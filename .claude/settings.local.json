@@ -1,7 +1,14 @@
 {
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
-      "Bash(mkdir -p docs)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
       "SlashCommand(/BMad:agents:architect)"
     ],
     "deny": [],
