@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir -p docs)"
+      "Bash(mkdir -p docs)",
+      "SlashCommand(/BMad:agents:architect)"
     ],
     "deny": [],
     "ask": []
