@@ -39,3 +39,8 @@ export type GameMechanicId =
   | 'trace-write'
   | 'picture-reveal'
   | 'word-building'
+
+export interface GameMechanic {
+  meta: GameMechanicMeta
+  Component: React.ComponentType<GameMechanicProps>
+}
