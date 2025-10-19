@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
@@ -11,18 +13,32 @@ export default function HomePage() {
         </p>
 
         <div className="flex gap-4 justify-center mt-8">
-          <button className="btn-primary btn-lg">
-            Get Started
-          </button>
-          <button className="btn-secondary btn-lg">
-            Learn More
-          </button>
+          <Link href="/word-lists">
+            <button className="btn-primary btn-lg">
+              Get Started
+            </button>
+          </Link>
+          <Link href="/word-lists">
+            <button className="btn-secondary btn-lg">
+              Manage Word Lists
+            </button>
+          </Link>
         </div>
 
-        <div className="mt-12 p-6 bg-blue-50 rounded-xl border border-blue-200">
-          <p className="text-sm text-blue-800">
-            🚧 <strong>Under Construction</strong> - Foundation & Project Setup in Progress
+        <div className="mt-12 p-6 bg-success-50 rounded-xl border border-success-200">
+          <p className="text-sm text-success-800">
+            ✅ <strong>Epic 2 Complete</strong> - Word List Management Ready!
           </p>
+        </div>
+
+        <div className="mt-6 text-left space-y-3">
+          <h3 className="font-semibold text-gray-900">What&apos;s Working:</h3>
+          <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+            <li>Create and edit word lists</li>
+            <li>Add up to 100 words per list</li>
+            <li>Input validation and duplicate detection</li>
+            <li>Data persists in browser storage</li>
+          </ul>
         </div>
       </div>
     </main>
