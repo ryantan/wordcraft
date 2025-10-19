@@ -9,6 +9,7 @@ import { missingLettersMechanic } from './missing-letters'
 import { letterMatchingMechanic } from './letter-matching'
 import { spellingChallengeMechanic } from './spelling-challenge'
 import { letterHuntMechanic } from './letter-hunt'
+import { pictureRevealMechanic } from './picture-reveal'
 
 // Register all game mechanics
 export function initializeGames(): void {
@@ -17,6 +18,7 @@ export function initializeGames(): void {
   registerGame('letter-matching', letterMatchingMechanic)
   registerGame('spelling-challenge', spellingChallengeMechanic)
   registerGame('letter-hunt', letterHuntMechanic)
+  registerGame('picture-reveal', pictureRevealMechanic)
 }
 
 // Auto-initialize on import (for client-side usage)
