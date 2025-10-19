@@ -239,7 +239,7 @@ export const MissingLetters: FC<GameMechanicProps> = ({
                     : 'bg-gray-50 border-2 border-gray-300 text-gray-700'
                 }`}
               >
-                {slot.isMissing ? (slot.userInput?.toUpperCase() || '_') : slot.letter.toUpperCase()}
+                {slot.isMissing ? (slot.userInput?.toUpperCase() || '_') : (slot.letter || ' ').toUpperCase()}
               </button>
             ))}
           </div>
