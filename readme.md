@@ -6,10 +6,10 @@ An adaptive spelling game for children ages 5-10. This project uses game mechani
 
 ```bash
 # Install dependencies
-npm install --legacy-peer-deps
+pnpm install
 
 # Run development server
-npm run dev
+pnpm dev
 
 # Open http://localhost:3000
 ```
@@ -31,19 +31,19 @@ npm run dev
 
 ```bash
 # Development
-npm run dev          # Start dev server with Turbopack
-npm run build        # Build for production
-npm run start        # Start production server
+pnpm dev          # Start dev server with Turbopack
+pnpm build        # Build for production
+pnpm start        # Start production server
 
 # Code Quality
-npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint issues
-npm run format       # Format code with Prettier
-npm run type-check   # Check TypeScript types
+pnpm lint         # Run ESLint
+pnpm lint:fix     # Fix ESLint issues
+pnpm format       # Format code with Prettier
+pnpm type-check   # Check TypeScript types
 
 # Testing (to be implemented)
-npm run test         # Run unit tests
-npm run test:e2e     # Run E2E tests
+pnpm test         # Run unit tests
+pnpm test:e2e     # Run E2E tests
 ```
 
 ## 📁 Project Structure
