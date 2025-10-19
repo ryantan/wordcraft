@@ -45,17 +45,25 @@ export const MissingLetters: FC<GameMechanicProps> = ({
   useEffect(() => {
     const letters = word.split('')
 
-    // Randomly select which letters to hide
+    // Get indices of non-space letters that can be hidden
+    const hideableIndices = letters
+      .map((letter, index) => (letter !== ' ' ? index : -1))
+      .filter(index => index !== -1)
+
+    // Randomly select which letters to hide (only non-space letters)
     const hiddenIndices = new Set<number>()
-    while (hiddenIndices.size < hiddenLetterCount) {
-      const randomIndex = Math.floor(Math.random() * letters.length)
-      hiddenIndices.add(randomIndex)
+    const maxHidden = Math.min(hiddenLetterCount, hideableIndices.length)
+
+    while (hiddenIndices.size < maxHidden) {
+      const randomHideableIndex =
+        hideableIndices[Math.floor(Math.random() * hideableIndices.length)]
+      hiddenIndices.add(randomHideableIndex)
     }
 
-    // Create slots
+    // Create slots (spaces are never hidden)
     const newSlots: LetterSlot[] = letters.map((letter, index) => ({
       letter,
-      isMissing: hiddenIndices.has(index),
+      isMissing: letter !== ' ' && hiddenIndices.has(index),
     }))
 
     setSlots(newSlots)

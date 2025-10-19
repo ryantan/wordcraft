@@ -49,11 +49,14 @@ export function validateWord(word: string): ValidationResult {
     })
   }
 
-  // Only allow letters and common punctuation (apostrophes, hyphens)
-  if (!/^[a-zA-Z'-]+$/.test(trimmed)) {
+  // Only allow letters, spaces, and common punctuation (apostrophes, hyphens)
+  // Also prevent multiple consecutive spaces
+  if (!/^[a-zA-Z' -]+$/.test(trimmed) || /\s{2,}/.test(trimmed)) {
     errors.push({
       field: 'word',
-      message: 'Word can only contain letters, hyphens, and apostrophes',
+      message: trimmed.includes('  ')
+        ? 'Word cannot contain multiple consecutive spaces'
+        : 'Word can only contain letters, spaces, hyphens, and apostrophes',
     })
   }
 
