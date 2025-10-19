@@ -25,10 +25,18 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-12 p-6 bg-success-50 rounded-xl border border-success-200">
-          <p className="text-sm text-success-800">
-            ✅ <strong>Epic 2 Complete</strong> - Word List Management Ready!
-          </p>
+        <div className="mt-12 space-y-4">
+          <div className="p-6 bg-success-50 rounded-xl border border-success-200">
+            <p className="text-sm text-success-800">
+              ✅ <strong>Epic 2 Complete</strong> - Word List Management Ready!
+            </p>
+          </div>
+
+          <div className="p-6 bg-success-50 rounded-xl border border-success-200">
+            <p className="text-sm text-success-800">
+              ✅ <strong>Epic 3 Complete</strong> - Core Game Mechanics Part 1 Ready!
+            </p>
+          </div>
         </div>
 
         <div className="mt-6 text-left space-y-3">
@@ -38,6 +46,9 @@ export default function HomePage() {
             <li>Add up to 100 words per list</li>
             <li>Input validation and duplicate detection</li>
             <li>Data persists in browser storage</li>
+            <li>4 interactive game mechanics (Word Scramble, Missing Letters, Letter Matching, Spelling Challenge)</li>
+            <li>Game session management with progress tracking</li>
+            <li>Performance stats and session summaries</li>
           </ul>
         </div>
       </div>
