@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { calculateSessionStats } from '@/lib/game/session-tracker'
-import { calculateConfidence } from '@/lib/algorithms/confidence-scoring'
+import { calculateWordConfidence } from '@/lib/algorithms/confidence-scoring'
 import type { GameResult } from '@/types'
 
 interface SessionSummaryProps {
@@ -56,8 +56,7 @@ export function SessionSummary({ results, listId, mechanicId }: SessionSummaryPr
 
   // Calculate confidence for each word
   const wordConfidence = stats.wordPracticeCounts.map(wordData => {
-    const wordResults = results.filter(r => r.word === wordData.word)
-    const confidence = calculateConfidence(wordResults)
+    const confidence = calculateWordConfidence(wordData.word, results)
     return {
       ...wordData,
       confidence,
