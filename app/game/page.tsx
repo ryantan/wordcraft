@@ -137,6 +137,7 @@ function GameContent() {
         word={session.currentWord}
         onComplete={session.handleGameComplete}
         onHintRequest={handleHintRequest}
+        difficulty={session.currentDifficulty}
       />
     </main>
   )

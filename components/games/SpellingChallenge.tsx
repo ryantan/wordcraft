@@ -13,6 +13,7 @@ export const SpellingChallenge: FC<GameMechanicProps> = ({
   word,
   onComplete,
   onHintRequest,
+  difficulty = 'medium',
 }) => {
   const [userInput, setUserInput] = useState('')
   const [attempts, setAttempts] = useState(0)
@@ -24,16 +25,19 @@ export const SpellingChallenge: FC<GameMechanicProps> = ({
   const [revealedLetters, setRevealedLetters] = useState<Set<number>>(new Set())
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Hide the word after 3 seconds
+  // Hide the word based on difficulty
   useEffect(() => {
+    // Difficulty affects how long the word is shown
+    const displayTime = difficulty === 'easy' ? 5000 : difficulty === 'hard' ? 2000 : 3000
+
     const timer = setTimeout(() => {
       setShowWord(false)
       // Focus input after word is hidden
       inputRef.current?.focus()
-    }, 3000)
+    }, displayTime)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [difficulty])
 
   const handleSubmit = useCallback(
     (e?: React.FormEvent) => {

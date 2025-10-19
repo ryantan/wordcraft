@@ -19,6 +19,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
   word,
   onComplete,
   onHintRequest,
+  difficulty = 'medium',
 }) => {
   const [pairs, setPairs] = useState<LetterPair[]>([])
   const [uppercaseOptions, setUppercaseOptions] = useState<string[]>([])
@@ -47,10 +48,13 @@ export const LetterMatching: FC<GameMechanicProps> = ({
     // Create uppercase options (one for each letter in the word, excluding spaces)
     const correctUppercase = letters.filter(l => l !== ' ').map(l => l.toUpperCase())
 
-    // Add a few distractors
+    // Add distractors based on difficulty
     const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     const uniqueCorrect = Array.from(new Set(correctUppercase))
-    const distractorCount = Math.min(3, Math.max(0, 8 - correctUppercase.length))
+
+    // Difficulty affects number of distractor letters
+    const baseDistractorCount = difficulty === 'easy' ? 1 : difficulty === 'hard' ? 5 : 3
+    const distractorCount = Math.min(baseDistractorCount, Math.max(0, 8 - correctUppercase.length))
     const distractors: string[] = []
 
     while (distractors.length < distractorCount) {
@@ -62,7 +66,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
 
     const allOptions = [...correctUppercase, ...distractors].sort(() => Math.random() - 0.5)
     setUppercaseOptions(allOptions)
-  }, [word])
+  }, [word, difficulty])
 
   const handleLowercaseClick = useCallback((index: number) => {
     if (pairs[index].matched) return

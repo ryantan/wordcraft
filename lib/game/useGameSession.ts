@@ -5,13 +5,14 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import type { GameResult, GameMechanicId, WordList } from '@/types'
+import type { GameResult, GameMechanicId, WordList, GameDifficulty } from '@/types'
 import { getGame, getGameIds } from '@/lib/games'
 import { selectNextWord } from './word-selector'
 import { initializeGameSession } from './session-manager'
 import { processGameCompletion } from './session-tracker'
 import { detectLearningStyle, selectNextGame } from '@/lib/algorithms/learning-style-detection'
 import { getAllGameResults, getLearningProfile } from '@/lib/storage/sessionStorage'
+import { calculateDifficulty, getInitialDifficulty } from '@/lib/algorithms/difficulty-adjustment'
 
 const MAX_ROUNDS = 10
 
@@ -20,6 +21,7 @@ export interface GameSessionState {
   sessionPerformance: Map<string, GameResult[]>
   currentWord: string | null
   currentMechanicId: GameMechanicId | null
+  currentDifficulty: GameDifficulty
   recentGames: GameMechanicId[]
   results: GameResult[]
   roundsCompleted: number
@@ -33,6 +35,7 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
     sessionPerformance: new Map(),
     currentWord: null,
     currentMechanicId: null,
+    currentDifficulty: 'medium',
     recentGames: [],
     results: [],
     roundsCompleted: 0,
@@ -70,6 +73,12 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
       )
       if (!nextWord) return prev
 
+      // Calculate difficulty based on word performance
+      const wordResults = prev.sessionPerformance.get(nextWord) || []
+      const difficulty = wordResults.length === 0
+        ? getInitialDifficulty(nextWord)
+        : calculateDifficulty(wordResults, prev.currentDifficulty)
+
       // Select game mechanic
       let mechanic: GameMechanicId
       if (mechanicId && getGame(mechanicId)) {
@@ -96,6 +105,7 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
         ...prev,
         currentWord: nextWord,
         currentMechanicId: mechanic,
+        currentDifficulty: difficulty,
         recentGames: [...prev.recentGames.slice(-2), mechanic],
         roundKey: prev.roundKey + 1,
       }
