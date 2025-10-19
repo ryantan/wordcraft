@@ -21,6 +21,7 @@ function GameContent() {
   const [wordsCompleted, setWordsCompleted] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [gameFinished, setGameFinished] = useState(false)
+  const [roundKey, setRoundKey] = useState(0)
 
   // Load word list and initialize game
   useEffect(() => {
@@ -43,9 +44,15 @@ function GameContent() {
   const startNextRound = useCallback(() => {
     if (!wordList) return
 
-    // Pick a random word from the list
-    const randomWord = wordList.words[Math.floor(Math.random() * wordList.words.length)]
-    setCurrentWord(randomWord)
+    // Pick a random word from the list (avoid the same word if possible)
+    let randomWord: string
+    if (wordList.words.length > 1 && currentWord) {
+      // Try to pick a different word
+      const availableWords = wordList.words.filter(w => w !== currentWord)
+      randomWord = availableWords[Math.floor(Math.random() * availableWords.length)]
+    } else {
+      randomWord = wordList.words[Math.floor(Math.random() * wordList.words.length)]
+    }
 
     // Pick a random game mechanic (or use the specified one)
     let mechanic: GameMechanicId
@@ -56,8 +63,11 @@ function GameContent() {
       mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
     }
 
+    // Update state - increment roundKey to force component remount
+    setCurrentWord(randomWord)
     setCurrentMechanicId(mechanic)
-  }, [wordList, mechanicId])
+    setRoundKey(prev => prev + 1)
+  }, [wordList, mechanicId, currentWord])
 
   // Initialize first round when word list loads
   useEffect(() => {
@@ -256,6 +266,7 @@ function GameContent() {
 
       {/* Game Area */}
       <GameComponent
+        key={roundKey}
         word={currentWord}
         onComplete={handleGameComplete}
         onHintRequest={handleHintRequest}
