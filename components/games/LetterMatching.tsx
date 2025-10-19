@@ -23,7 +23,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
   const [pairs, setPairs] = useState<LetterPair[]>([])
   const [uppercaseOptions, setUppercaseOptions] = useState<string[]>([])
   const [selectedLowercase, setSelectedLowercase] = useState<number>(-1)
-  const [attempts, setAttempts] = useState(0)
+  const [mistakes, setMistakes] = useState(0)
   const [hintsUsed, setHintsUsed] = useState(0)
   const [startTime] = useState(Date.now())
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null)
@@ -76,8 +76,6 @@ export const LetterMatching: FC<GameMechanicProps> = ({
       const pair = pairs[selectedLowercase]
       const correct = uppercase === pair.uppercase
 
-      setAttempts(prev => prev + 1)
-
       if (correct) {
         // Mark as matched
         const newPairs = [...pairs]
@@ -103,12 +101,14 @@ export const LetterMatching: FC<GameMechanicProps> = ({
         // Check if all matched
         if (newPairs.every(p => p.matched)) {
           const timeMs = Date.now() - startTime
+          // Attempts = 1 if no mistakes, otherwise mistakes + 1
+          const finalAttempts = mistakes === 0 ? 1 : mistakes + 1
 
           setTimeout(() => {
             onComplete({
               word,
               correct: true,
-              attempts: attempts + 1,
+              attempts: finalAttempts,
               timeMs,
               hintsUsed,
               mechanicId: 'letter-matching',
@@ -117,6 +117,8 @@ export const LetterMatching: FC<GameMechanicProps> = ({
           }, 1200)
         }
       } else {
+        // Increment mistakes counter for incorrect matches
+        setMistakes(prev => prev + 1)
         setFeedback('incorrect')
 
         setTimeout(() => {
@@ -125,7 +127,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
         }, 1200)
       }
     },
-    [selectedLowercase, pairs, attempts, hintsUsed, startTime, word, onComplete]
+    [selectedLowercase, pairs, mistakes, hintsUsed, startTime, word, onComplete]
   )
 
   const handleHint = useCallback(() => {
@@ -249,7 +251,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
         {/* Stats */}
         <div className="flex gap-6 justify-center text-sm text-gray-600">
           <div>
-            <span className="font-semibold">Attempts:</span> {attempts}
+            <span className="font-semibold">Mistakes:</span> {mistakes}
           </div>
           {onHintRequest && (
             <div>
