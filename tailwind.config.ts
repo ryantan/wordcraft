@@ -63,6 +63,7 @@ const config: Config = {
       animation: {
         'bounce-slow': 'bounce 1.5s infinite',
         'wiggle': 'wiggle 0.5s ease-in-out',
+        'shake': 'shake 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'fade-in': 'fadeIn 0.3s ease-in',
         'success-pulse': 'successPulse 0.6s ease-out',
@@ -71,6 +72,11 @@ const config: Config = {
         wiggle: {
           '0%, 100%': { transform: 'rotate(-3deg)' },
           '50%': { transform: 'rotate(3deg)' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '25%': { transform: 'translateX(-10px)' },
+          '75%': { transform: 'translateX(10px)' },
         },
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
