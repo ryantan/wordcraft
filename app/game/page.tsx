@@ -17,7 +17,6 @@ import {
 } from '@/lib/storage/sessionStorage'
 import { calculateAllConfidences } from '@/lib/algorithms/confidence-scoring'
 import {
-  selectWordsForSession,
   initializeWordReview,
   updateWordReview,
 } from '@/lib/algorithms/spaced-repetition'
@@ -30,16 +29,18 @@ function GameContent() {
   const mechanicId = searchParams.get('mechanicId') as GameMechanicId | null
 
   const [wordList, setWordList] = useState<WordList | null>(null)
-  const [sessionWords, setSessionWords] = useState<string[]>([]) // Adaptive word selection
-  const [currentWordIndex, setCurrentWordIndex] = useState(0)
+  const [wordPool, setWordPool] = useState<string[]>([]) // Words to practice this session
+  const [sessionPerformance, setSessionPerformance] = useState<Map<string, GameResult[]>>(new Map())
   const [currentWord, setCurrentWord] = useState<string | null>(null)
   const [currentMechanicId, setCurrentMechanicId] = useState<GameMechanicId | null>(null)
   const [recentGames, setRecentGames] = useState<GameMechanicId[]>([]) // For variety
   const [results, setResults] = useState<GameResult[]>([])
-  const [wordsCompleted, setWordsCompleted] = useState(0)
+  const [roundsCompleted, setRoundsCompleted] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [gameFinished, setGameFinished] = useState(false)
   const [roundKey, setRoundKey] = useState(0)
+
+  const MAX_ROUNDS = 10 // Session ends after 10 rounds
 
   // Load word list and initialize adaptive session
   useEffect(() => {
@@ -72,25 +73,83 @@ function GameContent() {
     // Calculate confidence scores for words in this list
     const confidences = calculateAllConfidences(list.words, allResults)
 
-    // Select words for this session using adaptive algorithm
-    const selectedWords = selectWordsForSession(
-      list.words,
-      allReviewData,
-      confidences,
-      5 // Session size
-    )
-    setSessionWords(selectedWords)
-    setCurrentWordIndex(0)
+    // Create initial word pool - prioritize struggling and due words
+    const strugglingWords = list.words.filter(word => {
+      const confidence = confidences.get(word)
+      return confidence && confidence.level === 'needs-work'
+    })
+
+    const dueWords = list.words.filter(word => {
+      const reviewData = allReviewData.get(word)
+      if (!reviewData) return false
+      return reviewData.nextReviewDate <= new Date()
+    })
+
+    // Combine and dedupe (struggling words get highest priority)
+    const priorityWords = Array.from(new Set([...strugglingWords, ...dueWords]))
+
+    // If no priority words, include all words
+    const initialPool = priorityWords.length > 0 ? priorityWords : list.words
+
+    setWordPool(initialPool)
+    setSessionPerformance(new Map())
 
     setIsLoading(false)
   }, [listId, router])
 
+  // Select next word based on session performance
+  const selectNextWord = useCallback((): string | null => {
+    if (wordPool.length === 0) return null
+
+    // Calculate priority scores for each word based on session performance
+    const wordScores = wordPool.map(word => {
+      const performance = sessionPerformance.get(word) || []
+
+      if (performance.length === 0) {
+        // Never practiced in this session - high priority
+        return { word, score: 100 }
+      }
+
+      // Calculate average performance in this session
+      const avgAttempts = performance.reduce((sum, r) => sum + r.attempts, 0) / performance.length
+      const avgHints = performance.reduce((sum, r) => sum + r.hintsUsed, 0) / performance.length
+      const recentResult = performance[performance.length - 1]
+
+      // Low score = struggled = high priority for repetition
+      let priorityScore = 100
+      priorityScore -= (avgAttempts - 1) * 20 // Multiple attempts = lower score
+      priorityScore -= avgHints * 15 // Used hints = lower score
+
+      // If last attempt was poor, boost priority
+      if (recentResult.attempts > 1) {
+        priorityScore -= 20
+      }
+
+      // Reduce priority if practiced many times already (give other words a chance)
+      priorityScore -= performance.length * 5
+
+      return { word, score: Math.max(0, priorityScore) }
+    })
+
+    // Sort by priority (lowest score = highest priority for practice)
+    wordScores.sort((a, b) => a.score - b.score)
+
+    // Avoid immediate repeats if possible
+    if (currentWord && wordScores.length > 1 && wordScores[0].word === currentWord) {
+      // Pick second highest priority word if top priority is current word
+      return wordScores[1].word
+    }
+
+    return wordScores[0].word
+  }, [wordPool, sessionPerformance, currentWord])
+
   // Start next round with adaptive selection
   const startNextRound = useCallback(() => {
-    if (!wordList || sessionWords.length === 0) return
+    if (!wordList || wordPool.length === 0) return
 
-    // Get next word from adaptive session selection
-    const nextWord = sessionWords[currentWordIndex]
+    // Select next word adaptively based on session performance
+    const nextWord = selectNextWord()
+    if (!nextWord) return
 
     // Select game mechanic adaptively (or use specified one)
     let mechanic: GameMechanicId
@@ -121,14 +180,14 @@ function GameContent() {
     setCurrentWord(nextWord)
     setCurrentMechanicId(mechanic)
     setRoundKey(prev => prev + 1)
-  }, [wordList, sessionWords, currentWordIndex, mechanicId, recentGames])
+  }, [wordList, wordPool, selectNextWord, mechanicId, recentGames])
 
-  // Initialize first round when session words are ready
+  // Initialize first round when word pool is ready
   useEffect(() => {
-    if (wordList && sessionWords.length > 0 && !currentWord) {
+    if (wordList && wordPool.length > 0 && !currentWord) {
       startNextRound()
     }
-  }, [wordList, sessionWords, currentWord, startNextRound])
+  }, [wordList, wordPool, currentWord, startNextRound])
 
   const handleGameComplete = useCallback(
     (result: GameResult) => {
@@ -137,7 +196,15 @@ function GameContent() {
 
       // Update local state
       setResults(prev => [...prev, result])
-      setWordsCompleted(prev => prev + 1)
+      setRoundsCompleted(prev => prev + 1)
+
+      // Track performance for this word in the current session
+      setSessionPerformance(prev => {
+        const newMap = new Map(prev)
+        const wordResults = newMap.get(result.word) || []
+        newMap.set(result.word, [...wordResults, result])
+        return newMap
+      })
 
       // Update spaced repetition review data
       const allResults = getAllGameResults()
@@ -158,21 +225,18 @@ function GameContent() {
       const profile = detectLearningStyle(allResults)
       saveLearningProfile(profile)
 
-      // Move to next word
-      const nextIndex = currentWordIndex + 1
-
-      // Check if we should continue or finish
-      if (nextIndex >= sessionWords.length) {
+      // Check if session should end
+      const nextRound = roundsCompleted + 1
+      if (nextRound >= MAX_ROUNDS) {
         setGameFinished(true)
       } else {
-        setCurrentWordIndex(nextIndex)
         // Short delay before next round
         setTimeout(() => {
           startNextRound()
         }, 2000)
       }
     },
-    [currentWordIndex, sessionWords, startNextRound]
+    [roundsCompleted, MAX_ROUNDS, startNextRound]
   )
 
   const handleHintRequest = useCallback(() => {
@@ -208,10 +272,17 @@ function GameContent() {
   }
 
   if (gameFinished) {
-    const totalAttempts = results.reduce((sum, r) => sum + r.attempts, 0)
     const totalTime = results.reduce((sum, r) => sum + r.timeMs, 0)
     const totalHints = results.reduce((sum, r) => sum + r.hintsUsed, 0)
     const avgTime = Math.round(totalTime / results.length / 1000)
+
+    // Get unique words and their practice counts
+    const uniqueWords = Array.from(new Set(results.map(r => r.word)))
+    const wordPracticeCounts = uniqueWords.map(word => ({
+      word,
+      count: results.filter(r => r.word === word).length,
+      results: results.filter(r => r.word === word)
+    }))
 
     return (
       <main className="container mx-auto p-8 max-w-3xl">
@@ -231,11 +302,11 @@ function GameContent() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-4xl font-bold text-primary-600">{results.length}</div>
-                <div className="text-sm text-gray-600 mt-1">Words</div>
+                <div className="text-sm text-gray-600 mt-1">Rounds</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary-600">{totalAttempts}</div>
-                <div className="text-sm text-gray-600 mt-1">Attempts</div>
+                <div className="text-4xl font-bold text-primary-600">{uniqueWords.length}</div>
+                <div className="text-sm text-gray-600 mt-1">Words</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-primary-600">{avgTime}s</div>
@@ -250,26 +321,32 @@ function GameContent() {
             {/* Results List */}
             <div className="mt-8 space-y-3">
               <h3 className="font-semibold text-gray-900">Words Practiced:</h3>
-              {results.map((result, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-success-50 border border-success-200 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">✓</span>
-                    <div>
-                      <div className="font-semibold text-gray-900">{result.word}</div>
-                      <div className="text-sm text-gray-600">
-                        {result.mechanicId.replace(/-/g, ' ')}
+              {wordPracticeCounts.map((wordData, index) => {
+                const totalWordAttempts = wordData.results.reduce((sum, r) => sum + r.attempts, 0)
+                const avgWordAttempts = totalWordAttempts / wordData.count
+                const totalWordTime = wordData.results.reduce((sum, r) => sum + r.timeMs, 0)
+
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-success-50 border border-success-200 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">✓</span>
+                      <div>
+                        <div className="font-semibold text-gray-900">{wordData.word}</div>
+                        <div className="text-sm text-gray-600">
+                          Practiced {wordData.count} {wordData.count === 1 ? 'time' : 'times'}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right text-sm text-gray-600">
+                      <div>{avgWordAttempts.toFixed(1)} avg attempts</div>
+                      <div>{Math.round(totalWordTime / wordData.count / 1000)}s avg</div>
+                    </div>
                   </div>
-                  <div className="text-right text-sm text-gray-600">
-                    <div>{result.attempts} {result.attempts === 1 ? 'attempt' : 'attempts'}</div>
-                    <div>{Math.round(result.timeMs / 1000)}s</div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
@@ -331,8 +408,8 @@ function GameContent() {
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-600">{wordsCompleted}/5</div>
-                <div className="text-xs text-gray-600">Words</div>
+                <div className="text-2xl font-bold text-primary-600">{roundsCompleted}/{MAX_ROUNDS}</div>
+                <div className="text-xs text-gray-600">Rounds</div>
               </div>
               <Link href="/word-lists">
                 <Button variant="outline" size="sm">
