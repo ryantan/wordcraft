@@ -146,7 +146,7 @@ export function SessionSummary({ results, listId, mechanicId }: SessionSummaryPr
 
         {/* Actions */}
         <div className="flex gap-4 justify-center">
-          <Link href={`/game?listId=${listId}${mechanicId ? `&mechanicId=${mechanicId}` : ''}`}>
+          <Link href={`/game?listId=${listId}${mechanicId ? `&mechanicId=${mechanicId}` : ''}&t=${Date.now()}`}>
             <Button size="lg">Play Again</Button>
           </Link>
           <Link href="/word-lists">
