@@ -6,11 +6,13 @@
 import { registerGame } from './registry'
 import { wordScrambleMechanic } from './word-scramble'
 import { missingLettersMechanic } from './missing-letters'
+import { letterMatchingMechanic } from './letter-matching'
 
 // Register all game mechanics
 export function initializeGames(): void {
   registerGame('word-scramble', wordScrambleMechanic)
   registerGame('missing-letters', missingLettersMechanic)
+  registerGame('letter-matching', letterMatchingMechanic)
 }
 
 // Auto-initialize on import (for client-side usage)
