@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getWordList } from '@/lib/storage/localStorage'
@@ -8,7 +8,7 @@ import { getGame, getGameIds } from '@/lib/games'
 import type { WordList, GameResult, GameMechanicId } from '@/types'
 import { Button } from '@/components/ui/button'
 
-export default function GamePage() {
+function GameContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const listId = searchParams.get('listId')
@@ -88,7 +88,6 @@ export default function GamePage() {
   const handleHintRequest = useCallback(() => {
     // Hints are handled within each game mechanic
     // This callback is just for tracking/analytics
-    console.log('Hint requested')
   }, [])
 
   if (isLoading) {
@@ -262,5 +261,24 @@ export default function GamePage() {
         onHintRequest={handleHintRequest}
       />
     </main>
+  )
+}
+
+export default function GamePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="container mx-auto p-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin h-12 w-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4" />
+              <p className="text-gray-600">Loading game...</p>
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <GameContent />
+    </Suspense>
   )
 }
