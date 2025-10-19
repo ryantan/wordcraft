@@ -4,7 +4,7 @@
  * Manages game session state and adaptive word/game selection.
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import type { GameResult, GameMechanicId, WordList } from '@/types'
 import { getGame, getGameIds } from '@/lib/games'
 import { selectNextWord } from './word-selector'
@@ -39,25 +39,43 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
     gameFinished: false,
     roundKey: 0,
   })
+  const initializedRef = useRef(false)
 
   // Initialize session when word list loads
   useEffect(() => {
     if (!wordList) return
 
+    console.log('[useGameSession] Initializing session for word list:', wordList.name)
     const sessionConfig = initializeGameSession(wordList)
+    console.log('[useGameSession] Word pool initialized:', sessionConfig.wordPool)
     setState(prev => ({
       ...prev,
       wordPool: sessionConfig.wordPool,
       sessionPerformance: sessionConfig.sessionPerformance,
+      currentWord: null,
+      currentMechanicId: null,
     }))
   }, [wordList])
 
   // Start next round
   const startNextRound = useCallback(() => {
-    if (!wordList) return
+    console.log('[useGameSession] startNextRound called')
+    if (!wordList) {
+      console.log('[useGameSession] No word list, returning')
+      return
+    }
 
     setState(prev => {
-      if (prev.wordPool.length === 0) return prev
+      console.log('[useGameSession] Current state:', {
+        wordPoolLength: prev.wordPool.length,
+        currentWord: prev.currentWord,
+        wordPool: prev.wordPool
+      })
+
+      if (prev.wordPool.length === 0) {
+        console.log('[useGameSession] Word pool is empty, returning')
+        return prev
+      }
 
       // Select next word adaptively
       const nextWord = selectNextWord(
@@ -65,29 +83,42 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
         prev.sessionPerformance,
         prev.currentWord
       )
-      if (!nextWord) return prev
+      console.log('[useGameSession] Selected word:', nextWord)
+      if (!nextWord) {
+        console.log('[useGameSession] No word selected, returning')
+        return prev
+      }
 
       // Select game mechanic
+      console.log('[useGameSession] Selecting game mechanic, mechanicId:', mechanicId)
       let mechanic: GameMechanicId
       if (mechanicId && getGame(mechanicId)) {
+        console.log('[useGameSession] Using specified mechanic:', mechanicId)
         mechanic = mechanicId
       } else {
         const allResults = getAllGameResults()
         const profile = getLearningProfile()
+        console.log('[useGameSession] All results count:', allResults.length)
+
+        const availableIds = getGameIds()
+        console.log('[useGameSession] Available game IDs:', availableIds)
 
         // Use adaptive selection if enough data
         if (allResults.length >= 12) {
           mechanic = selectNextGame(
             profile || detectLearningStyle(allResults),
+            availableIds,
             prev.recentGames
           )
+          console.log('[useGameSession] Adaptive mechanic selected:', mechanic)
         } else {
           // Random for first games
-          const availableIds = getGameIds()
           mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
+          console.log('[useGameSession] Random mechanic selected:', mechanic)
         }
       }
 
+      console.log('[useGameSession] Returning new state with:', { nextWord, mechanic })
       return {
         ...prev,
         currentWord: nextWord,
@@ -134,12 +165,25 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
     [startNextRound]
   )
 
-  // Initialize first round when ready
+  // Initialize first round when word pool is ready
   useEffect(() => {
-    if (wordList && state.wordPool.length > 0 && !state.currentWord) {
+    console.log('[useGameSession] Initialization effect triggered:', {
+      hasWordList: !!wordList,
+      wordPoolLength: state.wordPool.length,
+      currentWord: state.currentWord,
+      initialized: initializedRef.current
+    })
+    if (wordList && state.wordPool.length > 0 && !initializedRef.current) {
+      console.log('[useGameSession] Calling startNextRound from initialization')
+      initializedRef.current = true
       startNextRound()
     }
-  }, [wordList, state.wordPool, state.currentWord, startNextRound])
+  }, [wordList, state.wordPool.length, startNextRound])
+
+  // Reset initialization when word list changes
+  useEffect(() => {
+    initializedRef.current = false
+  }, [wordList])
 
   return {
     ...state,
