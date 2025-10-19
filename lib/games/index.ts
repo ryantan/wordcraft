@@ -7,12 +7,14 @@ import { registerGame } from './registry'
 import { wordScrambleMechanic } from './word-scramble'
 import { missingLettersMechanic } from './missing-letters'
 import { letterMatchingMechanic } from './letter-matching'
+import { spellingChallengeMechanic } from './spelling-challenge'
 
 // Register all game mechanics
 export function initializeGames(): void {
   registerGame('word-scramble', wordScrambleMechanic)
   registerGame('missing-letters', missingLettersMechanic)
   registerGame('letter-matching', letterMatchingMechanic)
+  registerGame('spelling-challenge', spellingChallengeMechanic)
 }
 
 // Auto-initialize on import (for client-side usage)
