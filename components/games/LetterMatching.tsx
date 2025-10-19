@@ -1,10 +1,11 @@
 'use client'
 
-import { type FC, useState, useEffect, useCallback, useMemo } from 'react'
+import { type FC, useState, useEffect, useCallback } from 'react'
 import type { GameMechanicProps } from '@/types'
 import { Button } from '@/components/ui/button'
 
 interface LetterPair {
+  index: number
   lowercase: string
   uppercase: string
   matched: boolean
@@ -27,16 +28,13 @@ export const LetterMatching: FC<GameMechanicProps> = ({
   const [startTime] = useState(Date.now())
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null)
 
-  // Get unique letters from the word
-  const uniqueLetters = useMemo(() => {
-    const letters = word.toLowerCase().split('')
-    return Array.from(new Set(letters))
-  }, [word])
-
   // Initialize the game
   useEffect(() => {
-    // Create pairs for unique letters
-    const newPairs: LetterPair[] = uniqueLetters.map(letter => ({
+    const letters = word.toLowerCase().split('')
+
+    // Create pairs for ALL letters (including duplicates)
+    const newPairs: LetterPair[] = letters.map((letter, index) => ({
+      index,
       lowercase: letter,
       uppercase: letter.toUpperCase(),
       matched: false,
@@ -44,22 +42,25 @@ export const LetterMatching: FC<GameMechanicProps> = ({
 
     setPairs(newPairs)
 
-    // Create uppercase options with some distractors
-    const correctUppercase = uniqueLetters.map(l => l.toUpperCase())
+    // Create uppercase options (one for each letter in the word)
+    const correctUppercase = letters.map(l => l.toUpperCase())
+
+    // Add a few distractors
     const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    const distractorCount = Math.min(4, 26 - correctUppercase.length)
+    const uniqueCorrect = Array.from(new Set(correctUppercase))
+    const distractorCount = Math.min(3, Math.max(0, 8 - correctUppercase.length))
     const distractors: string[] = []
 
     while (distractors.length < distractorCount) {
       const randomLetter = allLetters[Math.floor(Math.random() * allLetters.length)]
-      if (!correctUppercase.includes(randomLetter) && !distractors.includes(randomLetter)) {
+      if (!uniqueCorrect.includes(randomLetter) && !distractors.includes(randomLetter)) {
         distractors.push(randomLetter)
       }
     }
 
     const allOptions = [...correctUppercase, ...distractors].sort(() => Math.random() - 0.5)
     setUppercaseOptions(allOptions)
-  }, [uniqueLetters])
+  }, [word])
 
   const handleLowercaseClick = useCallback((index: number) => {
     if (pairs[index].matched) return
@@ -81,8 +82,14 @@ export const LetterMatching: FC<GameMechanicProps> = ({
         newPairs[selectedLowercase].matched = true
         setPairs(newPairs)
 
-        // Remove from options
-        setUppercaseOptions(prev => prev.filter(l => l !== uppercase))
+        // Remove only the first occurrence of this letter from options
+        setUppercaseOptions(prev => {
+          const index = prev.indexOf(uppercase)
+          if (index > -1) {
+            return [...prev.slice(0, index), ...prev.slice(index + 1)]
+          }
+          return prev
+        })
 
         setSelectedLowercase(-1)
         setFeedback('correct')
