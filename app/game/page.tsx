@@ -7,6 +7,21 @@ import { getWordList } from '@/lib/storage/localStorage'
 import { getGame, getGameIds } from '@/lib/games'
 import type { WordList, GameResult, GameMechanicId } from '@/types'
 import { Button } from '@/components/ui/button'
+import {
+  saveGameResult,
+  getAllGameResults,
+  getAllReviewData,
+  saveWordReviewData,
+  getLearningProfile,
+  saveLearningProfile,
+} from '@/lib/storage/sessionStorage'
+import { calculateAllConfidences } from '@/lib/algorithms/confidence-scoring'
+import {
+  selectWordsForSession,
+  initializeWordReview,
+  updateWordReview,
+} from '@/lib/algorithms/spaced-repetition'
+import { detectLearningStyle, selectNextGame } from '@/lib/algorithms/learning-style-detection'
 
 function GameContent() {
   const router = useRouter()
@@ -15,15 +30,18 @@ function GameContent() {
   const mechanicId = searchParams.get('mechanicId') as GameMechanicId | null
 
   const [wordList, setWordList] = useState<WordList | null>(null)
+  const [sessionWords, setSessionWords] = useState<string[]>([]) // Adaptive word selection
+  const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [currentWord, setCurrentWord] = useState<string | null>(null)
   const [currentMechanicId, setCurrentMechanicId] = useState<GameMechanicId | null>(null)
+  const [recentGames, setRecentGames] = useState<GameMechanicId[]>([]) // For variety
   const [results, setResults] = useState<GameResult[]>([])
   const [wordsCompleted, setWordsCompleted] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [gameFinished, setGameFinished] = useState(false)
   const [roundKey, setRoundKey] = useState(0)
 
-  // Load word list and initialize game
+  // Load word list and initialize adaptive session
   useEffect(() => {
     if (!listId) {
       router.push('/word-lists')
@@ -37,62 +55,124 @@ function GameContent() {
     }
 
     setWordList(list)
+
+    // Initialize adaptive learning data
+    const allResults = getAllGameResults()
+    let allReviewData = getAllReviewData()
+
+    // Initialize review data for any new words
+    list.words.forEach(word => {
+      if (!allReviewData.has(word)) {
+        const reviewData = initializeWordReview(word)
+        saveWordReviewData(reviewData)
+        allReviewData.set(word, reviewData)
+      }
+    })
+
+    // Calculate confidence scores for words in this list
+    const confidences = calculateAllConfidences(list.words, allResults)
+
+    // Select words for this session using adaptive algorithm
+    const selectedWords = selectWordsForSession(
+      list.words,
+      allReviewData,
+      confidences,
+      5 // Session size
+    )
+    setSessionWords(selectedWords)
+    setCurrentWordIndex(0)
+
     setIsLoading(false)
   }, [listId, router])
 
-  // Start next round
+  // Start next round with adaptive selection
   const startNextRound = useCallback(() => {
-    if (!wordList) return
+    if (!wordList || sessionWords.length === 0) return
 
-    // Pick a random word from the list (avoid the same word if possible)
-    let randomWord: string
-    if (wordList.words.length > 1 && currentWord) {
-      // Try to pick a different word
-      const availableWords = wordList.words.filter(w => w !== currentWord)
-      randomWord = availableWords[Math.floor(Math.random() * availableWords.length)]
-    } else {
-      randomWord = wordList.words[Math.floor(Math.random() * wordList.words.length)]
-    }
+    // Get next word from adaptive session selection
+    const nextWord = sessionWords[currentWordIndex]
 
-    // Pick a random game mechanic (or use the specified one)
+    // Select game mechanic adaptively (or use specified one)
     let mechanic: GameMechanicId
     if (mechanicId && getGame(mechanicId)) {
       mechanic = mechanicId
     } else {
-      const availableIds = getGameIds()
-      mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
+      // Use learning style detection to pick the best game
+      const allResults = getAllGameResults()
+      const profile = getLearningProfile()
+
+      // If we have enough data, use adaptive selection
+      if (allResults.length >= 12) {
+        mechanic = selectNextGame(
+          profile || detectLearningStyle(allResults),
+          recentGames
+        )
+      } else {
+        // Fall back to random for first few games
+        const availableIds = getGameIds()
+        mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
+      }
     }
+
+    // Track recent games for variety
+    setRecentGames(prev => [...prev.slice(-2), mechanic])
 
     // Update state - increment roundKey to force component remount
-    setCurrentWord(randomWord)
+    setCurrentWord(nextWord)
     setCurrentMechanicId(mechanic)
     setRoundKey(prev => prev + 1)
-  }, [wordList, mechanicId, currentWord])
+  }, [wordList, sessionWords, currentWordIndex, mechanicId, recentGames])
 
-  // Initialize first round when word list loads
+  // Initialize first round when session words are ready
   useEffect(() => {
-    if (wordList && !currentWord) {
+    if (wordList && sessionWords.length > 0 && !currentWord) {
       startNextRound()
     }
-  }, [wordList, currentWord, startNextRound])
+  }, [wordList, sessionWords, currentWord, startNextRound])
 
   const handleGameComplete = useCallback(
     (result: GameResult) => {
+      // Save result to storage
+      saveGameResult(result)
+
+      // Update local state
       setResults(prev => [...prev, result])
       setWordsCompleted(prev => prev + 1)
 
+      // Update spaced repetition review data
+      const allResults = getAllGameResults()
+      const confidences = calculateAllConfidences([result.word], allResults)
+      const confidence = confidences.get(result.word)
+
+      if (confidence) {
+        const allReviewData = getAllReviewData()
+        const existingReview = allReviewData.get(result.word)
+
+        if (existingReview) {
+          const updatedReview = updateWordReview(existingReview, confidence)
+          saveWordReviewData(updatedReview)
+        }
+      }
+
+      // Update learning style profile
+      const profile = detectLearningStyle(allResults)
+      saveLearningProfile(profile)
+
+      // Move to next word
+      const nextIndex = currentWordIndex + 1
+
       // Check if we should continue or finish
-      // For now, let's do 5 words per session
-      if (wordsCompleted + 1 >= 5) {
+      if (nextIndex >= sessionWords.length) {
         setGameFinished(true)
       } else {
+        setCurrentWordIndex(nextIndex)
         // Short delay before next round
         setTimeout(() => {
           startNextRound()
         }, 2000)
       }
     },
-    [wordsCompleted, startNextRound]
+    [currentWordIndex, sessionWords, startNextRound]
   )
 
   const handleHintRequest = useCallback(() => {
