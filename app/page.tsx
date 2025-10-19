@@ -18,9 +18,9 @@ export default function HomePage() {
               Get Started
             </button>
           </Link>
-          <Link href="/word-lists">
+          <Link href="/dashboard">
             <button className="btn-secondary btn-lg">
-              Manage Word Lists
+              View Progress
             </button>
           </Link>
         </div>
