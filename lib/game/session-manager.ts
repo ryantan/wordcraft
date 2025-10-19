@@ -5,10 +5,8 @@
  */
 
 import type { WordList } from '@/types'
-import { calculateAllConfidences } from '@/lib/algorithms/confidence-scoring'
 import { initializeWordReview } from '@/lib/algorithms/spaced-repetition'
 import {
-  getAllGameResults,
   getAllReviewData,
   saveWordReviewData,
 } from '@/lib/storage/sessionStorage'
@@ -21,20 +19,21 @@ export interface SessionConfig {
 /**
  * Initialize a new game session
  *
- * Creates the word pool for this session by:
- * 1. Identifying struggling words (low confidence)
- * 2. Finding words due for review (spaced repetition)
- * 3. Falling back to all words if no priority words exist
+ * Each session includes ALL words from the word list.
+ * Historical data is used for:
+ * - Long-term spaced repetition scheduling (when to review in future sessions)
+ * - Initializing review data for tracking
+ *
+ * Within-session confidence and word selection is based ONLY on
+ * current session performance, not historical data.
  *
  * @param wordList The word list to practice
  * @returns Configuration for the new session
  */
 export function initializeGameSession(wordList: WordList): SessionConfig {
-  // Load historical data
-  const allResults = getAllGameResults()
+  // Initialize review data for any new words (for spaced repetition tracking)
   let allReviewData = getAllReviewData()
 
-  // Initialize review data for any new words
   wordList.words.forEach(word => {
     if (!allReviewData.has(word)) {
       const reviewData = initializeWordReview(word)
@@ -43,30 +42,10 @@ export function initializeGameSession(wordList: WordList): SessionConfig {
     }
   })
 
-  // Calculate confidence scores
-  const confidences = calculateAllConfidences(wordList.words, allResults)
-
-  // Identify struggling words (needs-work level)
-  const strugglingWords = wordList.words.filter(word => {
-    const confidence = confidences.get(word)
-    return confidence && confidence.level === 'needs-work'
-  })
-
-  // Identify words due for review
-  const dueWords = wordList.words.filter(word => {
-    const reviewData = allReviewData.get(word)
-    if (!reviewData) return false
-    return reviewData.nextReviewDate <= new Date()
-  })
-
-  // Combine and dedupe (struggling words get highest priority)
-  const priorityWords = Array.from(new Set([...strugglingWords, ...dueWords]))
-
-  // Create word pool: use priority words if available, otherwise all words
-  const wordPool = priorityWords.length > 0 ? priorityWords : wordList.words
-
+  // Always include all words in the session
+  // Word repetition will be determined by current session performance
   return {
-    wordPool,
+    wordPool: wordList.words,
     sessionPerformance: new Map(),
   }
 }
