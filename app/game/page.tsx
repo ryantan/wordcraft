@@ -101,14 +101,26 @@ function GameContent() {
   const selectNextWord = useCallback((): string | null => {
     if (wordPool.length === 0) return null
 
-    // Calculate priority scores for each word based on session performance
+    // First priority: words that haven't been practiced yet
+    const unpracticedWords = wordPool.filter(word => {
+      const performance = sessionPerformance.get(word)
+      return !performance || performance.length === 0
+    })
+
+    // If there are unpracticed words, pick one (avoid current word)
+    if (unpracticedWords.length > 0) {
+      // Avoid immediate repeat
+      if (unpracticedWords.length > 1 && currentWord && unpracticedWords.includes(currentWord)) {
+        const otherWords = unpracticedWords.filter(w => w !== currentWord)
+        return otherWords[0]
+      }
+      return unpracticedWords[0]
+    }
+
+    // All words have been practiced at least once
+    // Now prioritize based on performance - words that struggled get repeated
     const wordScores = wordPool.map(word => {
       const performance = sessionPerformance.get(word) || []
-
-      if (performance.length === 0) {
-        // Never practiced in this session - high priority
-        return { word, score: 100 }
-      }
 
       // Calculate average performance in this session
       const avgAttempts = performance.reduce((sum, r) => sum + r.attempts, 0) / performance.length
