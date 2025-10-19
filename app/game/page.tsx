@@ -143,6 +143,14 @@ function GameContent() {
   )
 }
 
+function GamePageWrapper() {
+  const searchParams = useSearchParams()
+  // Use timestamp param as key to force remount on "Play Again"
+  const key = searchParams.get('t') || searchParams.get('listId') || 'default'
+
+  return <GameContent key={key} />
+}
+
 export default function GamePage() {
   return (
     <Suspense
@@ -157,7 +165,7 @@ export default function GamePage() {
         </main>
       }
     >
-      <GameContent />
+      <GamePageWrapper />
     </Suspense>
   )
 }
