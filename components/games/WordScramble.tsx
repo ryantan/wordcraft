@@ -13,6 +13,7 @@ export const WordScramble: FC<GameMechanicProps> = ({
   word,
   onComplete,
   onHintRequest,
+  difficulty = 'medium',
 }) => {
   const [words, setWords] = useState<string[]>([])
   const [scrambledWordIndex, setScrambledWordIndex] = useState<number>(0)
@@ -40,15 +41,19 @@ export const WordScramble: FC<GameMechanicProps> = ({
     const scrambled = wordToScramble.split('').sort(() => Math.random() - 0.5)
 
     // Ensure it's actually scrambled (not same as original)
+    // Difficulty affects scrambling thoroughness
+    const shuffleCount = difficulty === 'easy' ? 1 : difficulty === 'hard' ? 3 : 2
     let maxAttempts = 10
     while (scrambled.join('') === wordToScramble && maxAttempts > 0) {
-      scrambled.sort(() => Math.random() - 0.5)
+      for (let i = 0; i < shuffleCount; i++) {
+        scrambled.sort(() => Math.random() - 0.5)
+      }
       maxAttempts--
     }
 
     setScrambledLetters(scrambled)
     setUserAnswer([])
-  }, [word])
+  }, [word, difficulty])
 
   const handleLetterClick = useCallback((letter: string, index: number) => {
     // Move letter from scrambled to user answer
