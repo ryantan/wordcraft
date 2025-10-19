@@ -32,18 +32,20 @@ export const LetterMatching: FC<GameMechanicProps> = ({
   useEffect(() => {
     const letters = word.toLowerCase().split('')
 
-    // Create pairs for ALL letters (including duplicates)
-    const newPairs: LetterPair[] = letters.map((letter, index) => ({
-      index,
-      lowercase: letter,
-      uppercase: letter.toUpperCase(),
-      matched: false,
-    }))
+    // Create pairs for ALL letters (including duplicates), excluding spaces
+    const newPairs: LetterPair[] = letters
+      .map((letter, index) => ({
+        index,
+        lowercase: letter,
+        uppercase: letter.toUpperCase(),
+        matched: letter === ' ', // Auto-match spaces
+      }))
+      .filter(pair => pair.lowercase !== ' ') // Remove space pairs from display
 
     setPairs(newPairs)
 
-    // Create uppercase options (one for each letter in the word)
-    const correctUppercase = letters.map(l => l.toUpperCase())
+    // Create uppercase options (one for each letter in the word, excluding spaces)
+    const correctUppercase = letters.filter(l => l !== ' ').map(l => l.toUpperCase())
 
     // Add a few distractors
     const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'

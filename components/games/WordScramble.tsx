@@ -24,11 +24,13 @@ export const WordScramble: FC<GameMechanicProps> = ({
   // Scramble the word on mount
   useEffect(() => {
     const letters = word.split('')
-    const scrambled = [...letters].sort(() => Math.random() - 0.5)
+    // Filter out spaces from scrambling - they'll be shown as separators
+    const lettersOnly = letters.filter(l => l !== ' ')
+    const scrambled = [...lettersOnly].sort(() => Math.random() - 0.5)
 
-    // Ensure it's actually scrambled (not same as original)
+    // Ensure it's actually scrambled (not same as original letters)
     let maxAttempts = 10
-    while (scrambled.join('') === word && maxAttempts > 0) {
+    while (scrambled.join('') === lettersOnly.join('') && maxAttempts > 0) {
       scrambled.sort(() => Math.random() - 0.5)
       maxAttempts--
     }
@@ -51,7 +53,9 @@ export const WordScramble: FC<GameMechanicProps> = ({
 
   const handleSubmit = useCallback(() => {
     const answer = userAnswer.join('').toLowerCase()
-    const correct = answer === word.toLowerCase()
+    // Compare without spaces (spaces are not part of the scrambled letters)
+    const wordWithoutSpaces = word.replace(/\s/g, '').toLowerCase()
+    const correct = answer === wordWithoutSpaces
 
     setAttempts(prev => prev + 1)
     setIsCorrect(correct)
@@ -89,9 +93,10 @@ export const WordScramble: FC<GameMechanicProps> = ({
     setHintsUsed(prev => prev + 1)
     onHintRequest()
 
-    // Hint: Place the first correct letter in the answer
-    if (userAnswer.length < word.length) {
-      const nextCorrectLetter = word[userAnswer.length]
+    // Hint: Place the next correct letter in the answer (skip spaces)
+    const wordWithoutSpaces = word.replace(/\s/g, '')
+    if (userAnswer.length < wordWithoutSpaces.length) {
+      const nextCorrectLetter = wordWithoutSpaces[userAnswer.length]
       const letterIndex = scrambledLetters.findIndex(
         l => l.toLowerCase() === nextCorrectLetter.toLowerCase()
       )
@@ -108,6 +113,9 @@ export const WordScramble: FC<GameMechanicProps> = ({
     setScrambledLetters(prev => [...prev, ...userAnswer])
     setUserAnswer([])
   }, [userAnswer])
+
+  // Calculate word length without spaces for comparison
+  const wordLengthWithoutSpaces = word.replace(/\s/g, '').length
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
@@ -174,7 +182,7 @@ export const WordScramble: FC<GameMechanicProps> = ({
             <Button
               variant="outline"
               onClick={handleHint}
-              disabled={userAnswer.length >= word.length || showFeedback}
+              disabled={userAnswer.length >= wordLengthWithoutSpaces || showFeedback}
             >
               💡 Hint ({hintsUsed})
             </Button>
@@ -188,7 +196,7 @@ export const WordScramble: FC<GameMechanicProps> = ({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={userAnswer.length !== word.length || showFeedback}
+            disabled={userAnswer.length !== wordLengthWithoutSpaces || showFeedback}
             size="lg"
           >
             Check Answer
