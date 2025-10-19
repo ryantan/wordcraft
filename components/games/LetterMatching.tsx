@@ -91,18 +91,14 @@ export const LetterMatching: FC<GameMechanicProps> = ({
           return prev
         })
 
-        setSelectedLowercase(-1)
-        setFeedback('correct')
-
-        setTimeout(() => {
-          setFeedback(null)
-        }, 800)
-
         // Check if all matched
         if (newPairs.every(p => p.matched)) {
           const timeMs = Date.now() - startTime
           // Attempts = 1 if no mistakes, otherwise mistakes + 1
           const finalAttempts = mistakes === 0 ? 1 : mistakes + 1
+
+          setSelectedLowercase(-1)
+          setFeedback('correct')
 
           setTimeout(() => {
             onComplete({
@@ -114,7 +110,11 @@ export const LetterMatching: FC<GameMechanicProps> = ({
               mechanicId: 'letter-matching',
               completedAt: new Date(),
             })
-          }, 1200)
+          }, 800)
+        } else {
+          // Auto-select next unmatched letter for continuous flow
+          const nextUnmatched = newPairs.findIndex((p, i) => !p.matched)
+          setSelectedLowercase(nextUnmatched)
         }
       } else {
         // Increment mistakes counter for incorrect matches
@@ -182,7 +182,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
               <button
                 key={`lower-${index}`}
                 onClick={() => handleLowercaseClick(index)}
-                disabled={pair.matched || feedback !== null}
+                disabled={pair.matched || feedback === 'incorrect'}
                 className={`w-16 h-16 text-3xl font-bold rounded-lg transition-all ${
                   pair.matched
                     ? 'bg-success-100 border-2 border-success-500 text-success-700 opacity-50'
@@ -207,7 +207,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
               <button
                 key={`upper-${index}`}
                 onClick={() => handleUppercaseClick(letter)}
-                disabled={selectedLowercase === -1 || feedback !== null}
+                disabled={selectedLowercase === -1 || feedback === 'incorrect'}
                 className="w-16 h-16 text-3xl font-bold rounded-lg bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-500 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {letter}
