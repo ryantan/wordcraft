@@ -45,9 +45,7 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
   useEffect(() => {
     if (!wordList) return
 
-    console.log('[useGameSession] Initializing session for word list:', wordList.name)
     const sessionConfig = initializeGameSession(wordList)
-    console.log('[useGameSession] Word pool initialized:', sessionConfig.wordPool)
     setState(prev => ({
       ...prev,
       wordPool: sessionConfig.wordPool,
@@ -59,23 +57,10 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
 
   // Start next round
   const startNextRound = useCallback(() => {
-    console.log('[useGameSession] startNextRound called')
-    if (!wordList) {
-      console.log('[useGameSession] No word list, returning')
-      return
-    }
+    if (!wordList) return
 
     setState(prev => {
-      console.log('[useGameSession] Current state:', {
-        wordPoolLength: prev.wordPool.length,
-        currentWord: prev.currentWord,
-        wordPool: prev.wordPool
-      })
-
-      if (prev.wordPool.length === 0) {
-        console.log('[useGameSession] Word pool is empty, returning')
-        return prev
-      }
+      if (prev.wordPool.length === 0) return prev
 
       // Select next word adaptively
       const nextWord = selectNextWord(
@@ -83,25 +68,16 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
         prev.sessionPerformance,
         prev.currentWord
       )
-      console.log('[useGameSession] Selected word:', nextWord)
-      if (!nextWord) {
-        console.log('[useGameSession] No word selected, returning')
-        return prev
-      }
+      if (!nextWord) return prev
 
       // Select game mechanic
-      console.log('[useGameSession] Selecting game mechanic, mechanicId:', mechanicId)
       let mechanic: GameMechanicId
       if (mechanicId && getGame(mechanicId)) {
-        console.log('[useGameSession] Using specified mechanic:', mechanicId)
         mechanic = mechanicId
       } else {
         const allResults = getAllGameResults()
         const profile = getLearningProfile()
-        console.log('[useGameSession] All results count:', allResults.length)
-
         const availableIds = getGameIds()
-        console.log('[useGameSession] Available game IDs:', availableIds)
 
         // Use adaptive selection if enough data
         if (allResults.length >= 12) {
@@ -110,15 +86,12 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
             availableIds,
             prev.recentGames
           )
-          console.log('[useGameSession] Adaptive mechanic selected:', mechanic)
         } else {
           // Random for first games
           mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
-          console.log('[useGameSession] Random mechanic selected:', mechanic)
         }
       }
 
-      console.log('[useGameSession] Returning new state with:', { nextWord, mechanic })
       return {
         ...prev,
         currentWord: nextWord,
@@ -167,14 +140,7 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
 
   // Initialize first round when word pool is ready
   useEffect(() => {
-    console.log('[useGameSession] Initialization effect triggered:', {
-      hasWordList: !!wordList,
-      wordPoolLength: state.wordPool.length,
-      currentWord: state.currentWord,
-      initialized: initializedRef.current
-    })
     if (wordList && state.wordPool.length > 0 && !initializedRef.current) {
-      console.log('[useGameSession] Calling startNextRound from initialization')
       initializedRef.current = true
       startNextRound()
     }
