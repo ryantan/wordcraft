@@ -54,45 +54,49 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
 
   // Start next round
   const startNextRound = useCallback(() => {
-    if (!wordList || state.wordPool.length === 0) return
+    if (!wordList) return
 
-    // Select next word adaptively
-    const nextWord = selectNextWord(
-      state.wordPool,
-      state.sessionPerformance,
-      state.currentWord
-    )
-    if (!nextWord) return
+    setState(prev => {
+      if (prev.wordPool.length === 0) return prev
 
-    // Select game mechanic
-    let mechanic: GameMechanicId
-    if (mechanicId && getGame(mechanicId)) {
-      mechanic = mechanicId
-    } else {
-      const allResults = getAllGameResults()
-      const profile = getLearningProfile()
+      // Select next word adaptively
+      const nextWord = selectNextWord(
+        prev.wordPool,
+        prev.sessionPerformance,
+        prev.currentWord
+      )
+      if (!nextWord) return prev
 
-      // Use adaptive selection if enough data
-      if (allResults.length >= 12) {
-        mechanic = selectNextGame(
-          profile || detectLearningStyle(allResults),
-          state.recentGames
-        )
+      // Select game mechanic
+      let mechanic: GameMechanicId
+      if (mechanicId && getGame(mechanicId)) {
+        mechanic = mechanicId
       } else {
-        // Random for first games
-        const availableIds = getGameIds()
-        mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
-      }
-    }
+        const allResults = getAllGameResults()
+        const profile = getLearningProfile()
 
-    setState(prev => ({
-      ...prev,
-      currentWord: nextWord,
-      currentMechanicId: mechanic,
-      recentGames: [...prev.recentGames.slice(-2), mechanic],
-      roundKey: prev.roundKey + 1,
-    }))
-  }, [wordList, mechanicId, state.wordPool, state.sessionPerformance, state.currentWord, state.recentGames])
+        // Use adaptive selection if enough data
+        if (allResults.length >= 12) {
+          mechanic = selectNextGame(
+            profile || detectLearningStyle(allResults),
+            prev.recentGames
+          )
+        } else {
+          // Random for first games
+          const availableIds = getGameIds()
+          mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
+        }
+      }
+
+      return {
+        ...prev,
+        currentWord: nextWord,
+        currentMechanicId: mechanic,
+        recentGames: [...prev.recentGames.slice(-2), mechanic],
+        roundKey: prev.roundKey + 1,
+      }
+    })
+  }, [wordList, mechanicId])
 
   // Handle game completion
   const handleGameComplete = useCallback(
@@ -100,7 +104,8 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
       // Process with adaptive learning systems
       processGameCompletion(result)
 
-      // Update local state
+      // Update local state and determine if we should continue
+      let shouldContinue = false
       setState(prev => {
         const newSessionPerformance = new Map(prev.sessionPerformance)
         const wordResults = newSessionPerformance.get(result.word) || []
@@ -108,6 +113,7 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
 
         const nextRound = prev.roundsCompleted + 1
         const finished = nextRound >= MAX_ROUNDS
+        shouldContinue = !finished
 
         return {
           ...prev,
@@ -119,14 +125,13 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
       })
 
       // Start next round after delay if not finished
-      const nextRound = state.roundsCompleted + 1
-      if (nextRound < MAX_ROUNDS) {
+      if (shouldContinue) {
         setTimeout(() => {
           startNextRound()
         }, 2000)
       }
     },
-    [state.roundsCompleted, startNextRound]
+    [startNextRound]
   )
 
   // Initialize first round when ready
