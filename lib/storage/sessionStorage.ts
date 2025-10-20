@@ -238,3 +238,73 @@ export function getStorageStats() {
     newestResult: results.length > 0 ? results[results.length - 1].completedAt : null,
   }
 }
+
+// ============================================================================
+// Story Session State Persistence (Story 6.4a)
+// ============================================================================
+
+const STORY_SESSION_KEY = 'wordcraft_story_session_state'
+
+/**
+ * Save story session state to sessionStorage
+ * Handles serialization of Maps and Dates
+ */
+export function saveStorySessionState(state: any): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    // Convert Maps to arrays for serialization
+    const serialized = {
+      ...state,
+      wordStats: Array.from(state.wordStats || []),
+      sessionStartTime: state.sessionStartTime?.toISOString(),
+      generatedStory: state.generatedStory ? {
+        ...state.generatedStory,
+        stage2ExtraBeats: Array.from(state.generatedStory.stage2ExtraBeats || []),
+      } : null,
+    }
+
+    sessionStorage.setItem(STORY_SESSION_KEY, JSON.stringify(serialized))
+  } catch (error) {
+    console.error('Error saving story session state:', error)
+  }
+}
+
+/**
+ * Load story session state from sessionStorage
+ * Handles deserialization of Maps and Dates
+ */
+export function loadStorySessionState(): any | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const data = sessionStorage.getItem(STORY_SESSION_KEY)
+    if (!data) return null
+
+    const parsed = JSON.parse(data)
+
+    // Convert arrays back to Maps
+    const deserialized = {
+      ...parsed,
+      wordStats: new Map(parsed.wordStats || []),
+      sessionStartTime: parsed.sessionStartTime ? new Date(parsed.sessionStartTime) : new Date(),
+      generatedStory: parsed.generatedStory ? {
+        ...parsed.generatedStory,
+        stage2ExtraBeats: new Map(parsed.generatedStory.stage2ExtraBeats || []),
+      } : null,
+    }
+
+    return deserialized
+  } catch (error) {
+    console.error('Error loading story session state:', error)
+    return null
+  }
+}
+
+/**
+ * Clear story session state from sessionStorage
+ */
+export function clearStorySessionState(): void {
+  if (typeof window === 'undefined') return
+  sessionStorage.removeItem(STORY_SESSION_KEY)
+}
