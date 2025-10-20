@@ -37,6 +37,9 @@
 - Include parameter descriptions and return types
 - Document edge cases and important behavior notes
 
+**Version control**
+- Always commit atomically with conventional commit messages
+
 ## Naming Conventions
 
 | Element | Convention | Example |
