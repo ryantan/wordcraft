@@ -146,7 +146,7 @@ const fantasyTheme: StoryThemeContent = {
     },
     {
       id: 'checkpoint3',
-      title: 'Dragon's Mountain',
+      title: "Dragon's Mountain",
       narrative:
         "Heroic! You've conquered the dragon's mountain with {wordCount} words. The final battle awaits!",
       celebrationEmoji: '🐉',
