@@ -1,167 +1,89 @@
 /**
  * Story Progress Storage
  *
- * Handles persistence of story progress to IndexedDB
+ * Handles persistence of story progress to localStorage
+ * Follows the storage abstraction pattern from localStorage.ts
  */
 
-import type { StoryProgressContext } from '@/machines/story-progress/types'
+import type { StoryProgressContext } from '@/types'
 
-const DB_NAME = 'wordcraft-story'
-const DB_VERSION = 1
-const STORE_NAME = 'story-progress'
+const STORAGE_KEY = 'wordcraft_story_progress'
 
 /**
- * Open IndexedDB database
- */
-async function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result
-
-      // Create object store if it doesn't exist
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'wordListId' })
-      }
-    }
-  })
-}
-
-/**
- * Save story progress to IndexedDB
+ * Save story progress to localStorage
  *
  * @param context Story progress context to save
- * @param wordListId Optional word list ID (defaults to 'default')
  */
-export async function saveStoryProgress(
-  context: StoryProgressContext,
-  wordListId: string = 'default'
-): Promise<void> {
-  try {
-    const db = await openDB()
-    const transaction = db.transaction(STORE_NAME, 'readwrite')
-    const store = transaction.objectStore(STORE_NAME)
+export function saveStoryProgress(context: StoryProgressContext): void {
+  if (typeof window === 'undefined') return // SSR safety
 
+  try {
+    // Serialize context with Date converted to ISO string
     const data = {
-      wordListId,
       ...context,
-      // Serialize Date to ISO string for IndexedDB
       sessionStartTime: context.sessionStartTime.toISOString(),
-      updatedAt: new Date().toISOString(),
     }
 
-    await new Promise<void>((resolve, reject) => {
-      const request = store.put(data)
-      request.onsuccess = () => resolve()
-      request.onerror = () => reject(request.error)
-    })
-
-    db.close()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   } catch (error) {
-    console.error('Failed to save story progress:', error)
-    throw error
+    console.error('Error saving story progress:', error)
+    // Graceful degradation - don't throw, just log
   }
 }
 
 /**
- * Load story progress from IndexedDB
+ * Load story progress from localStorage
  *
- * @param wordListId Optional word list ID (defaults to 'default')
  * @returns Saved progress context or null if not found
  */
-export async function loadStoryProgress(
-  wordListId: string = 'default'
-): Promise<StoryProgressContext | null> {
+export function loadStoryProgress(): StoryProgressContext | null {
+  if (typeof window === 'undefined') return null // SSR safety
+
   try {
-    const db = await openDB()
-    const transaction = db.transaction(STORE_NAME, 'readonly')
-    const store = transaction.objectStore(STORE_NAME)
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!stored) return null
 
-    const data = await new Promise<any>((resolve, reject) => {
-      const request = store.get(wordListId)
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
+    const data = JSON.parse(stored)
 
-    db.close()
-
-    if (!data) {
-      return null
-    }
-
-    // Deserialize ISO string back to Date
+    // Deserialize ISO string back to Date object
     return {
-      currentCheckpoint: data.currentCheckpoint,
-      gamesCompleted: data.gamesCompleted,
-      totalGamesInSession: data.totalGamesInSession,
-      checkpointsUnlocked: data.checkpointsUnlocked,
-      lastCheckpointAt: data.lastCheckpointAt,
-      storyTheme: data.storyTheme,
+      ...data,
       sessionStartTime: new Date(data.sessionStartTime),
     }
   } catch (error) {
-    console.error('Failed to load story progress:', error)
-    return null
+    console.error('Error loading story progress:', error)
+    return null // Graceful degradation
   }
 }
 
 /**
- * Delete story progress from IndexedDB
+ * Delete story progress from localStorage
+ */
+export function deleteStoryProgress(): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch (error) {
+    console.error('Error deleting story progress:', error)
+  }
+}
+
+/**
+ * Reset story progress to initial state
  *
- * @param wordListId Optional word list ID (defaults to 'default')
+ * @param storyTheme Theme for the new story session
  */
-export async function deleteStoryProgress(wordListId: string = 'default'): Promise<void> {
-  try {
-    const db = await openDB()
-    const transaction = db.transaction(STORE_NAME, 'readwrite')
-    const store = transaction.objectStore(STORE_NAME)
-
-    await new Promise<void>((resolve, reject) => {
-      const request = store.delete(wordListId)
-      request.onsuccess = () => resolve()
-      request.onerror = () => reject(request.error)
-    })
-
-    db.close()
-  } catch (error) {
-    console.error('Failed to delete story progress:', error)
-    throw error
+export function resetStoryProgress(storyTheme: string = 'space'): void {
+  const initialContext: StoryProgressContext = {
+    currentCheckpoint: 0,
+    gamesCompleted: 0,
+    totalGamesInSession: 20,
+    checkpointsUnlocked: [0],
+    lastCheckpointAt: 0,
+    storyTheme,
+    sessionStartTime: new Date(),
   }
-}
 
-/**
- * Get all story progress records (for debugging)
- */
-export async function getAllStoryProgress(): Promise<Array<StoryProgressContext & { wordListId: string }>> {
-  try {
-    const db = await openDB()
-    const transaction = db.transaction(STORE_NAME, 'readonly')
-    const store = transaction.objectStore(STORE_NAME)
-
-    const records = await new Promise<any[]>((resolve, reject) => {
-      const request = store.getAll()
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
-
-    db.close()
-
-    return records.map(data => ({
-      wordListId: data.wordListId,
-      currentCheckpoint: data.currentCheckpoint,
-      gamesCompleted: data.gamesCompleted,
-      totalGamesInSession: data.totalGamesInSession,
-      checkpointsUnlocked: data.checkpointsUnlocked,
-      lastCheckpointAt: data.lastCheckpointAt,
-      storyTheme: data.storyTheme,
-      sessionStartTime: new Date(data.sessionStartTime),
-    }))
-  } catch (error) {
-    console.error('Failed to get all story progress:', error)
-    return []
-  }
+  saveStoryProgress(initialContext)
 }
