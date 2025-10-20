@@ -99,11 +99,17 @@ Based on the WordCraft Project Brief, here are the technical decisions that will
 
 **State Management (XState Details)**:
 - **Machines**:
-  - `GameSessionMachine`: Orchestrates overall game flow
+  - `GameSessionMachine`: Orchestrates overall game flow (Practice Mode)
+  - `StorySessionMachine`: Orchestrates story mode with beat-based progression (NEW)
   - `AdaptiveEngineMachine`: Manages word confidence, prioritization, learning style
-  - `StoryProgressMachine`: Tracks narrative checkpoints
+  - `StoryProgressMachine`: Tracks narrative checkpoints (child actor of StorySessionMachine)
   - `WordListMachine`: Handles CRUD operations with localStorage
-- **Actors**: Use XState actors for parallel concerns (timers, animations)
+- **Story Mode Architecture**:
+  - `StorySessionMachine` accepts wordList as input (not runtime state)
+  - Hierarchical states: idle → showingIntro → processingBeat (with beat-type substates) → finale
+  - Beat types: GameBeat, ChoiceBeat, NarrativeBeat, CheckpointBeat
+  - LLM stub generates story beats initially; OpenAI integration in future phase
+- **Actors**: Use XState actors for parallel concerns (timers, animations, child machines)
 - **Persistence**: XState state snapshots saved to IndexedDB for session resume
 
 **Performance**:

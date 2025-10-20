@@ -1,6 +1,6 @@
 # Epic 6: Story Mode Integration
 
-**Expanded Goal**: Create a lightweight narrative theme that provides continuity and motivation across game sessions by introducing story checkpoints, character visuals, and progression tracking. The story mode wraps the educational experience in an engaging narrative without interrupting gameplay flow. By the end of this epic, children experience a cohesive story that advances as they complete games, adding an extra layer of motivation and making WordCraft feel like a unified adventure rather than disconnected mini-games.
+**Expanded Goal**: Create a beat-based narrative system where each story beat advances the narrative through game challenges, choice moments, narrative segments, and checkpoint celebrations. LLM-generated content (initially stub-based) creates contextual, word-relevant story beats that make learning feel like an interactive adventure. The system supports two-stage progression: Stage 1 presents words in story-coherent order for narrative flow, while Stage 2 focuses on mastery of challenging words. By the end of this epic, children experience a dynamic, personalized story that adapts to their word list and progress, making WordCraft feel like a unique adventure tailored to their learning journey.
 
 ## Story 6.1: Select Story Theme and Create Assets
 
@@ -25,14 +25,15 @@ I want to build an XState machine that manages story progression and checkpoint 
 so that the narrative state is maintainable and persistent.
 
 **Acceptance Criteria:**
-1. `StoryProgressMachine` is created in `/machines/story-progress-machine.ts`
+1. `StoryProgressMachine` is created in `/machines/story/storyProgressMachine.ts`
 2. Machine has states representing story checkpoints: `intro`, `checkpoint1`, `checkpoint2`, `checkpoint3`, `finale`
 3. Machine manages context: current checkpoint, games completed, story milestones unlocked
-4. Machine handles events: `GAME_COMPLETED`, `CHECKPOINT_REACHED`, `STORY_RESET`
-5. Progression logic: advance checkpoint every N games completed (e.g., every 5-7 games)
+4. Machine handles events: `GAME_COMPLETED`, `CHECKPOINT_REACHED`, `CONTINUE_STORY`, `STORY_RESET`
+5. Progression logic: advance checkpoint every N games completed (e.g., every 5 games)
 6. Machine persists state to IndexedDB so story resumes across sessions
 7. Machine is visualizable in XState Inspector
-8. Unit tests verify checkpoint progression logic
+8. Machine is spawned as child actor by StorySessionMachine for checkpoint detection
+9. Unit tests verify checkpoint progression logic
 
 ## Story 6.3: Create Story Narrative Content
 
@@ -50,68 +51,83 @@ so that children feel part of a larger adventure.
 7. Content avoids gender-specific pronouns (uses "you" or "the explorer")
 8. Content is reviewed for age-appropriateness and clarity
 
-## Story 6.4: Integrate Story Checkpoints into Game Session
+## Story 6.4: Create Story Mode Flow (Parent Story)
 
 As a child,
-I want to see story updates as I complete games,
-so that I feel like I'm progressing through an adventure.
+I want to experience a narrative story adventure while practicing spelling,
+so that learning feels like playing through an exciting game with a beginning, middle, and end.
 
 **Acceptance Criteria:**
-1. `GameSessionMachine` integrates with `StoryProgressMachine`
-2. After every N games completed, session triggers a story checkpoint event
-3. Checkpoint screen displays: character visual, environment background, narrative text, "Continue" button
-4. Checkpoint celebration includes simple animation (character movement, confetti, sparkles)
-5. Checkpoint screen is skippable but encouraged with 3-5 second auto-delay before "Continue" appears
-6. Story progression is smooth and doesn't feel intrusive to gameplay
-7. UI clearly indicates this is a story moment (different visual treatment than game screens)
-8. Checkpoint data is saved so progress persists across sessions
+1. ✅ **CheckpointScreen component exists** with animations, confetti, and delayed continue
+2. Story Mode is a separate `/story` route (doesn't affect existing `/practice`)
+3. `StorySessionMachine` orchestrates story beat progression with support for multiple beat types
+4. App automatically selects words and game mechanics based on LLM-generated story
+5. Beat types include: GameBeat, ChoiceBeat, NarrativeBeat, CheckpointBeat
+6. Checkpoints appear at appropriate story beats (5, 10, 15 games)
+7. Story intro and finale screens frame the narrative experience
+8. All story progress persists across sessions
+9. Practice mode remains completely unchanged
 
-## Story 6.5: Create Story Introduction and Finale Screens
+**Substories:**
+- **Story 6.4a:** Create StorySessionMachine with beat-based architecture and LLM stub
+- **Story 6.4b:** Create Story Mode Page with UI integration for all beat types
+- **Story 6.4c:** Create Story Intro & Finale Screens
 
-As a child,
-I want to see a story introduction when I start and a finale when I finish,
-so that the experience has a clear beginning and satisfying ending.
+**Implementation Notes:**
+- See `docs/stories/6.4.integrate-story-checkpoints.md` for architectural decision
+- LLM story generation uses stub initially (hardcoded templates), OpenAI later
+- Stage 1: Words in story-coherent order (not random)
+- Stage 2: Mastery phase for low-confidence words
 
-**Acceptance Criteria:**
-1. Story intro screen displays when starting a new word list for the first time
-2. Intro includes: character introduction, narrative setup, "Let's Begin" button
-3. Story finale screen displays when all words in list reach mastery (>80% confidence)
-4. Finale includes: celebration animation, congratulatory message, character completion visual
-5. Finale shows summary: words mastered, games played, time spent
-6. Finale offers options: "Practice More", "Try New Words", "View Progress"
-7. Intro and finale are visually distinct and celebratory
-8. Screens are responsive and work on mobile and desktop
+## Story 6.5: Implement Beat-Type UI Components
 
-## Story 6.6: Add Visual Story Elements to Game UI
-
-As a child,
-I want to see story-themed visual elements during gameplay,
-so that I feel immersed in the adventure even while playing games.
+As a developer,
+I want to create UI components for each beat type (narrative, choice, game, checkpoint),
+so that the Story Mode page can render dynamic story content.
 
 **Acceptance Criteria:**
-1. Game session UI includes a subtle story banner/header showing current checkpoint
-2. Character sprite appears in a corner or edge of the game screen (non-intrusive)
-3. Progress bar or indicator shows advancement toward next checkpoint
-4. Visual theme (colors, backgrounds) aligns with selected story theme
-5. Story elements don't obscure game interactions or distract from gameplay
-6. Elements are visible but not dominant (games remain the focus)
-7. Responsive design ensures story elements scale appropriately on mobile
-8. Visual polish: smooth transitions, subtle animations for story elements
+1. `NarrativeBeatScreen` component displays story text with "Continue" button
+2. `ChoiceBeatScreen` component presents two choices for user selection
+3. `GameBeatScreen` component wraps existing game mechanics with story narrative context
+4. `CheckpointBeatScreen` component (already exists) shows milestone celebrations
+5. All components accept beat data as props following TypeScript interfaces
+6. Components have consistent visual theme aligned with story mode design
+7. Animations and transitions are smooth between beat types
+8. Components are responsive and work on mobile and desktop
+9. Components integrate with StorySessionMachine for event handling
+
+## Story 6.6: Create LLM Story Generation Stub
+
+As a developer,
+I want to create a stub for LLM story generation that returns template-based beats,
+so that Story Mode can function immediately while we prepare for OpenAI integration later.
+
+**Acceptance Criteria:**
+1. `story-generator.ts` module created in `/lib/story/`
+2. Stub function `generateStory(wordList, theme, targetBeats)` returns `GeneratedStory`
+3. Generated story includes Stage 1 beats (one per word in story order)
+4. Story beats include mix of GameBeat, NarrativeBeat, ChoiceBeat, and CheckpointBeat types
+5. Beat narrative is contextually relevant to word (basic templates initially)
+6. CheckpointBeats placed at beats 5, 10, 15 using Story 6.3 content
+7. Stage 2 extra beats and fixed sequence structures are stubbed (can be empty Maps/arrays)
+8. Interface is designed for future OpenAI integration (TODOs documented)
+9. Unit tests verify stub generates expected beat structure
 
 ## Story 6.7: Test Story Mode Integration and Flow
 
 As a developer,
-I want to validate that story mode enhances rather than disrupts the gameplay experience,
-so that children stay engaged and motivated.
+I want to validate that the beat-based story mode creates an engaging, cohesive experience,
+so that children stay motivated throughout their practice session.
 
 **Acceptance Criteria:**
-1. Integration tests verify story checkpoints trigger at correct intervals
-2. Tests verify story state persists correctly across sessions
-3. Manual play-testing confirms story feels motivating, not annoying
-4. Testing confirms checkpoint screens don't break game flow
-5. Story intro and finale appear at appropriate times
-6. Visual elements render correctly on various screen sizes
-7. Story content is age-appropriate and clear to target audience
-8. User testing with children (if possible) validates engagement and understanding
+1. Integration tests verify all beat types (game, choice, narrative, checkpoint) render correctly
+2. Tests verify StorySessionMachine transitions between beat types based on guards
+3. Tests verify story state persists correctly across sessions (beat index, choices, progress)
+4. Manual play-testing confirms beat flow feels natural and engaging
+5. Testing confirms beat transitions are smooth without jarring jumps
+6. Story progression from intro → beats → finale works end-to-end
+7. Choice beats don't break flow; narrative beats provide context
+8. LLM stub generates coherent, word-relevant story structure
+9. User testing with children (if possible) validates engagement and understanding
 
 ---

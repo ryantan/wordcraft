@@ -22,6 +22,7 @@ The MVP focuses on client-side functionality with no authentication or server re
 
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
+| 2025-10-20 | 2.0 | Updated Epic 6 (Story Mode) with beat-based architecture: Added beat types (Game, Choice, Narrative, Checkpoint), LLM story generation stub, two-stage progression, updated FRs 26-32, renumbered subsequent FRs | Sarah (PO) |
 | 2025-10-18 | 1.0 | Initial PRD created from Project Brief | Mary (Business Analyst) |
 
 ---

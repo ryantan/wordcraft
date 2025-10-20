@@ -36,26 +36,28 @@
 - **FR25:** Game difficulty dynamically adjusts based on real-time performance (e.g., adding time pressure, reducing hints)
 
 **Story Mode:**
-- **FR26:** A lightweight narrative theme (space adventure, treasure hunt, fantasy quest, etc.) ties all game sessions together
-- **FR27:** The story progresses through checkpoints as the child completes mini-games
-- **FR28:** Story progression is persistent across sessions and resumes from the last checkpoint
-- **FR29:** Visual elements (character, theme graphics) are consistent throughout the experience
-- **FR30:** Story advancement provides positive reinforcement and motivation to continue playing
+- **FR26:** A lightweight narrative theme (space adventure, treasure hunt, fantasy quest, etc.) ties all game sessions together with beat-level storytelling
+- **FR27:** Story beats advance the narrative through multiple beat types: game challenges, choice moments, narrative segments, and checkpoint celebrations
+- **FR28:** LLM-generated story content creates contextual, word-relevant narrative for each beat (stub implementation initially, OpenAI integration later)
+- **FR29:** Story progression is persistent across sessions and resumes from the last beat
+- **FR30:** Visual elements (character, theme graphics) are consistent throughout the experience
+- **FR31:** Story advancement provides positive reinforcement and motivation to continue playing
+- **FR32:** Stage 1 presents words in story-coherent order (not random) for narrative flow; Stage 2 focuses on mastery of challenging words
 
 **Parent Dashboard:**
-- **FR31:** Parents can view mastery status for each word in a word list (mastered, in-progress, needs work)
-- **FR32:** The dashboard displays confidence scores for individual words with visual indicators (colors, progress bars)
-- **FR33:** Parents can view session history including date, duration, and words practiced
-- **FR34:** Basic analytics show total time spent, number of sessions, and overall mastery rate
-- **FR35:** Parents can export word lists and progress data for backup purposes
-- **FR36:** Parents can import previously exported data to restore progress
+- **FR33:** Parents can view mastery status for each word in a word list (mastered, in-progress, needs work)
+- **FR34:** The dashboard displays confidence scores for individual words with visual indicators (colors, progress bars)
+- **FR35:** Parents can view session history including date, duration, and words practiced
+- **FR36:** Basic analytics show total time spent, number of sessions, and overall mastery rate
+- **FR37:** Parents can export word lists and progress data for backup purposes
+- **FR38:** Parents can import previously exported data to restore progress
 
 **User Interface:**
-- **FR37:** The interface is responsive and works on desktop browsers (1024px+) and mobile devices (320px+)
-- **FR38:** All game interactions support both mouse/keyboard and touch input
-- **FR39:** Visual feedback is provided for all user actions (button presses, correct/incorrect answers)
-- **FR40:** Navigation between screens is intuitive with clear back/home/exit options
-- **FR41:** The app provides a simple onboarding/welcome screen explaining how to get started
+- **FR39:** The interface is responsive and works on desktop browsers (1024px+) and mobile devices (320px+)
+- **FR40:** All game interactions support both mouse/keyboard and touch input
+- **FR41:** Visual feedback is provided for all user actions (button presses, correct/incorrect answers)
+- **FR42:** Navigation between screens is intuitive with clear back/home/exit options
+- **FR43:** The app provides a simple onboarding/welcome screen explaining how to get started
 
 ## Non-Functional Requirements
 
