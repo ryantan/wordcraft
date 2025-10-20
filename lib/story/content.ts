@@ -104,7 +104,7 @@ const treasureTheme: StoryThemeContent = {
         "Extraordinary! The island's treasures are yours, with {wordCount} words conquered. The final treasure awaits at Skull Rock!",
       celebrationEmoji: '🏝️',
     },
-  },
+  ],
 
   finale: {
     id: 'finale',
@@ -151,7 +151,7 @@ const fantasyTheme: StoryThemeContent = {
         "Heroic! You've conquered the dragon's mountain with {wordCount} words. The final battle awaits!",
       celebrationEmoji: '🐉',
     },
-  },
+  ],
 
   finale: {
     id: 'finale',
