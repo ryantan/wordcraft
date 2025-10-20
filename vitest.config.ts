@@ -7,7 +7,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: [],
+    environmentMatchGlobs: [
+      // Use happy-dom for component tests
+      ['**/*.test.tsx', 'happy-dom'],
+    ],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
