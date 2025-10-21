@@ -1,5 +1,12 @@
 # 12. Coding Standards
 
+**Code style**
+- Use early abort as much as possible
+- Keep files below 200 lines, as much as possible, break larger components into smaller components with clearly defined single responsibility.
+- Prefer simple conditions for if statements over complex multi-operator condition expressions
+- When critical variables are empty unexpectedly, throw exceptions.
+- Do not fail silently.
+
 ## Critical Fullstack Rules
 
 **Type Organization:**
@@ -33,7 +40,7 @@
 - Functions return sensible defaults on error (empty arrays, null, false)
 
 **JSDoc Documentation:**
-- All exported functions require JSDoc comments
+- All functions require JSDoc comments
 - Include parameter descriptions and return types
 - Document edge cases and important behavior notes
 
