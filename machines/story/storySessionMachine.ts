@@ -103,6 +103,7 @@ export const storySessionMachine = createMachine(
       },
 
       processingBeat: {
+        initial: 'showingNarrative',
         always: [
           {
             guard: 'shouldShowFinale',
