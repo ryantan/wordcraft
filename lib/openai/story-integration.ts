@@ -5,28 +5,22 @@
  * Provides fallback mechanisms and error handling
  */
 
+import { validateEnvironment } from '@/lib/env';
 import type {
-  StoryGenerationInput,
-  GeneratedStory,
-  StoryBeat,
-  StoryTheme,
-  GameBeat,
   ChoiceBeat,
+  GameBeat,
+  GeneratedStory,
   NarrativeBeat,
-} from '@/types/story'
-import { 
-  createOpenAIClient, 
-  generateStoryContent,
-  withRetry,
-  withTimeout,
-} from './client'
-import {
-  parseChoiceBeatResponse,
-} from './prompts'
-import { validateEnvironment } from '@/lib/env'
+  StoryBeat,
+  StoryGenerationInput,
+  StoryTheme,
+} from '@/types/story';
+
+import { createOpenAIClient, generateStoryContent, withRetry, withTimeout } from './client';
+import { parseChoiceBeatResponse } from './prompts';
 
 // Cache for OpenAI client instance
-let openAIClient: ReturnType<typeof createOpenAIClient> | null = null
+let openAIClient: ReturnType<typeof createOpenAIClient> | null = null;
 
 /**
  * Get or create OpenAI client with environment validation
@@ -35,40 +29,40 @@ let openAIClient: ReturnType<typeof createOpenAIClient> | null = null
 function getOpenAIClient(): ReturnType<typeof createOpenAIClient> | null {
   // Skip in test/development without API key
   if (process.env.NODE_ENV === 'test' || !process.env.OPENAI_API_KEY) {
-    return null
+    return null;
   }
 
   if (!openAIClient) {
     try {
-      validateEnvironment()
-      openAIClient = createOpenAIClient()
+      validateEnvironment();
+      openAIClient = createOpenAIClient();
     } catch (error) {
-      console.error('Failed to initialize OpenAI client:', error)
-      return null
+      console.error('Failed to initialize OpenAI client:', error);
+      return null;
     }
   }
 
-  return openAIClient
+  return openAIClient;
 }
 
 /**
  * Enhanced story generation with OpenAI integration
  * Falls back to template system on errors
- * 
+ *
  * @param input - Story generation parameters
  * @param templateFallback - Template-based generation function
  * @returns Generated story with beats
  */
 export async function generateStoryWithAI(
   input: StoryGenerationInput,
-  templateFallback: (input: StoryGenerationInput) => GeneratedStory
+  templateFallback: (input: StoryGenerationInput) => GeneratedStory,
 ): Promise<GeneratedStory> {
-  const client = getOpenAIClient()
-  
+  const client = getOpenAIClient();
+
   // Use template fallback if OpenAI is not available
   if (!client) {
-    console.warn('OpenAI client not available, using template system')
-    return templateFallback(input)
+    console.warn('OpenAI client not available, using template system');
+    return templateFallback(input);
   }
 
   try {
@@ -76,18 +70,18 @@ export async function generateStoryWithAI(
     const stage1Beats = await generateStage1BeatsWithAI(
       client,
       input.wordList,
-      input.theme as StoryTheme
-    )
+      input.theme as StoryTheme,
+    );
 
     // Return AI-generated story structure
     return {
       stage1Beats,
       stage2ExtraBeats: new Map(),
       stage2FixedSequence: [],
-    }
+    };
   } catch (error) {
-    console.error('OpenAI story generation failed, using fallback:', error)
-    return templateFallback(input)
+    console.error('OpenAI story generation failed, using fallback:', error);
+    return templateFallback(input);
   }
 }
 
@@ -101,14 +95,14 @@ export async function generateStoryWithAI(
 async function generateStage1BeatsWithAI(
   client: ReturnType<typeof createOpenAIClient>,
   wordList: string[],
-  theme: StoryTheme
+  theme: StoryTheme,
 ): Promise<StoryBeat[]> {
-  const beats: StoryBeat[] = []
-  let beatIndex = 0
-  let context = `Starting a ${theme} adventure...`
+  const beats: StoryBeat[] = [];
+  let beatIndex = 0;
+  let context = `Starting a ${theme} adventure...`;
 
   for (let i = 0; i < wordList.length; i++) {
-    const word = wordList[i]
+    const word = wordList[i];
     // const progressPercentage = Math.floor((i / wordList.length) * 100)
 
     // Add narrative beats periodically
@@ -122,28 +116,28 @@ async function generateStage1BeatsWithAI(
               beatType: 'narrative',
               context,
             }),
-            15000
-          )
-        )
+            15000,
+          ),
+        );
 
         const narrativeBeat: NarrativeBeat = {
           type: 'narrative',
           id: `narrative-${beatIndex}`,
           narrative: narrativeResponse.content || generateFallbackNarrative(theme, beatIndex),
-        }
-        
-        beats.push(narrativeBeat)
-        context = narrativeResponse.content
-        beatIndex++
+        };
+
+        beats.push(narrativeBeat);
+        context = narrativeResponse.content;
+        beatIndex++;
       } catch (error) {
-        console.error('Failed to generate narrative beat:', error)
+        console.error('Failed to generate narrative beat:', error);
         // Use fallback narrative
         beats.push({
           type: 'narrative',
           id: `narrative-${beatIndex}`,
           narrative: generateFallbackNarrative(theme, beatIndex),
-        })
-        beatIndex++
+        });
+        beatIndex++;
       }
     }
 
@@ -158,39 +152,39 @@ async function generateStage1BeatsWithAI(
               beatType: 'choice',
               context,
             }),
-            15000
-          )
-        )
+            15000,
+          ),
+        );
 
-        const parsed = parseChoiceBeatResponse(choiceResponse.content)
-        
+        const parsed = parseChoiceBeatResponse(choiceResponse.content);
+
         const choiceBeat: ChoiceBeat = {
           type: 'choice',
           id: `choice-${beatIndex}`,
           narrative: context,
           question: parsed.question || generateFallbackChoice(theme).question,
           options: parsed.options || generateFallbackChoice(theme).options,
-        }
-        
-        beats.push(choiceBeat)
-        beatIndex++
+        };
+
+        beats.push(choiceBeat);
+        beatIndex++;
       } catch (error) {
-        console.error('Failed to generate choice beat:', error)
+        console.error('Failed to generate choice beat:', error);
         // Use fallback choice
-        const fallback = generateFallbackChoice(theme)
+        const fallback = generateFallbackChoice(theme);
         beats.push({
           type: 'choice',
           id: `choice-${beatIndex}`,
           narrative: context,
           ...fallback,
-        })
-        beatIndex++
+        });
+        beatIndex++;
       }
     }
 
     // Add game beat for this word
     try {
-      const gameType = selectGameType(i)
+      const gameType = selectGameType(i);
       const gameResponse = await withRetry(() =>
         withTimeout(
           generateStoryContent(client, {
@@ -199,9 +193,9 @@ async function generateStage1BeatsWithAI(
             beatType: 'game',
             context,
           }),
-          15000
-        )
-      )
+          15000,
+        ),
+      );
 
       const gameBeat: GameBeat = {
         type: 'game',
@@ -210,12 +204,12 @@ async function generateStage1BeatsWithAI(
         word,
         gameType,
         stage: 1,
-      }
-      
-      beats.push(gameBeat)
-      context = `After successfully spelling "${word}"...`
+      };
+
+      beats.push(gameBeat);
+      context = `After successfully spelling "${word}"...`;
     } catch (error) {
-      console.error('Failed to generate game beat:', error)
+      console.error('Failed to generate game beat:', error);
       // Use fallback game narrative
       beats.push({
         type: 'game',
@@ -224,11 +218,11 @@ async function generateStage1BeatsWithAI(
         word,
         gameType: selectGameType(i),
         stage: 1,
-      })
+      });
     }
   }
 
-  return beats
+  return beats;
 }
 
 /**
@@ -241,9 +235,9 @@ function generateFallbackNarrative(theme: string, _index: number): string {
     fantasy: ['The magical quest continues...'],
     ocean: ['You dive deeper into the ocean...'],
     jungle: ['The jungle path reveals new wonders...'],
-  }
-  
-  return narratives[theme]?.[0] || 'Your adventure continues...'
+  };
+
+  return narratives[theme]?.[0] || 'Your adventure continues...';
 }
 
 /**
@@ -271,9 +265,9 @@ function generateFallbackChoice(theme: string): { question: string; options: [st
       question: 'Which path looks safer?',
       options: ['Dense trees', 'Open trail'],
     },
-  }
-  
-  return choices[theme] || choices.space
+  };
+
+  return choices[theme] || choices.space;
 }
 
 /**
@@ -286,24 +280,20 @@ function generateFallbackGameNarrative(theme: string, word: string): string {
     fantasy: `A magical spell requires "${word.toUpperCase()}" - cast it now!`,
     ocean: `The ocean reveals "${word.toUpperCase()}" - spell it to continue!`,
     jungle: `The jungle path shows "${word.toUpperCase()}" - master it!`,
-  }
-  
-  return templates[theme] || `Time to spell "${word.toUpperCase()}"!`
+  };
+
+  return templates[theme] || `Time to spell "${word.toUpperCase()}"!`;
 }
 
 /**
  * Select game type based on index
  */
 function selectGameType(
-  _index: number
+  _index: number,
 ): 'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters' {
-  const gameTypes: Array<'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'> = [
-    'letterMatching',
-    'wordScramble',
-    'wordBuilding',
-    'missingLetters',
-    'spellingChallenge',
-  ]
+  const gameTypes: Array<
+    'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'
+  > = ['letterMatching', 'wordScramble', 'wordBuilding', 'missingLetters', 'spellingChallenge'];
 
-  return gameTypes[_index % gameTypes.length]
+  return gameTypes[_index % gameTypes.length];
 }
