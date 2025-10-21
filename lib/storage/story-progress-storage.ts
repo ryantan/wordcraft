@@ -8,6 +8,7 @@
 import type { StoryProgressContext } from '@/types'
 
 const STORAGE_KEY = 'wordcraft_story_progress'
+const INTRO_TRACKING_KEY = 'wordcraft_story_intro_seen'
 
 /**
  * Save story progress to localStorage
@@ -86,4 +87,66 @@ export function resetStoryProgress(storyTheme: string = 'space'): void {
   }
 
   saveStoryProgress(initialContext)
+}
+
+/**
+ * Check if story intro has been seen for a specific word list
+ *
+ * @param wordListId Unique identifier for the word list
+ * @returns Promise that resolves to true if intro was seen, false otherwise
+ *
+ * @example
+ * ```typescript
+ * const seen = await hasSeenStoryIntro('list-123')
+ * if (!seen) {
+ *   // Show intro screen
+ * }
+ * ```
+ */
+export async function hasSeenStoryIntro(wordListId: string): Promise<boolean> {
+  if (typeof window === 'undefined') return false // SSR safety
+
+  try {
+    const stored = localStorage.getItem(INTRO_TRACKING_KEY)
+    if (!stored) return false
+
+    const tracking = JSON.parse(stored) as Record<string, { seen: boolean; timestamp: number }>
+    return tracking[wordListId]?.seen ?? false
+  } catch (error) {
+    console.error('Error checking story intro status:', error)
+    return false // Default to not seen on error
+  }
+}
+
+/**
+ * Mark story intro as seen for a specific word list
+ *
+ * @param wordListId Unique identifier for the word list
+ * @returns Promise that resolves when the status is saved
+ *
+ * @example
+ * ```typescript
+ * await markStoryIntroAsSeen('list-123')
+ * // Intro won't show again for this word list
+ * ```
+ */
+export async function markStoryIntroAsSeen(wordListId: string): Promise<void> {
+  if (typeof window === 'undefined') return // SSR safety
+
+  try {
+    const stored = localStorage.getItem(INTRO_TRACKING_KEY)
+    const tracking = stored
+      ? (JSON.parse(stored) as Record<string, { seen: boolean; timestamp: number }>)
+      : {}
+
+    tracking[wordListId] = {
+      seen: true,
+      timestamp: Date.now(),
+    }
+
+    localStorage.setItem(INTRO_TRACKING_KEY, JSON.stringify(tracking))
+  } catch (error) {
+    console.error('Error marking story intro as seen:', error)
+    // Graceful degradation - don't throw, just log
+  }
 }
