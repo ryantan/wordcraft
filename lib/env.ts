@@ -6,6 +6,7 @@ export const env = {
   enableXStateInspect: process.env.NEXT_PUBLIC_XSTATE_INSPECT === 'true',
   enableStoryMode: process.env.NEXT_PUBLIC_ENABLE_STORY_MODE !== 'false',
   enableAnalytics: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',
+  enableOpenAIStoryGeneration: process.env.NEXT_PUBLIC_ENABLE_OPENAI_STORIES === 'true',
 } as const
 
 /**
