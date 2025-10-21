@@ -24,95 +24,35 @@ import { getWordList } from '@/lib/storage/localStorage'
 import { generateStoryAsync } from '@/lib/story/story-generator'
 import type { WordList, GeneratedStory } from '@/types'
 
-export default function StoryModePage() {
+// Story Session Component - only rendered when story is ready
+function StorySession({ 
+  wordList, 
+  generatedStory, 
+  hasSeenIntro 
+}: { 
+  wordList: WordList
+  generatedStory: GeneratedStory
+  hasSeenIntro: boolean 
+}) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [showExitDialog, setShowExitDialog] = useState(false)
-  const [generatedStory, setGeneratedStory] = useState<GeneratedStory | null>(null)
-  const [isGeneratingStory, setIsGeneratingStory] = useState(false)
-  
-  // Initialize with demo word list to avoid conditional hooks
-  const createDemoWordList = () => {
-    const now = new Date()
-    return {
-      id: 'demo-story',
-      name: 'Space Adventure Words',
-      description: 'Words for space adventure',
-      words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
-      createdAt: now,
-      lastModifiedAt: now,
-      updatedAt: now,
-    }
-  }
 
-  const [wordList, setWordList] = useState<WordList>(createDemoWordList)
-
-  // Get word list from URL params or use demo
-  useEffect(() => {
-    const listId = searchParams.get('listId')
-    if (listId) {
-      const userWordList = getWordList(listId)
-      if (userWordList) {
-        setWordList(userWordList)
-        return
-      }
-    }
-    
-    // Fallback to demo word list
-    setWordList(createDemoWordList())
-  }, [searchParams])
-
-  // Generate story whenever wordList changes
-  useEffect(() => {
-    async function generateStory() {
-      setIsGeneratingStory(true)
-      try {
-        console.log('🚀 Generating story for word list:', wordList.name)
-        const story = await generateStoryAsync({
-          wordList: wordList.words,
-          theme: 'space',
-          targetBeats: 20,
-        })
-        setGeneratedStory(story)
-        console.log('✅ Story generated successfully')
-      } catch (error) {
-        console.error('❌ Story generation failed:', error)
-        setGeneratedStory(null)
-      } finally {
-        setIsGeneratingStory(false)
-      }
-    }
-
-    generateStory()
-  }, [wordList])
-
-  // Check if intro has been seen for this word list
-  const { hasSeenIntro } = useStoryIntro(wordList.id)
-
-  // Initialize XState machine only when we have a generated story
+  // Create machine with the generated story
   const [state, send] = useMachine(storySessionMachine, {
     input: {
       wordList: wordList,
       theme: 'space',
       wordListId: wordList.id,
       hasSeenIntro,
-      generatedStory: generatedStory || undefined,
+      generatedStory: generatedStory,
     },
   })
-
-  // Update machine context when story is generated
-  useEffect(() => {
-    if (generatedStory && state.context.generatedStory === null) {
-      send({ type: 'STORY_GENERATED', story: generatedStory })
-    }
-  }, [generatedStory, send, state.context.generatedStory])
 
   const handleExit = () => {
     setShowExitDialog(true)
   }
 
   const confirmExit = () => {
-    // Clear story session state and return to home
     router.push('/')
   }
 
@@ -140,25 +80,6 @@ export default function StoryModePage() {
               Exit
             </Button>
           </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Loading state - show different messages based on what's happening
-  if (isGeneratingStory || state.matches('idle')) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-4xl mb-4">🚀</div>
-          {isGeneratingStory ? (
-            <>
-              <p className="text-xl font-semibold">Creating your adventure...</p>
-              <p className="text-sm text-gray-600 mt-2">Using AI to craft a unique story just for you!</p>
-            </>
-          ) : (
-            <p className="text-xl font-semibold">Preparing your adventure...</p>
-          )}
         </div>
       </div>
     )
@@ -282,5 +203,97 @@ export default function StoryModePage() {
         </Button>
       </div>
     </div>
+  )
+}
+
+export default function StoryModePage() {
+  const searchParams = useSearchParams()
+  const [generatedStory, setGeneratedStory] = useState<GeneratedStory | null>(null)
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false)
+  
+  // Initialize with demo word list to avoid conditional hooks
+  const createDemoWordList = () => {
+    const now = new Date()
+    return {
+      id: 'demo-story',
+      name: 'Space Adventure Words',
+      description: 'Words for space adventure',
+      words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
+      createdAt: now,
+      lastModifiedAt: now,
+      updatedAt: now,
+    }
+  }
+
+  const [wordList, setWordList] = useState<WordList>(createDemoWordList)
+
+  // Get word list from URL params or use demo
+  useEffect(() => {
+    const listId = searchParams.get('listId')
+    if (listId) {
+      const userWordList = getWordList(listId)
+      if (userWordList) {
+        setWordList(userWordList)
+        return
+      }
+    }
+    
+    // Fallback to demo word list
+    setWordList(createDemoWordList())
+  }, [searchParams])
+
+  // Generate story whenever wordList changes
+  useEffect(() => {
+    async function generateStory() {
+      setIsGeneratingStory(true)
+      try {
+        console.log('🚀 Generating story for word list:', wordList.name)
+        const story = await generateStoryAsync({
+          wordList: wordList.words,
+          theme: 'space',
+          targetBeats: 20,
+        })
+        setGeneratedStory(story)
+        console.log('✅ Story generated successfully')
+      } catch (error) {
+        console.error('❌ Story generation failed:', error)
+        setGeneratedStory(null)
+      } finally {
+        setIsGeneratingStory(false)
+      }
+    }
+
+    generateStory()
+  }, [wordList])
+
+  // Check if intro has been seen for this word list
+  const { hasSeenIntro } = useStoryIntro(wordList.id)
+
+  // Loading state - show while generating story
+  if (isGeneratingStory || !generatedStory) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🚀</div>
+          {isGeneratingStory ? (
+            <>
+              <p className="text-xl font-semibold">Creating your adventure...</p>
+              <p className="text-sm text-gray-600 mt-2">Using AI to craft a unique story just for you!</p>
+            </>
+          ) : (
+            <p className="text-xl font-semibold">Preparing your adventure...</p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Render StorySession component with generated story
+  return (
+    <StorySession 
+      wordList={wordList} 
+      generatedStory={generatedStory} 
+      hasSeenIntro={hasSeenIntro}
+    />
   )
 }
