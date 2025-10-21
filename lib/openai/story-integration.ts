@@ -18,13 +18,9 @@ import {
   generateStoryContent,
   withRetry,
   withTimeout,
-  OpenAIAPIError,
   type StoryGenerationRequest,
 } from './client'
 import {
-  generateNarrativeBeatPrompt,
-  generateGameBeatPrompt,
-  generateChoiceBeatPrompt,
   parseChoiceBeatResponse,
   type StoryTheme,
 } from './prompts'
@@ -72,7 +68,7 @@ export async function generateStoryWithAI(
   
   // Use template fallback if OpenAI is not available
   if (!client) {
-    console.log('OpenAI client not available, using template system')
+    console.warn('OpenAI client not available, using template system')
     return templateFallback(input)
   }
 
@@ -114,7 +110,7 @@ async function generateStage1BeatsWithAI(
 
   for (let i = 0; i < wordList.length; i++) {
     const word = wordList[i]
-    const progressPercentage = Math.floor((i / wordList.length) * 100)
+    // const progressPercentage = Math.floor((i / wordList.length) * 100)
 
     // Add narrative beats periodically
     if (i % 3 === 0 && i > 0) {
@@ -300,7 +296,7 @@ function generateFallbackGameNarrative(theme: string, word: string): string {
  * Select game type based on index
  */
 function selectGameType(
-  index: number
+  _index: number
 ): 'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters' {
   const gameTypes: Array<'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'> = [
     'letterMatching',
@@ -310,5 +306,5 @@ function selectGameType(
     'spellingChallenge',
   ]
 
-  return gameTypes[index % gameTypes.length]
+  return gameTypes[_index % gameTypes.length]
 }

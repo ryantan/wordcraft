@@ -4,7 +4,7 @@
  * Handles initialization of game sessions with adaptive word selection.
  */
 
-import type { WordList } from '@/types'
+import type { WordList, GameResult } from '@/types'
 import { initializeWordReview } from '@/lib/algorithms/spaced-repetition'
 import {
   getAllReviewData,
@@ -13,7 +13,7 @@ import {
 
 export interface SessionConfig {
   wordPool: string[]
-  sessionPerformance: Map<string, any[]>
+  sessionPerformance: Map<string, GameResult[]>
 }
 
 /**
@@ -32,7 +32,7 @@ export interface SessionConfig {
  */
 export function initializeGameSession(wordList: WordList): SessionConfig {
   // Initialize review data for any new words (for spaced repetition tracking)
-  let allReviewData = getAllReviewData()
+  const allReviewData = getAllReviewData()
 
   wordList.words.forEach(word => {
     if (!allReviewData.has(word)) {

@@ -34,7 +34,7 @@ export function generateStory(
   const { wordList, theme } = input
 
   // Get story content for theme
-  const storyContent = getStoryContent(theme as any) // Type assertion for stub
+  const storyContent = getStoryContent(theme as 'space' | 'treasure' | 'fantasy') // Type assertion for stub
 
   const stage1Beats: StoryBeat[] = []
   let beatIndex = 0

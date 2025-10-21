@@ -8,7 +8,7 @@
 
 import { useMachine } from '@xstate/react'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { storySessionMachine } from '@/machines/story'
 import { StoryIntroScreen } from '@/components/story/StoryIntroScreen'
 import { NarrativeBeatScreen } from '@/components/story/NarrativeBeatScreen'
@@ -39,7 +39,7 @@ export default function StoryModePage() {
   }
 
   // Check if intro has been seen for this word list
-  const { hasSeenIntro, isLoading: introLoading } = useStoryIntro(demoWordList.id)
+  const { hasSeenIntro } = useStoryIntro(demoWordList.id)
 
   const [state, send] = useMachine(storySessionMachine, {
     input: {

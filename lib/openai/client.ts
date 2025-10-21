@@ -195,7 +195,7 @@ export async function withRetry<T>(
   fn: () => Promise<T>,
   retries: number = MAX_RETRIES
 ): Promise<T> {
-  let lastError: any
+  let lastError: unknown
   let delay = INITIAL_DELAY
 
   for (let i = 0; i <= retries; i++) {

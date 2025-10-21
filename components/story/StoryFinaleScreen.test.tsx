@@ -167,16 +167,16 @@ describe('StoryFinaleScreen', () => {
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
-        ['ROCKET', { word: 'ROCKET', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 3000, lastAttemptTime: new Date(), confidence: 90 }],
-        ['SPACE', { word: 'SPACE', attempts: 2, successes: 1, errors: 1, hintsUsed: 0, totalTimeSpent: 5000, lastAttemptTime: new Date(), confidence: 75 }],
-        ['ALIEN', { word: 'ALIEN', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 2000, lastAttemptTime: new Date(), confidence: 85 }],
+        ['ROCKET', { word: 'ROCKET', confidence: 90, errors: 0, hints: 0, timeSpent: 3000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
+        ['SPACE', { word: 'SPACE', confidence: 75, errors: 1, hints: 0, timeSpent: 5000, streak: 0, lastPracticed: new Date(), attemptsCount: 2 }],
+        ['ALIEN', { word: 'ALIEN', confidence: 85, errors: 0, hints: 0, timeSpent: 2000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
       ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={stats}
+        stats={wordStats}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
@@ -191,16 +191,16 @@ describe('StoryFinaleScreen', () => {
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
-        ['ROCKET', { word: 'ROCKET', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 3000, lastAttemptTime: new Date(), confidence: 90 }],
-        ['SPACE', { word: 'SPACE', attempts: 2, successes: 1, errors: 1, hintsUsed: 0, totalTimeSpent: 5000, lastAttemptTime: new Date(), confidence: 75 }],
-        ['ALIEN', { word: 'ALIEN', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 2000, lastAttemptTime: new Date(), confidence: 85 }],
+        ['ROCKET', { word: 'ROCKET', confidence: 90, errors: 0, hints: 0, timeSpent: 3000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
+        ['SPACE', { word: 'SPACE', confidence: 75, errors: 1, hints: 0, timeSpent: 5000, streak: 0, lastPracticed: new Date(), attemptsCount: 2 }],
+        ['ALIEN', { word: 'ALIEN', confidence: 85, errors: 0, hints: 0, timeSpent: 2000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
       ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={stats}
+        stats={wordStats}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
@@ -216,16 +216,16 @@ describe('StoryFinaleScreen', () => {
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
-        ['ROCKET', { word: 'ROCKET', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 3000, lastAttemptTime: new Date(), confidence: 90 }],
-        ['SPACE', { word: 'SPACE', attempts: 2, successes: 1, errors: 1, hintsUsed: 0, totalTimeSpent: 5000, lastAttemptTime: new Date(), confidence: 60 }],
-        ['ALIEN', { word: 'ALIEN', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 2000, lastAttemptTime: new Date(), confidence: 75 }],
+        ['ROCKET', { word: 'ROCKET', confidence: 90, errors: 0, hints: 0, timeSpent: 3000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
+        ['SPACE', { word: 'SPACE', confidence: 60, errors: 1, hints: 0, timeSpent: 5000, streak: 0, lastPracticed: new Date(), attemptsCount: 2 }],
+        ['ALIEN', { word: 'ALIEN', confidence: 75, errors: 0, hints: 0, timeSpent: 2000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
       ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={stats}
+        stats={wordStats}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
@@ -413,14 +413,14 @@ describe('StoryFinaleScreen', () => {
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
-        ['WORD1', { word: 'WORD1', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 1000, lastAttemptTime: new Date(), confidence: 85 }],
+        ['WORD1', { word: 'WORD1', confidence: 85, errors: 0, hints: 0, timeSpent: 1000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
       ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={stats}
+        stats={wordStats}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}

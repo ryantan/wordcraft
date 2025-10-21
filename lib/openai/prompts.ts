@@ -182,7 +182,7 @@ Always maintain story continuity and theme consistency.`
 /**
  * Format beat response into structured data
  */
-export function parseGameBeatResponse(response: string, word: string, gameType: string): Partial<StoryBeat> {
+export function parseGameBeatResponse(response: string, _word: string, _gameType: string): Partial<StoryBeat> {
   return {
     narrative: sanitizePromptInput(response),
     // Additional fields will be filled by the story generator
