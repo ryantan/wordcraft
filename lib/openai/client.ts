@@ -122,7 +122,7 @@ export async function generateStoryContent(
       throw new OpenAIAPIError(
         `OpenAI API error: ${error.message}`,
         error.status,
-        error.code
+        error.code || undefined
       )
     }
     throw error

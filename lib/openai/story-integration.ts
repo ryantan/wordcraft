@@ -18,7 +18,6 @@ import {
   generateStoryContent,
   withRetry,
   withTimeout,
-  type StoryGenerationRequest,
 } from './client'
 import {
   parseChoiceBeatResponse,

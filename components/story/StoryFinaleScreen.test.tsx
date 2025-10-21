@@ -166,17 +166,18 @@ describe('StoryFinaleScreen', () => {
       const mockOnPlayAgain = vi.fn()
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
-      const wordStats = new Map<string, WordStats>([
-        ['ROCKET', { word: 'ROCKET', confidence: 90, errors: 0, hints: 0, timeSpent: 3000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-        ['SPACE', { word: 'SPACE', confidence: 75, errors: 1, hints: 0, timeSpent: 5000, streak: 0, lastPracticed: new Date(), attemptsCount: 2 }],
-        ['ALIEN', { word: 'ALIEN', confidence: 85, errors: 0, hints: 0, timeSpent: 2000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-      ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={wordStats}
+        stats={{
+          totalWords: 3,
+          wordsMastered: 2,
+          gamesPlayed: 3,
+          timeSpent: 180,
+          averageConfidence: 83
+        }}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
@@ -190,17 +191,18 @@ describe('StoryFinaleScreen', () => {
       const mockOnPlayAgain = vi.fn()
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
-      const wordStats = new Map<string, WordStats>([
-        ['ROCKET', { word: 'ROCKET', confidence: 90, errors: 0, hints: 0, timeSpent: 3000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-        ['SPACE', { word: 'SPACE', confidence: 75, errors: 1, hints: 0, timeSpent: 5000, streak: 0, lastPracticed: new Date(), attemptsCount: 2 }],
-        ['ALIEN', { word: 'ALIEN', confidence: 85, errors: 0, hints: 0, timeSpent: 2000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-      ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={wordStats}
+        stats={{
+          totalWords: 3,
+          wordsMastered: 2,
+          gamesPlayed: 3,
+          timeSpent: 180,
+          averageConfidence: 83
+        }}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
@@ -215,17 +217,18 @@ describe('StoryFinaleScreen', () => {
       const mockOnPlayAgain = vi.fn()
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
-      const wordStats = new Map<string, WordStats>([
-        ['ROCKET', { word: 'ROCKET', confidence: 90, errors: 0, hints: 0, timeSpent: 3000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-        ['SPACE', { word: 'SPACE', confidence: 60, errors: 1, hints: 0, timeSpent: 5000, streak: 0, lastPracticed: new Date(), attemptsCount: 2 }],
-        ['ALIEN', { word: 'ALIEN', confidence: 75, errors: 0, hints: 0, timeSpent: 2000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-      ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={wordStats}
+        stats={{
+          totalWords: 3,
+          wordsMastered: 2,
+          gamesPlayed: 3,
+          timeSpent: 180,
+          averageConfidence: 83
+        }}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
@@ -412,15 +415,18 @@ describe('StoryFinaleScreen', () => {
       const mockOnPlayAgain = vi.fn()
       const mockOnTryNewWords = vi.fn()
       const mockOnViewProgress = vi.fn()
-      const wordStats = new Map<string, WordStats>([
-        ['WORD1', { word: 'WORD1', confidence: 85, errors: 0, hints: 0, timeSpent: 1000, streak: 1, lastPracticed: new Date(), attemptsCount: 1 }],
-      ])
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
           wordListName="Space Adventure Words"
-        stats={wordStats}
+        stats={{
+          totalWords: 3,
+          wordsMastered: 2,
+          gamesPlayed: 3,
+          timeSpent: 180,
+          averageConfidence: 83
+        }}
         onTryNewWords={mockOnTryNewWords}
         onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
