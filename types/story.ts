@@ -152,6 +152,7 @@ export interface StorySessionContext {
   // Word stats tracking
   wordStats: Map<string, WordStats>
   userChoices: Array<{ beatId: string; choice: string }>
+  gameResults: Array<any> // GameResult array for stats calculation
 
   // Story integration
   storyProgressActor: any | null  // XState ActorRef
@@ -164,8 +165,11 @@ export interface StorySessionContext {
   introContent: any | null
   finaleContent: any | null
 
-  // Session
+  // Session tracking
   sessionStartTime: Date
+  sessionStartTimeMs: number // Timestamp for stats calculation
+  wordListId: string
+  hasSeenIntro: boolean
 }
 
 /**
@@ -225,6 +229,20 @@ export type RestartStoryEvent = {
 }
 
 /**
+ * Event: Skip intro screen
+ */
+export type SkipIntroEvent = {
+  type: 'SKIP_INTRO'
+}
+
+/**
+ * Event: Navigate to word lists from finale
+ */
+export type TryNewWordsEvent = {
+  type: 'TRY_NEW_WORDS'
+}
+
+/**
  * Union type of all StorySessionMachine events
  */
 export type StorySessionEvent =
@@ -235,6 +253,8 @@ export type StorySessionEvent =
   | ContinueStoryEvent
   | SkipCheckpointEvent
   | RestartStoryEvent
+  | SkipIntroEvent
+  | TryNewWordsEvent
 
 /**
  * Input provided when creating StorySessionMachine
@@ -242,4 +262,6 @@ export type StorySessionEvent =
 export interface StorySessionInput {
   wordList: WordList
   theme?: string
+  wordListId?: string
+  hasSeenIntro?: boolean
 }

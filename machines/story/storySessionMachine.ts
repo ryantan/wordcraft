@@ -23,6 +23,7 @@ import {
   allWordsMastered,
   getWordsNeedingPractice,
 } from '@/lib/story/word-stats'
+import { markStoryIntroAsSeen } from '@/lib/storage/story-progress-storage'
 
 /**
  * Story Session Machine
@@ -57,6 +58,7 @@ export const storySessionMachine = createMachine(
       // Word stats tracking
       wordStats: new Map<string, WordStats>(),
       userChoices: [],
+      gameResults: [],
 
       // Story integration
       storyProgressActor: null,
@@ -69,8 +71,11 @@ export const storySessionMachine = createMachine(
       introContent: null,
       finaleContent: null,
 
-      // Session
+      // Session tracking
       sessionStartTime: new Date(),
+      sessionStartTimeMs: Date.now(),
+      wordListId: input.wordListId || input.wordList.id,
+      hasSeenIntro: input.hasSeenIntro || false,
     }),
 
     states: {
@@ -88,7 +93,11 @@ export const storySessionMachine = createMachine(
         on: {
           START_STORY: {
             target: 'processingBeat',
-            actions: 'loadCurrentBeat',
+            actions: ['markIntroAsSeen', 'loadCurrentBeat'],
+          },
+          SKIP_INTRO: {
+            target: 'processingBeat',
+            actions: ['markIntroAsSeen', 'loadCurrentBeat'],
           },
         },
       },
@@ -180,6 +189,9 @@ export const storySessionMachine = createMachine(
         on: {
           RESTART_STORY: {
             target: 'idle',
+          },
+          TRY_NEW_WORDS: {
+            actions: 'navigateToWordLists',
           },
         },
       },
@@ -335,6 +347,29 @@ export const storySessionMachine = createMachine(
           finaleContent: content.finale,
         }
       }),
+
+      /**
+       * Mark intro as seen in storage and update context
+       */
+      markIntroAsSeen: assign(({ context }) => {
+        // Async storage operation (fire and forget)
+        markStoryIntroAsSeen(context.wordListId).catch((error) => {
+          console.error('Error marking intro as seen:', error)
+        })
+
+        return {
+          hasSeenIntro: true,
+        }
+      }),
+
+      /**
+       * Navigate to word lists page
+       */
+      navigateToWordLists: () => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/word-lists'
+        }
+      },
     },
 
     guards: {
