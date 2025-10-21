@@ -61,7 +61,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Progress Dashboard</h1>
-            <p className="text-gray-600">Track your child's spelling journey</p>
+            <p className="text-gray-600">Track your child&apos;s spelling journey</p>
           </div>
           <Link href="/">
             <Button variant="outline">Back to Home</Button>

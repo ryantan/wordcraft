@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { createActor } from 'xstate'
 import { storySessionMachine } from './storySessionMachine'
 import type { WordList } from '@/types'
-import type { StorySessionInput, GameBeat, CheckpointBeat } from '@/types/story'
+import type { GameBeat } from '@/types/story'
 
 describe('StorySessionMachine', () => {
   let mockWordList: WordList
@@ -20,7 +20,7 @@ describe('StorySessionMachine', () => {
       description: 'Test word list',
       words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR'],
       createdAt: new Date(),
-      lastModifiedAt: new Date(),
+      updatedAt: new Date(),
     }
   })
 

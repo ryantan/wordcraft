@@ -117,7 +117,7 @@ export const LetterMatching: FC<GameMechanicProps> = ({
           }, 800)
         } else {
           // Auto-select next unmatched letter for continuous flow
-          const nextUnmatched = newPairs.findIndex((p, i) => !p.matched)
+          const nextUnmatched = newPairs.findIndex((p, _i) => !p.matched)
           setSelectedLowercase(nextUnmatched)
         }
       } else {

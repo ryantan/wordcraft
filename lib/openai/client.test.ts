@@ -45,7 +45,7 @@ describe('OpenAI Client', () => {
   describe('createOpenAIClient', () => {
     it('should create client with valid API key', () => {
       const mockClient = {}
-      vi.mocked(OpenAI).mockImplementation(() => mockClient as any)
+      vi.mocked(OpenAI).mockImplementation(() => mockClient as OpenAI)
 
       const client = createOpenAIClient()
 
@@ -103,7 +103,7 @@ describe('OpenAI Client', () => {
             }),
           },
         },
-      } as any
+      } as OpenAI
 
       const result = await generateStoryContent(mockClient, {
         theme: 'space',
@@ -141,7 +141,7 @@ describe('OpenAI Client', () => {
             create: vi.fn().mockRejectedValue(mockError),
           },
         },
-      } as any
+      } as OpenAI
 
       await expect(
         generateStoryContent(mockClient, {
@@ -164,7 +164,7 @@ describe('OpenAI Client', () => {
             }),
           },
         },
-      } as any
+      } as OpenAI
 
       const result = await generateStoryContent(mockClient, {
         theme: 'space',
@@ -197,7 +197,7 @@ describe('OpenAI Client', () => {
             data: [{ id: 'model-1' }],
           }),
         },
-      } as any
+      } as OpenAI
 
       const result = await testConnection(mockClient)
       expect(result).toBe(true)
@@ -208,7 +208,7 @@ describe('OpenAI Client', () => {
         models: {
           list: vi.fn().mockRejectedValue(new Error('Connection failed')),
         },
-      } as any
+      } as OpenAI
 
       const result = await testConnection(mockClient)
       expect(result).toBe(false)

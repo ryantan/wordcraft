@@ -1,6 +1,6 @@
 'use client'
 
-import { type FC, useState, useEffect, useCallback, useMemo } from 'react'
+import { type FC, useState, useCallback, useMemo } from 'react'
 import type { GameMechanicProps } from '@/types'
 import { Button } from '@/components/ui/button'
 
@@ -122,7 +122,7 @@ export const PictureReveal: FC<GameMechanicProps> = ({
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-gray-900">Reveal the Picture</h2>
           <p className="text-gray-600">
-            Click letters that spell "{word}" to uncover the hidden picture
+            Click letters that spell &quot;{word}&quot; to uncover the hidden picture
           </p>
         </div>
 
