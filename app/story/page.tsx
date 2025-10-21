@@ -7,8 +7,8 @@
 'use client'
 
 import { useMachine } from '@xstate/react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { storySessionMachine } from '@/machines/story'
 import { StoryIntroScreen } from '@/components/story/StoryIntroScreen'
 import { NarrativeBeatScreen } from '@/components/story/NarrativeBeatScreen'
@@ -20,32 +20,54 @@ import type { GameBeat, ChoiceBeat } from '@/types/story'
 import { Button } from '@/components/ui/button'
 import { useStoryIntro } from '@/lib/hooks/useStoryIntro'
 import { calculateSessionStats } from '@/lib/game/calculate-session-stats'
+import { getWordList } from '@/lib/storage/localStorage'
+import type { WordList } from '@/types'
 
 export default function StoryModePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [showExitDialog, setShowExitDialog] = useState(false)
-
-  // TODO: Get word list from URL params or user selection
-  // For now, using a demo word list
-  const now = new Date()
-  const demoWordList = {
-    id: 'demo-story',
-    name: 'Space Adventure Words',
-    description: 'Words for space adventure',
-    words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
-    createdAt: now,
-    lastModifiedAt: now,
-    updatedAt: now,
+  
+  // Initialize with demo word list to avoid conditional hooks
+  const createDemoWordList = () => {
+    const now = new Date()
+    return {
+      id: 'demo-story',
+      name: 'Space Adventure Words',
+      description: 'Words for space adventure',
+      words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
+      createdAt: now,
+      lastModifiedAt: now,
+      updatedAt: now,
+    }
   }
 
-  // Check if intro has been seen for this word list
-  const { hasSeenIntro } = useStoryIntro(demoWordList.id)
+  const [wordList, setWordList] = useState<WordList>(createDemoWordList)
 
+  // Get word list from URL params or use demo
+  useEffect(() => {
+    const listId = searchParams.get('listId')
+    if (listId) {
+      const userWordList = getWordList(listId)
+      if (userWordList) {
+        setWordList(userWordList)
+        return
+      }
+    }
+    
+    // Fallback to demo word list
+    setWordList(createDemoWordList())
+  }, [searchParams])
+
+  // Check if intro has been seen for this word list
+  const { hasSeenIntro } = useStoryIntro(wordList.id)
+
+  // Initialize XState machine with current word list
   const [state, send] = useMachine(storySessionMachine, {
     input: {
-      wordList: demoWordList,
+      wordList: wordList,
       theme: 'space',
-      wordListId: demoWordList.id,
+      wordListId: wordList.id,
       hasSeenIntro,
     },
   })
@@ -106,7 +128,7 @@ export default function StoryModePage() {
       <StoryIntroScreen
         introContent={state.context.introContent}
         theme={state.context.storyTheme}
-        wordListName={demoWordList.name}
+        wordListName={wordList.name}
         onStart={() => send({ type: 'START_STORY' })}
         onSkip={() => send({ type: 'SKIP_INTRO' })}
       />
@@ -199,10 +221,10 @@ export default function StoryModePage() {
     return (
       <StoryFinaleScreen
         finaleContent={state.context.finaleContent}
-        wordListName={demoWordList.name}
+        wordListName={wordList.name}
         stats={stats}
         onPlayAgain={() => send({ type: 'RESTART_STORY' })}
-        onTryNewWords={() => send({ type: 'TRY_NEW_WORDS' })}
+        onTryNewWords={() => router.push('/word-lists')}
         onViewProgress={() => router.push('/dashboard')}
       />
     )
