@@ -4,29 +4,26 @@
  * Manages story intro visibility tracking for word lists
  */
 
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback } from 'react'
-import {
-  hasSeenStoryIntro,
-  markStoryIntroAsSeen,
-} from '@/lib/storage/story-progress-storage'
+import { hasSeenStoryIntro, markStoryIntroAsSeen } from '@/lib/storage/story-progress-storage';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface UseStoryIntroReturn {
   /**
    * Whether the user has seen the intro for this word list
    */
-  hasSeenIntro: boolean
+  hasSeenIntro: boolean;
 
   /**
    * Whether the intro status is still being loaded
    */
-  isLoading: boolean
+  isLoading: boolean;
 
   /**
    * Mark the intro as seen for this word list
    */
-  markAsSeen: () => Promise<void>
+  markAsSeen: () => Promise<void>;
 }
 
 /**
@@ -49,8 +46,8 @@ export interface UseStoryIntroReturn {
  * ```
  */
 export function useStoryIntro(wordListId: string | undefined): UseStoryIntroReturn {
-  const [hasSeenIntro, setHasSeenIntro] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [hasSeenIntro, setHasSeenIntro] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load intro seen status from storage on mount
   useEffect(() => {
@@ -60,20 +57,20 @@ export function useStoryIntro(wordListId: string | undefined): UseStoryIntroRetu
       }
 
       try {
-        setIsLoading(true)
-        const seen = await hasSeenStoryIntro(wordListId)
-        setHasSeenIntro(seen)
+        setIsLoading(true);
+        const seen = await hasSeenStoryIntro(wordListId);
+        setHasSeenIntro(seen);
       } catch (error) {
-        console.error('Error loading intro status:', error)
+        console.error('Error loading intro status:', error);
         // Default to not seen on error
-        setHasSeenIntro(false)
+        setHasSeenIntro(false);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    loadIntroStatus()
-  }, [wordListId])
+    loadIntroStatus();
+  }, [wordListId]);
 
   // Function to mark intro as seen
   const markAsSeen = useCallback(async () => {
@@ -82,18 +79,18 @@ export function useStoryIntro(wordListId: string | undefined): UseStoryIntroRetu
     }
 
     try {
-      await markStoryIntroAsSeen(wordListId)
-      setHasSeenIntro(true)
+      await markStoryIntroAsSeen(wordListId);
+      setHasSeenIntro(true);
     } catch (error) {
-      console.error('Error marking intro as seen:', error)
+      console.error('Error marking intro as seen:', error);
       // Still update local state to prevent re-showing intro in this session
-      setHasSeenIntro(true)
+      setHasSeenIntro(true);
     }
-  }, [wordListId])
+  }, [wordListId]);
 
   return {
     hasSeenIntro,
     isLoading,
     markAsSeen,
-  }
+  };
 }

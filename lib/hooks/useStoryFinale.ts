@@ -4,24 +4,24 @@
  * Calculates when to show story finale and computes session statistics
  */
 
-'use client'
+'use client';
 
-import { useMemo } from 'react'
-import { calculateSessionStats } from '@/lib/game/calculate-session-stats'
-import type { SessionStats } from '@/types/session'
-import type { WordStats } from '@/types/story'
-import type { GameResult } from '@/types/game'
+import { calculateSessionStats } from '@/lib/game/calculate-session-stats';
+import type { GameResult } from '@/types/game';
+import type { SessionStats } from '@/types/session';
+import type { WordStats } from '@/types/story';
+import { useMemo } from 'react';
 
 export interface UseStoryFinaleReturn {
   /**
    * Whether the finale should be shown (all words mastered)
    */
-  shouldShowFinale: boolean
+  shouldShowFinale: boolean;
 
   /**
    * Calculated session statistics
    */
-  stats: SessionStats
+  stats: SessionStats;
 }
 
 /**
@@ -55,25 +55,23 @@ export interface UseStoryFinaleReturn {
 export function useStoryFinale(
   wordStats: Map<string, WordStats>,
   gameResults: GameResult[],
-  sessionStartTime: number
+  sessionStartTime: number,
 ): UseStoryFinaleReturn {
   // Calculate session stats (memoized to prevent unnecessary recalculations)
   const stats = useMemo(
     () => calculateSessionStats(wordStats, gameResults, sessionStartTime),
-    [wordStats, gameResults, sessionStartTime]
-  )
+    [wordStats, gameResults, sessionStartTime],
+  );
 
   // Determine if finale should be shown (all words >= 80% confidence)
   const shouldShowFinale = useMemo(() => {
-    if (wordStats.size === 0) return false
+    if (wordStats.size === 0) return false;
 
-    return Array.from(wordStats.values()).every(
-      (wordStat) => wordStat.confidence >= 80
-    )
-  }, [wordStats])
+    return Array.from(wordStats.values()).every(wordStat => wordStat.confidence >= 80);
+  }, [wordStats]);
 
   return {
     shouldShowFinale,
     stats,
-  }
+  };
 }
