@@ -42,7 +42,7 @@ const STORY_GENERATION_TIMEOUT = 30000
 export async function generateStoryWithOpenAI(
   input: StoryGenerationInput
 ): Promise<GeneratedStory | null> {
-  console.log('generateStoryWithOpenAI start');
+  console.log('generateStoryWithOpenAI start, input:', JSON.stringify(input));
   try {
     // Validate environment and create client
     validateEnvironment()
@@ -83,6 +83,7 @@ export async function generateStoryWithOpenAI(
       console.warn('OpenAI response failed validation')
       return null
     }
+    console.info('OpenAI response passed validation')
 
     // Transform to our internal GeneratedStory format
     return transformToGeneratedStory(validatedResponse, input)
