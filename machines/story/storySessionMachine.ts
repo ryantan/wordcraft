@@ -84,22 +84,7 @@ export const storySessionMachine = createMachine(
           'initializeWordStats',
           'loadIntroContent',
         ],
-        on: {
-          STORY_GENERATED: {
-            actions: 'updateGeneratedStory',
-            target: 'showingIntro',
-          },
-        },
-        always: [
-          {
-            guard: 'hasGeneratedStory',
-            target: 'showingIntro',
-          },
-          {
-            // If no story provided, stay in idle (loading state)
-            target: 'idle',
-          },
-        ],
+        always: 'showingIntro',
       },
 
       showingIntro: {
@@ -221,17 +206,6 @@ export const storySessionMachine = createMachine(
           spawn(storyProgressMachine, { id: 'storyProgress' }),
       }),
 
-      /**
-       * Update the generated story in context
-       */
-      updateGeneratedStory: assign({
-        generatedStory: ({ event }) => {
-          if (event.type === 'STORY_GENERATED') {
-            return event.story
-          }
-          return null
-        },
-      }),
 
       /**
        * Initialize word stats for all words in list
@@ -384,14 +358,6 @@ export const storySessionMachine = createMachine(
     },
 
     guards: {
-      /**
-       * Check if a story has been generated and provided
-       */
-      hasGeneratedStory: ({ context }) => {
-        return context.generatedStory !== null && 
-               context.generatedStory.stage1Beats.length > 0
-      },
-
       /**
        * Check if current beat is a narrative beat
        */
