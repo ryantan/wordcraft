@@ -2,8 +2,8 @@
  * Picture Reveal Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { PictureReveal } from '@/components/games/PictureReveal'
+import { PictureReveal } from '@/components/games/PictureReveal';
+import type { GameMechanic } from '@/types';
 
 export const pictureRevealMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const pictureRevealMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: PictureReveal,
-}
+};

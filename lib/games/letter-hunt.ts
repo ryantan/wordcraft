@@ -2,8 +2,8 @@
  * Letter Hunt Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { LetterHunt } from '@/components/games/LetterHunt'
+import { LetterHunt } from '@/components/games/LetterHunt';
+import type { GameMechanic } from '@/types';
 
 export const letterHuntMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const letterHuntMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: LetterHunt,
-}
+};

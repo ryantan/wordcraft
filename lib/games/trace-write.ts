@@ -2,8 +2,8 @@
  * Trace & Write Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { TraceAndWrite } from '@/components/games/TraceAndWrite'
+import { TraceAndWrite } from '@/components/games/TraceAndWrite';
+import type { GameMechanic } from '@/types';
 
 export const traceWriteMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const traceWriteMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: TraceAndWrite,
-}
+};

@@ -2,8 +2,8 @@
  * Letter Matching Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { LetterMatching } from '@/components/games/LetterMatching'
+import { LetterMatching } from '@/components/games/LetterMatching';
+import type { GameMechanic } from '@/types';
 
 export const letterMatchingMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const letterMatchingMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: LetterMatching,
-}
+};

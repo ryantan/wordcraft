@@ -2,8 +2,8 @@
  * Word Scramble Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { WordScramble } from '@/components/games/WordScramble'
+import { WordScramble } from '@/components/games/WordScramble';
+import type { GameMechanic } from '@/types';
 
 export const wordScrambleMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const wordScrambleMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: WordScramble,
-}
+};
