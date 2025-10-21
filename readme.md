@@ -64,8 +64,9 @@ wordcraft/
 
 ## 📚 Documentation
 
-- [Product Requirements Document](./docs/prd.md) - Full feature specifications
+- [Product Requirements Document](./prd/*.md) - Full feature specifications
 - [Frontend Architecture](./docs/ui-architecture.md) - Technical architecture
+- [Architecture](./docs/architecture/*.md) - Technical architecture
 - [Project Brief](./docs/brief.md) - Project overview
 
 ## 🔧 Tech Stack
@@ -81,7 +82,7 @@ wordcraft/
 
 ## 🎯 Roadmap
 
-See the [PRD](./docs/prd.md) for detailed user stories:
+See the [PRD](./docs/prd/*.md) for detailed user stories:
 
 1. ✅ **Epic 1**: Foundation & Project Setup
 2. 🔄 **Epic 2**: Word List Management
