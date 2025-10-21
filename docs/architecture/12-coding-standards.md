@@ -37,8 +37,30 @@
 - Include parameter descriptions and return types
 - Document edge cases and important behavior notes
 
-**Version control**
-- Always commit atomically with conventional commit messages
+**Version Control - MANDATORY for Dev Agents**
+- **ALWAYS commit atomically** - One logical change per commit
+- **ALWAYS use conventional commit messages** following this exact format:
+  ```
+  type(scope): description
+  
+  Optional body explaining what and why
+  Optional footer with breaking changes or references
+  ```
+- **Required commit types:** feat, fix, docs, style, refactor, test, chore
+- **Required commit workflow:**
+  1. Stage only related files for the logical change
+  2. Write conventional commit message using heredoc format
+  3. Verify commit includes only intended changes
+- **Examples:**
+  ```bash
+  git commit -m "$(cat <<'EOF'
+  feat(story): add OpenAI story generation service
+  
+  Implement dynamic story beat generation using OpenAI API.
+  Includes fallback to template system on API failures.
+  EOF
+  )"
+  ```
 
 ## Naming Conventions
 
@@ -62,5 +84,6 @@ When developing for WordCraft:
 4. **Follow App Router conventions** - Routes are defined with `page.tsx` files in the `/app` directory
 5. **Handle SSR safety** - All browser APIs (localStorage, window, document) require checks for `typeof window !== 'undefined'`
 6. **Support multi-word phrases** - Remember that "words" can include spaces (e.g., "went red")
+7. **MANDATORY: Commit atomically with conventional messages** - Every commit MUST follow the version control standards above
 
 ---
