@@ -5,16 +5,17 @@
  * Checkpoints trigger after specific game milestones (5, 10, 15 games).
  */
 
-import { setup, assign } from 'xstate'
-import type { StoryProgressContext, StoryProgressEvent } from './types'
-import { saveStoryProgress, loadStoryProgress } from '@/lib/storage/story-progress-storage'
+import { loadStoryProgress, saveStoryProgress } from '@/lib/storage/story-progress-storage';
+import { assign, setup } from 'xstate';
+
+import type { StoryProgressContext, StoryProgressEvent } from './types';
 
 /** Number of games required to reach each checkpoint */
 const CHECKPOINT_THRESHOLDS = {
   checkpoint1: 5,
   checkpoint2: 10,
   checkpoint3: 15,
-} as const
+} as const;
 
 /**
  * Story Progress Machine
@@ -34,29 +35,26 @@ export const storyProgressMachine = setup({
   guards: {
     shouldReachCheckpoint1: ({ context }) => {
       return (
-        context.gamesCompleted >= CHECKPOINT_THRESHOLDS.checkpoint1 &&
-        context.currentCheckpoint < 1
-      )
+        context.gamesCompleted >= CHECKPOINT_THRESHOLDS.checkpoint1 && context.currentCheckpoint < 1
+      );
     },
 
     shouldReachCheckpoint2: ({ context }) => {
       return (
-        context.gamesCompleted >= CHECKPOINT_THRESHOLDS.checkpoint2 &&
-        context.currentCheckpoint < 2
-      )
+        context.gamesCompleted >= CHECKPOINT_THRESHOLDS.checkpoint2 && context.currentCheckpoint < 2
+      );
     },
 
     shouldReachCheckpoint3: ({ context }) => {
       return (
-        context.gamesCompleted >= CHECKPOINT_THRESHOLDS.checkpoint3 &&
-        context.currentCheckpoint < 3
-      )
+        context.gamesCompleted >= CHECKPOINT_THRESHOLDS.checkpoint3 && context.currentCheckpoint < 3
+      );
     },
 
     shouldReachFinale: ({ context }) => {
       // Finale reached when significantly beyond checkpoint 3
       // In practice, this will be triggered by external logic (all words mastered)
-      return context.gamesCompleted >= 20 && context.currentCheckpoint >= 3
+      return context.gamesCompleted >= 20 && context.currentCheckpoint >= 3;
     },
   },
 
@@ -69,9 +67,9 @@ export const storyProgressMachine = setup({
       currentCheckpoint: 1,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(1)) {
-          return [...context.checkpointsUnlocked, 1]
+          return [...context.checkpointsUnlocked, 1];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -80,9 +78,9 @@ export const storyProgressMachine = setup({
       currentCheckpoint: 2,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(2)) {
-          return [...context.checkpointsUnlocked, 2]
+          return [...context.checkpointsUnlocked, 2];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -91,9 +89,9 @@ export const storyProgressMachine = setup({
       currentCheckpoint: 3,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(3)) {
-          return [...context.checkpointsUnlocked, 3]
+          return [...context.checkpointsUnlocked, 3];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -102,9 +100,9 @@ export const storyProgressMachine = setup({
       currentCheckpoint: 4,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(4)) {
-          return [...context.checkpointsUnlocked, 4]
+          return [...context.checkpointsUnlocked, 4];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -112,8 +110,8 @@ export const storyProgressMachine = setup({
     persistProgress: ({ context }) => {
       // Save progress to IndexedDB
       saveStoryProgress(context).catch(err => {
-        console.error('Failed to save story progress:', err)
-      })
+        console.error('Failed to save story progress:', err);
+      });
     },
 
     resetStory: assign({
@@ -209,24 +207,22 @@ export const storyProgressMachine = setup({
       entry: ['unlockFinale', 'persistProgress'],
     },
   },
-})
+});
 
 /**
  * Initialize Story Progress Machine with persisted data
  *
  * Loads previous progress from IndexedDB if available
  */
-export async function initializeStoryProgress(
-  wordListId?: string
-): Promise<StoryProgressContext> {
-  const saved = await loadStoryProgress(wordListId)
+export async function initializeStoryProgress(wordListId?: string): Promise<StoryProgressContext> {
+  const saved = await loadStoryProgress(wordListId);
 
   if (saved) {
     return {
       ...saved,
       // Ensure Date object (might be serialized as string)
       sessionStartTime: new Date(saved.sessionStartTime),
-    }
+    };
   }
 
   // Return default context
@@ -238,5 +234,5 @@ export async function initializeStoryProgress(
     lastCheckpointAt: 0,
     storyTheme: 'space',
     sessionStartTime: new Date(),
-  }
+  };
 }
