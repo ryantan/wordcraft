@@ -8,6 +8,7 @@
 
 import { useMachine } from '@xstate/react'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { storySessionMachine } from '@/machines/story'
 import { StoryIntroScreen } from '@/components/story/StoryIntroScreen'
 import { NarrativeBeatScreen } from '@/components/story/NarrativeBeatScreen'
@@ -17,7 +18,8 @@ import { StoryFinaleScreen } from '@/components/story/StoryFinaleScreen'
 import { GameRenderer } from '@/components/story/GameRenderer'
 import type { GameBeat, ChoiceBeat } from '@/types/story'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useStoryIntro } from '@/lib/hooks/useStoryIntro'
+import { calculateSessionStats } from '@/lib/game/calculate-session-stats'
 
 export default function StoryModePage() {
   const router = useRouter()
@@ -36,10 +38,15 @@ export default function StoryModePage() {
     updatedAt: now,
   }
 
+  // Check if intro has been seen for this word list
+  const { hasSeenIntro, isLoading: introLoading } = useStoryIntro(demoWordList.id)
+
   const [state, send] = useMachine(storySessionMachine, {
     input: {
       wordList: demoWordList,
       theme: 'space',
+      wordListId: demoWordList.id,
+      hasSeenIntro,
     },
   })
 
@@ -99,7 +106,9 @@ export default function StoryModePage() {
       <StoryIntroScreen
         introContent={state.context.introContent}
         theme={state.context.storyTheme}
+        wordListName={demoWordList.name}
         onStart={() => send({ type: 'START_STORY' })}
+        onSkip={() => send({ type: 'SKIP_INTRO' })}
       />
     )
   }
@@ -180,11 +189,21 @@ export default function StoryModePage() {
 
   // Finale
   if (state.matches('finale')) {
+    // Calculate session stats
+    const stats = calculateSessionStats(
+      state.context.wordStats,
+      state.context.gameResults,
+      state.context.sessionStartTimeMs
+    )
+
     return (
       <StoryFinaleScreen
         finaleContent={state.context.finaleContent}
-        wordStats={state.context.wordStats}
+        wordListName={demoWordList.name}
+        stats={stats}
         onPlayAgain={() => send({ type: 'RESTART_STORY' })}
+        onTryNewWords={() => send({ type: 'TRY_NEW_WORDS' })}
+        onViewProgress={() => router.push('/dashboard')}
       />
     )
   }
