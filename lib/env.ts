@@ -7,7 +7,7 @@ export const env = {
   enableStoryMode: process.env.NEXT_PUBLIC_ENABLE_STORY_MODE !== 'false',
   enableAnalytics: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true',
   enableOpenAIStoryGeneration: process.env.NEXT_PUBLIC_ENABLE_OPENAI_STORIES === 'true',
-} as const
+} as const;
 
 /**
  * Server-side environment configuration
@@ -20,26 +20,26 @@ export const serverEnv = {
     maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || '500', 10),
     temperature: parseFloat(process.env.OPENAI_TEMPERATURE || '0.8'),
   },
-}
+};
 
 /**
  * Validate required environment variables
  * @throws Error if required variables are missing
  */
 export function validateEnvironment(): void {
-  const required = ['OPENAI_API_KEY']
-  const missing: string[] = []
+  const required = ['OPENAI_API_KEY'];
+  const missing: string[] = [];
 
   for (const key of required) {
     if (!process.env[key]) {
-      missing.push(key)
+      missing.push(key);
     }
   }
 
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Please check your .env.local file and ensure all required variables are set.'
-    )
+        'Please check your .env.local file and ensure all required variables are set.',
+    );
   }
 }
