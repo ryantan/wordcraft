@@ -22,30 +22,17 @@ import {
   OpenAIAPIError,
 } from './client'
 import { validateEnvironment } from '@/lib/env'
+import { 
+  getStoryGenerationJsonSchema, 
+  validateAndTransformOpenAIResponse,
+  type OpenAIStoryResponse 
+} from './story-schema'
 
 /**
  * Request timeout for story generation (3 seconds as per AC 5)
  */
 const STORY_GENERATION_TIMEOUT = 30000
 
-/**
- * OpenAI API response structure for story generation
- */
-interface OpenAIStoryResponse {
-  stage1Beats: Array<{
-    type: 'game' | 'choice' | 'narrative' | 'checkpoint'
-    id: string
-    narrative: string
-    word?: string
-    gameType?: string
-    stage?: number
-    question?: string
-    options?: [string, string]
-    checkpointNumber?: number
-    celebrationEmoji?: string
-    title?: string
-  }>
-}
 
 /**
  * Generate a complete story using OpenAI
@@ -61,27 +48,42 @@ export async function generateStoryWithOpenAI(
     validateEnvironment()
     const client = createOpenAIClient()
 
-    // Generate story content with timeout
+    // Generate story content with timeout and JSON schema
     const response = await withTimeout(
       withRetry(async () => {
-        return await generateStoryContent(client, {
-          theme: input.theme,
-          wordList: input.wordList,
-          beatType: 'narrative',
-          context: buildStoryGenerationPrompt(input),
-        })
+        return await generateStoryContent(
+          client, 
+          {
+            theme: input.theme,
+            wordList: input.wordList,
+            beatType: 'narrative',
+            context: buildStoryGenerationPrompt(input),
+          },
+          getStoryGenerationJsonSchema()
+        )
       }),
       STORY_GENERATION_TIMEOUT
     )
 
-    // Parse and validate response
-    const parsedStory = parseOpenAIResponse(response.content, input)
-    if (!parsedStory) {
-      console.warn('Failed to parse OpenAI story response')
+    // Parse JSON response
+    let jsonData: unknown
+    try {
+      jsonData = JSON.parse(response.content)
+    } catch (error) {
+      console.error('Failed to parse OpenAI JSON response:', error)
+      console.error('Response content:', response.content)
       return null
     }
 
-    return parsedStory
+    // Validate with Zod schema
+    const validatedResponse = validateAndTransformOpenAIResponse(jsonData)
+    if (!validatedResponse) {
+      console.warn('OpenAI response failed validation')
+      return null
+    }
+
+    // Transform to our internal GeneratedStory format
+    return transformToGeneratedStory(validatedResponse, input)
   } catch (error) {
     if (error instanceof OpenAIAPIError) {
       console.error('OpenAI API error during story generation:', error.message)
@@ -108,7 +110,7 @@ REQUIREMENTS:
 - Include educational spelling challenges
 
 BEAT TYPES TO INCLUDE:
-1. Game Beats: Spelling challenges for each word
+1. Game Beats: Spelling challenges for each word (use "letterMatching", "wordBuilding", "spellingChallenge", "wordScramble", or "missingLetters")
 2. Narrative Beats: Story progression (every 3-4 beats)
 3. Choice Beats: Interactive decisions (2-3 total)
 4. Checkpoint Beats: Celebrations at positions 5, 10, 15
@@ -118,47 +120,15 @@ ${getThemeElements(theme)}
 
 STRUCTURE REQUIREMENTS:
 - Start with narrative setup
-- Each word gets a game beat
+- Each word gets a game beat with appropriate gameType
 - Intersperse narrative beats for story flow
 - Add choice beats for engagement
-- Include checkpoint celebrations
+- Include checkpoint celebrations with titles and emojis
 
-RESPONSE FORMAT:
-Return valid JSON matching this structure:
-{
-  "stage1Beats": [
-    {
-      "type": "narrative",
-      "id": "narrative-1",
-      "narrative": "Your adventure begins in the cosmic depths of space..."
-    },
-    {
-      "type": "game",
-      "id": "game-rocket-stage1",
-      "narrative": "A space beacon signals 'ROCKET' - spell it to unlock the next sector!",
-      "word": "ROCKET",
-      "gameType": "letterMatching",
-      "stage": 1
-    },
-    {
-      "type": "choice",
-      "id": "choice-1",
-      "narrative": "You reach a cosmic crossroads...",
-      "question": "Which path through the nebula looks safer?",
-      "options": ["Navigate left", "Navigate right"]
-    },
-    {
-      "type": "checkpoint",
-      "id": "checkpoint-1",
-      "narrative": "Amazing progress! You've mastered 5 cosmic words and earned a stellar achievement!",
-      "checkpointNumber": 1,
-      "celebrationEmoji": "🌟",
-      "title": "Stellar Speller"
-    }
-  ]
-}
+WORD LIST TO COVER:
+${wordList.map(word => `- ${word.toUpperCase()}`).join('\n')}
 
-Generate the complete story now:`
+Each word must appear exactly once in a game beat. Generate an engaging story that connects all words thematically.`
 }
 
 /**
@@ -176,100 +146,82 @@ function getThemeElements(theme: string): string {
 }
 
 /**
- * Parse OpenAI response into GeneratedStory structure
+ * Transform validated OpenAI response to our internal GeneratedStory format
  */
-function parseOpenAIResponse(
-  content: string,
+function transformToGeneratedStory(
+  validatedResponse: OpenAIStoryResponse,
   input: StoryGenerationInput
-): GeneratedStory | null {
-  try {
-    // Clean and parse JSON response
-    const cleanContent = content.trim()
-    const jsonMatch = cleanContent.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      console.warn('No JSON found in OpenAI response')
-      return null
+): GeneratedStory {
+  // Convert validated schema types to our internal types
+  const stage1Beats: StoryBeat[] = validatedResponse.stage1Beats.map((beat) => {
+    const baseProps = {
+      id: beat.id,
+      narrative: beat.narrative,
     }
 
-    const parsed: OpenAIStoryResponse = JSON.parse(jsonMatch[0])
-    if (!parsed.stage1Beats || !Array.isArray(parsed.stage1Beats)) {
-      console.warn('Invalid story structure in OpenAI response')
-      return null
-    }
-
-    // Convert to proper beat types
-    const stage1Beats: StoryBeat[] = parsed.stage1Beats.map((beat, index) => {
-      const baseProps = {
-        id: beat.id || `beat-${index}`,
-        narrative: beat.narrative || 'Continue your adventure...',
-      }
-
-      switch (beat.type) {
-        case 'game':
-          return {
-            ...baseProps,
-            type: 'game',
-            word: beat.word || input.wordList[0],
-            gameType: (beat.gameType as any) || 'letterMatching',
-            stage: (beat.stage as 1 | 2) || 1,
-          } as GameBeat
-
-        case 'choice':
-          return {
-            ...baseProps,
-            type: 'choice',
-            question: beat.question || 'What should you do?',
-            options: beat.options || ['Option A', 'Option B'],
-          } as ChoiceBeat
-
-        case 'checkpoint':
-          return {
-            ...baseProps,
-            type: 'checkpoint',
-            checkpointNumber: (beat.checkpointNumber as 1 | 2 | 3) || 1,
-            celebrationEmoji: beat.celebrationEmoji || '🎉',
-            title: beat.title || 'Great Progress!',
-          } as CheckpointBeat
-
-        default:
-          return {
-            ...baseProps,
-            type: 'narrative',
-          } as NarrativeBeat
-      }
-    })
-
-    // Validate story structure
-    const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[]
-    const requiredWords = new Set(input.wordList)
-    const coveredWords = new Set(gameBeats.map(b => b.word))
-
-    // Ensure all words are covered
-    for (const word of requiredWords) {
-      if (!coveredWords.has(word)) {
-        console.warn(`Missing game beat for word: ${word}`)
-        // Add missing game beat
-        stage1Beats.push({
+    switch (beat.type) {
+      case 'game':
+        return {
+          ...baseProps,
           type: 'game',
-          id: `game-${word}-generated`,
-          narrative: `Time to spell "${word.toUpperCase()}"!`,
-          word,
-          gameType: 'letterMatching',
-          stage: 1,
-        })
-      }
-    }
+          word: beat.word,
+          gameType: beat.gameType,
+          stage: beat.stage,
+        } as GameBeat
 
-    return {
-      stage1Beats,
-      stage2ExtraBeats: new Map(),
-      stage2FixedSequence: [],
+      case 'choice':
+        return {
+          ...baseProps,
+          type: 'choice',
+          question: beat.question,
+          options: beat.options,
+        } as ChoiceBeat
+
+      case 'checkpoint':
+        return {
+          ...baseProps,
+          type: 'checkpoint',
+          checkpointNumber: beat.checkpointNumber,
+          celebrationEmoji: beat.celebrationEmoji || '🎉',
+          title: beat.title,
+        } as CheckpointBeat
+
+      case 'narrative':
+      default:
+        return {
+          ...baseProps,
+          type: 'narrative',
+        } as NarrativeBeat
     }
-  } catch (error) {
-    console.error('Failed to parse OpenAI story response:', error)
-    return null
+  })
+
+  // Validate that all required words are covered
+  const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[]
+  const requiredWords = new Set(input.wordList)
+  const coveredWords = new Set(gameBeats.map(b => b.word))
+
+  // Add missing words as game beats
+  for (const word of requiredWords) {
+    if (!coveredWords.has(word)) {
+      console.warn(`Missing game beat for word: ${word}`)
+      stage1Beats.push({
+        type: 'game',
+        id: `game-${word.toLowerCase()}-generated`,
+        narrative: `Time to spell "${word.toUpperCase()}"!`,
+        word,
+        gameType: 'letterMatching',
+        stage: 1,
+      })
+    }
+  }
+
+  return {
+    stage1Beats,
+    stage2ExtraBeats: new Map(),
+    stage2FixedSequence: [],
   }
 }
+
 
 /**
  * Validate generated story content for quality and appropriateness
