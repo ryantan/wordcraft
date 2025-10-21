@@ -12,10 +12,15 @@ export default function HomePage() {
           Adaptive Spelling Game for Children Ages 5-10
         </p>
 
-        <div className="flex gap-4 justify-center mt-8">
+        <div className="flex flex-wrap gap-4 justify-center mt-8">
           <Link href="/word-lists">
             <button className="btn-primary btn-lg">
               Get Started
+            </button>
+          </Link>
+          <Link href="/story">
+            <button className="btn-primary btn-lg bg-purple-600 hover:bg-purple-700">
+              🚀 Story Mode
             </button>
           </Link>
           <Link href="/dashboard">
@@ -37,6 +42,12 @@ export default function HomePage() {
               ✅ <strong>Epic 3 Complete</strong> - Core Game Mechanics Part 1 Ready!
             </p>
           </div>
+
+          <div className="p-6 bg-purple-50 rounded-xl border border-purple-200">
+            <p className="text-sm text-purple-800">
+              ✅ <strong>Epic 6 Complete</strong> - Story Mode with AI-Powered Narratives!
+            </p>
+          </div>
         </div>
 
         <div className="mt-6 text-left space-y-3">
@@ -49,6 +60,8 @@ export default function HomePage() {
             <li>4 interactive game mechanics (Word Scramble, Missing Letters, Letter Matching, Spelling Challenge)</li>
             <li>Game session management with progress tracking</li>
             <li>Performance stats and session summaries</li>
+            <li><strong>Story Mode:</strong> Interactive narrative-driven spelling adventures</li>
+            <li><strong>AI-Powered Stories:</strong> Dynamic content generation with OpenAI</li>
           </ul>
         </div>
       </div>
