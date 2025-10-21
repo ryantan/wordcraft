@@ -21,12 +21,15 @@ import { Button } from '@/components/ui/button'
 import { useStoryIntro } from '@/lib/hooks/useStoryIntro'
 import { calculateSessionStats } from '@/lib/game/calculate-session-stats'
 import { getWordList } from '@/lib/storage/localStorage'
-import type { WordList } from '@/types'
+import { generateStoryAsync } from '@/lib/story/story-generator'
+import type { WordList, GeneratedStory } from '@/types'
 
 export default function StoryModePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showExitDialog, setShowExitDialog] = useState(false)
+  const [generatedStory, setGeneratedStory] = useState<GeneratedStory | null>(null)
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false)
   
   // Initialize with demo word list to avoid conditional hooks
   const createDemoWordList = () => {
@@ -59,18 +62,50 @@ export default function StoryModePage() {
     setWordList(createDemoWordList())
   }, [searchParams])
 
+  // Generate story whenever wordList changes
+  useEffect(() => {
+    async function generateStory() {
+      setIsGeneratingStory(true)
+      try {
+        console.log('🚀 Generating story for word list:', wordList.name)
+        const story = await generateStoryAsync({
+          wordList: wordList.words,
+          theme: 'space',
+          targetBeats: 20,
+        })
+        setGeneratedStory(story)
+        console.log('✅ Story generated successfully')
+      } catch (error) {
+        console.error('❌ Story generation failed:', error)
+        setGeneratedStory(null)
+      } finally {
+        setIsGeneratingStory(false)
+      }
+    }
+
+    generateStory()
+  }, [wordList])
+
   // Check if intro has been seen for this word list
   const { hasSeenIntro } = useStoryIntro(wordList.id)
 
-  // Initialize XState machine with current word list
+  // Initialize XState machine only when we have a generated story
   const [state, send] = useMachine(storySessionMachine, {
     input: {
       wordList: wordList,
       theme: 'space',
       wordListId: wordList.id,
       hasSeenIntro,
+      generatedStory: generatedStory || undefined,
     },
   })
+
+  // Update machine context when story is generated
+  useEffect(() => {
+    if (generatedStory && state.context.generatedStory === null) {
+      send({ type: 'STORY_GENERATED', story: generatedStory })
+    }
+  }, [generatedStory, send, state.context.generatedStory])
 
   const handleExit = () => {
     setShowExitDialog(true)
@@ -110,13 +145,20 @@ export default function StoryModePage() {
     )
   }
 
-  // Loading state
-  if (state.matches('idle')) {
+  // Loading state - show different messages based on what's happening
+  if (isGeneratingStory || state.matches('idle')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="text-4xl mb-4">🚀</div>
-          <p className="text-xl font-semibold">Preparing your adventure...</p>
+          {isGeneratingStory ? (
+            <>
+              <p className="text-xl font-semibold">Creating your adventure...</p>
+              <p className="text-sm text-gray-600 mt-2">Using AI to craft a unique story just for you!</p>
+            </>
+          ) : (
+            <p className="text-xl font-semibold">Preparing your adventure...</p>
+          )}
         </div>
       </div>
     )
