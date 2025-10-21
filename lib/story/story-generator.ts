@@ -1,6 +1,9 @@
 /**
  * Story Generation Module
  *
+ * TODO: Extract the hardcoded version of story generator to a separate
+ *  file, consider using strategy pattern to select generation approach.
+ *
  * Generates story beats with contextual narrative for Story Mode.
  * Supports both OpenAI-powered dynamic generation and template fallback.
  */
@@ -21,6 +24,8 @@ import { env } from '@/lib/env'
 
 /**
  * Generate a complete story with beats for word practice
+ *
+ * TODO: Remove
  *
  * ENHANCED IMPLEMENTATION:
  * - Uses template-based system for synchronous compatibility
@@ -48,19 +53,17 @@ export function generateStory(
   // For now, always use template system to maintain sync compatibility
   // TODO: Convert story session machine to async for OpenAI integration
   const templateResult = generateTemplateStory(input)
-  
+
   metrics.endTime = Date.now()
   metrics.duration = metrics.endTime - metrics.startTime
   metrics.success = true
   metrics.beatCount = templateResult.stage1Beats.length
   logStoryMetrics(metrics)
-  
+
   return templateResult
 }
 
 /**
- * NOTE: Only used by demo-story-generation.ts right now.
- *
  * Asynchronous story generation with OpenAI integration
  * This is the future interface for async story generation
  */
@@ -105,19 +108,21 @@ export async function generateStoryAsync(input: StoryGenerationInput): Promise<G
   // Generate using template system (fallback)
   console.info('Using template story generation')
   const templateResult = generateTemplateStory(input)
-  
+
   metrics.endTime = Date.now()
   metrics.duration = metrics.endTime - metrics.startTime
   metrics.success = true
   metrics.fallbackUsed = true
   metrics.beatCount = templateResult.stage1Beats.length
   logStoryMetrics(metrics)
-  
+
   return templateResult
 }
 
 /**
  * Generate story using template system (original implementation)
+ *
+ * Used as a fallback when LLM is not available.
  */
 function generateTemplateStory(
   input: StoryGenerationInput
@@ -203,7 +208,9 @@ function generateTemplateStory(
 }
 
 /**
- * Get narrative text for a narrative beat
+ * Get hardcoded narrative text for a narrative beat
+ *
+ * Note: only used by `generateTemplateStory`
  */
 function getNarrativeForBeat(theme: string, beatIndex: number): string {
   const narratives: Record<string, string[]> = {
@@ -233,7 +240,9 @@ function getNarrativeForBeat(theme: string, beatIndex: number): string {
 }
 
 /**
- * Get game narrative for a specific word
+ * Get hardcoded game narrative for a specific word
+ *
+ * Note: only used by `generateTemplateStory`.
  */
 function getGameNarrative(theme: string, word: string, index: number): string {
   const templates: Record<string, string[]> = {
@@ -263,7 +272,9 @@ function getGameNarrative(theme: string, word: string, index: number): string {
 }
 
 /**
- * Get choice question for theme
+ * Get hardcoded choice question for theme
+ *
+ * Note: only used by `generateTemplateStory`.
  */
 function getChoiceQuestion(theme: string, beatIndex: number): string {
   const questions: Record<string, string[]> = {
@@ -286,7 +297,9 @@ function getChoiceQuestion(theme: string, beatIndex: number): string {
 }
 
 /**
- * Get choice options for theme
+ * Get hardcoded choice options for theme.
+ *
+ * Note: only used by `generateTemplateStory`.
  */
 function getChoiceOptions(theme: string, beatIndex: number): [string, string] {
   const options: Record<string, [string, string][]> = {
