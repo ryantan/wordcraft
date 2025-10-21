@@ -7,9 +7,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import type { WordStats } from '@/types/story'
+import type { SessionStats } from '@/types/session'
+import { formatTime } from '@/lib/game/calculate-session-stats'
 import Confetti from 'react-confetti'
 import { useState, useEffect } from 'react'
 
@@ -19,16 +19,21 @@ interface StoryFinaleScreenProps {
     narrative: string
     celebrationEmoji?: string
   } | null
-  wordStats: Map<string, WordStats>
+  wordListName: string
+  stats: SessionStats
   onPlayAgain: () => void
+  onTryNewWords: () => void
+  onViewProgress: () => void
 }
 
 export function StoryFinaleScreen({
   finaleContent,
-  wordStats,
+  wordListName,
+  stats,
   onPlayAgain,
+  onTryNewWords,
+  onViewProgress,
 }: StoryFinaleScreenProps) {
-  const router = useRouter()
   const [showConfetti, setShowConfetti] = useState(true)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
@@ -41,21 +46,6 @@ export function StoryFinaleScreen({
     const timer = setTimeout(() => setShowConfetti(false), 5000)
     return () => clearTimeout(timer)
   }, [])
-
-  // Calculate summary stats
-  const totalWords = wordStats.size
-  const masteredWords = Array.from(wordStats.values()).filter(
-    (stats) => stats.confidence >= 80
-  ).length
-  const averageConfidence =
-    totalWords > 0
-      ? Math.round(
-          Array.from(wordStats.values()).reduce(
-            (sum, stats) => sum + stats.confidence,
-            0
-          ) / totalWords
-        )
-      : 0
 
   if (!finaleContent) {
     return <div>Loading...</div>
@@ -89,14 +79,26 @@ export function StoryFinaleScreen({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mb-8"
+          className="mb-4"
         >
           <p className="text-xl text-gray-700 leading-relaxed text-center">
             {finaleContent.narrative}
           </p>
         </motion.div>
 
-        {/* Summary Stats */}
+        {/* Word List Name */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mb-8"
+        >
+          <p className="text-lg text-green-600 font-semibold text-center">
+            Word List: &quot;{wordListName}&quot;
+          </p>
+        </motion.div>
+
+        {/* Summary Stats - 5 stats in grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,23 +108,31 @@ export function StoryFinaleScreen({
           <h3 className="text-xl font-bold text-green-800 mb-4 text-center">
             Your Achievement
           </h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
             <div>
-              <div className="text-3xl font-bold text-green-600">{totalWords}</div>
-              <div className="text-sm text-gray-600">Words Practiced</div>
+              <div className="text-3xl font-bold text-green-600">{stats.totalWords}</div>
+              <div className="text-sm text-gray-600">Total Words</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-green-600">{masteredWords}</div>
-              <div className="text-sm text-gray-600">Words Mastered</div>
+              <div className="text-3xl font-bold text-green-600">{stats.wordsMastered}</div>
+              <div className="text-sm text-gray-600">Mastered</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-green-600">{averageConfidence}%</div>
-              <div className="text-sm text-gray-600">Avg Confidence</div>
+              <div className="text-3xl font-bold text-green-600">{stats.gamesPlayed}</div>
+              <div className="text-sm text-gray-600">Games Played</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-green-600">{formatTime(stats.timeSpent)}</div>
+              <div className="text-sm text-gray-600">Time Spent</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-green-600">{Math.round(stats.averageConfidence)}%</div>
+              <div className="text-sm text-gray-600">Avg Score</div>
             </div>
           </div>
         </motion.div>
 
-        {/* Action buttons */}
+        {/* Action buttons - now 3 buttons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -132,17 +142,24 @@ export function StoryFinaleScreen({
           <Button
             onClick={onPlayAgain}
             size="lg"
-            className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 text-lg font-bold rounded-lg"
+            className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 text-lg font-bold rounded-lg"
           >
-            Play Again 🔄
+            Practice More 🔄
           </Button>
           <Button
-            onClick={() => router.push('/')}
+            onClick={onTryNewWords}
+            size="lg"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-4 text-lg font-bold rounded-lg"
+          >
+            Try New Words ✨
+          </Button>
+          <Button
+            onClick={onViewProgress}
             size="lg"
             variant="outline"
-            className="border-green-500 text-green-700 hover:bg-green-50 px-8 py-4 text-lg font-semibold rounded-lg"
+            className="border-green-500 text-green-700 hover:bg-green-50 px-6 py-4 text-lg font-semibold rounded-lg"
           >
-            Exit to Home 🏠
+            View Progress 📊
           </Button>
         </motion.div>
       </motion.div>

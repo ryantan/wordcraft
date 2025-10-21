@@ -7,6 +7,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StoryFinaleScreen } from './StoryFinaleScreen'
 import type { WordStats } from '@/types/story'
+import type { SessionStats } from '@/types/session'
 
 // Mock next/navigation
 const mockPush = vi.fn()
@@ -28,6 +29,14 @@ describe('StoryFinaleScreen', () => {
     celebrationEmoji: '⭐',
   }
 
+  const mockStats: SessionStats = {
+    totalWords: 10,
+    wordsMastered: 8,
+    gamesPlayed: 25,
+    timeSpent: 300, // 5 minutes
+    averageConfidence: 85,
+  }
+
   beforeEach(() => {
     mockPush.mockClear()
     // Mock window dimensions
@@ -46,12 +55,17 @@ describe('StoryFinaleScreen', () => {
   describe('Rendering', () => {
     it('renders finale content correctly', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -62,12 +76,17 @@ describe('StoryFinaleScreen', () => {
 
     it('displays celebration emoji', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -77,7 +96,9 @@ describe('StoryFinaleScreen', () => {
 
     it('displays default emoji when celebrationEmoji is not provided', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
       const contentWithoutEmoji = {
         title: 'Complete!',
         narrative: 'You did it!',
@@ -86,7 +107,10 @@ describe('StoryFinaleScreen', () => {
       render(
         <StoryFinaleScreen
           finaleContent={contentWithoutEmoji}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -97,12 +121,17 @@ describe('StoryFinaleScreen', () => {
 
     it('shows loading state when content is null', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={null}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -112,12 +141,17 @@ describe('StoryFinaleScreen', () => {
 
     it('renders action buttons', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -130,6 +164,8 @@ describe('StoryFinaleScreen', () => {
   describe('Stats Calculation', () => {
     it('calculates total words correctly', () => {
       const mockOnPlayAgain = vi.fn()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
         ['ROCKET', { word: 'ROCKET', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 3000, lastAttemptTime: new Date(), confidence: 90 }],
         ['SPACE', { word: 'SPACE', attempts: 2, successes: 1, errors: 1, hintsUsed: 0, totalTimeSpent: 5000, lastAttemptTime: new Date(), confidence: 75 }],
@@ -139,7 +175,10 @@ describe('StoryFinaleScreen', () => {
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -149,6 +188,8 @@ describe('StoryFinaleScreen', () => {
 
     it('calculates mastered words correctly (confidence >= 80)', () => {
       const mockOnPlayAgain = vi.fn()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
         ['ROCKET', { word: 'ROCKET', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 3000, lastAttemptTime: new Date(), confidence: 90 }],
         ['SPACE', { word: 'SPACE', attempts: 2, successes: 1, errors: 1, hintsUsed: 0, totalTimeSpent: 5000, lastAttemptTime: new Date(), confidence: 75 }],
@@ -158,7 +199,10 @@ describe('StoryFinaleScreen', () => {
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -169,6 +213,8 @@ describe('StoryFinaleScreen', () => {
 
     it('calculates average confidence correctly', () => {
       const mockOnPlayAgain = vi.fn()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
         ['ROCKET', { word: 'ROCKET', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 3000, lastAttemptTime: new Date(), confidence: 90 }],
         ['SPACE', { word: 'SPACE', attempts: 2, successes: 1, errors: 1, hintsUsed: 0, totalTimeSpent: 5000, lastAttemptTime: new Date(), confidence: 60 }],
@@ -178,7 +224,10 @@ describe('StoryFinaleScreen', () => {
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -189,12 +238,17 @@ describe('StoryFinaleScreen', () => {
 
     it('handles empty word stats', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -207,12 +261,17 @@ describe('StoryFinaleScreen', () => {
 
     it('displays stats labels correctly', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -227,12 +286,17 @@ describe('StoryFinaleScreen', () => {
     it('calls onPlayAgain when Play Again button is clicked', async () => {
       const user = userEvent.setup()
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -246,12 +310,17 @@ describe('StoryFinaleScreen', () => {
     it('navigates to home when Exit button is clicked', async () => {
       const user = userEvent.setup()
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -266,12 +335,17 @@ describe('StoryFinaleScreen', () => {
   describe('Accessibility', () => {
     it('has proper semantic structure', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -288,12 +362,17 @@ describe('StoryFinaleScreen', () => {
     it('buttons are keyboard accessible', async () => {
       const user = userEvent.setup()
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -311,12 +390,17 @@ describe('StoryFinaleScreen', () => {
   describe('Summary Section', () => {
     it('displays "Your Achievement" heading', () => {
       const mockOnPlayAgain = vi.fn()
-      const wordStats = new Map<string, WordStats>()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
+      const stats = mockStats
 
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
@@ -326,6 +410,8 @@ describe('StoryFinaleScreen', () => {
 
     it('displays stats in grid layout', () => {
       const mockOnPlayAgain = vi.fn()
+      const mockOnTryNewWords = vi.fn()
+      const mockOnViewProgress = vi.fn()
       const wordStats = new Map<string, WordStats>([
         ['WORD1', { word: 'WORD1', attempts: 1, successes: 1, errors: 0, hintsUsed: 0, totalTimeSpent: 1000, lastAttemptTime: new Date(), confidence: 85 }],
       ])
@@ -333,7 +419,10 @@ describe('StoryFinaleScreen', () => {
       render(
         <StoryFinaleScreen
           finaleContent={mockFinaleContent}
-          wordStats={wordStats}
+          wordListName="Space Adventure Words"
+        stats={stats}
+        onTryNewWords={mockOnTryNewWords}
+        onViewProgress={mockOnViewProgress}
           onPlayAgain={mockOnPlayAgain}
         />
       )
