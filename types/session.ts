@@ -38,3 +38,15 @@ export interface SessionSummary {
   totalWords: number
   successRate: number
 }
+
+/**
+ * Statistics for a story mode session
+ * Used in StoryFinaleScreen to display session achievements
+ */
+export interface SessionStats {
+  totalWords: number
+  wordsMastered: number
+  gamesPlayed: number
+  timeSpent: number // in seconds
+  averageConfidence: number
+}
