@@ -32,6 +32,7 @@ import { env } from '@/lib/env'
 export function generateStory(
   input: StoryGenerationInput
 ): GeneratedStory {
+  console.log('generateStory start');
   const startTime = Date.now()
   let metrics: StoryGenerationMetrics = {
     startTime,
@@ -57,10 +58,13 @@ export function generateStory(
 }
 
 /**
+ * NOTE: Only used by demo-story-generation.ts right now.
+ *
  * Asynchronous story generation with OpenAI integration
  * This is the future interface for async story generation
  */
 export async function generateStoryAsync(input: StoryGenerationInput): Promise<GeneratedStory> {
+  console.log('generateStoryAsync start');
   const startTime = Date.now()
   let metrics: StoryGenerationMetrics = {
     startTime,

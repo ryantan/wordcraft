@@ -120,7 +120,7 @@ export interface WordStats {
  */
 export interface StoryGenerationInput {
   wordList: string[]
-  theme: string
+  theme: StoryTheme;
   targetBeats: number
 }
 

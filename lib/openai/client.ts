@@ -7,6 +7,8 @@
 
 import OpenAI from 'openai'
 import { serverEnv } from '@/lib/env'
+import type { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions";
+import { StoryTheme } from "@/types";
 
 // Retry configuration
 const MAX_RETRIES = 3
@@ -36,7 +38,7 @@ export function createOpenAIClient(): OpenAI {
  * OpenAI request configuration for story generation
  */
 export interface StoryGenerationRequest {
-  theme: string
+  theme: StoryTheme;
   wordList: string[]
   beatType?: 'narrative' | 'game' | 'choice'
   context?: string
@@ -89,8 +91,9 @@ export async function generateStoryContent(
   client: OpenAI,
   request: StoryGenerationRequest
 ): Promise<StoryGenerationResponse> {
+  console.log('generateStoryContent start');
   try {
-    const completion = await client.chat.completions.create({
+    const openAiRequest: ChatCompletionCreateParamsBase = {
       model: serverEnv.openai.model,
       messages: [
         {
@@ -104,7 +107,13 @@ export async function generateStoryContent(
       ],
       temperature: serverEnv.openai.temperature,
       max_tokens: serverEnv.openai.maxTokens,
-    })
+    }
+    console.log('Open AI request: ');
+    console.log(JSON.stringify(openAiRequest, null, 2));
+
+    const completion = await client.chat.completions.create(openAiRequest) as OpenAI.Chat.Completions.ChatCompletion
+    console.log('Open AI response: ');
+    console.log(JSON.stringify(completion, null, 2));
 
     const content = completion.choices[0]?.message?.content || ''
     const usage = completion.usage

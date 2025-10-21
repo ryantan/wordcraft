@@ -13,7 +13,6 @@ import type {
   ChoiceBeat,
   NarrativeBeat,
   CheckpointBeat,
-  StoryTheme,
 } from '@/types/story'
 import {
   createOpenAIClient,
@@ -28,15 +27,6 @@ import { validateEnvironment } from '@/lib/env'
  * Request timeout for story generation (3 seconds as per AC 5)
  */
 const STORY_GENERATION_TIMEOUT = 3000
-
-/**
- * OpenAI story generation request interface
- */
-interface StoryGenerationRequest {
-  wordList: string[]
-  theme: StoryTheme
-  targetBeats: number
-}
 
 /**
  * OpenAI API response structure for story generation
@@ -65,6 +55,7 @@ interface OpenAIStoryResponse {
 export async function generateStoryWithOpenAI(
   input: StoryGenerationInput
 ): Promise<GeneratedStory | null> {
+  console.log('generateStoryWithOpenAI start');
   try {
     // Validate environment and create client
     validateEnvironment()
@@ -174,7 +165,7 @@ Generate the complete story now:`
  * Get theme-specific elements for prompt enhancement
  */
 function getThemeElements(theme: string): string {
-  const elements = {
+  const elements: Record<string, string> = {
     space: 'rockets, planets, aliens, stars, galaxies, space stations, astronauts, cosmic adventures',
     treasure: 'maps, chests, pirates, islands, gold, adventures, hidden treasures, mysterious clues',
     fantasy: 'wizards, dragons, castles, magic spells, enchanted forests, mystical creatures',
