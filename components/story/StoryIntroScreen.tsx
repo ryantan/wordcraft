@@ -16,10 +16,18 @@ interface StoryIntroScreenProps {
     celebrationEmoji?: string
   } | null
   theme: string
+  wordListName: string
   onStart: () => void
+  onSkip?: () => void
 }
 
-export function StoryIntroScreen({ introContent, theme, onStart }: StoryIntroScreenProps) {
+export function StoryIntroScreen({
+  introContent,
+  theme,
+  wordListName,
+  onStart,
+  onSkip,
+}: StoryIntroScreenProps) {
   if (!introContent) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -29,7 +37,7 @@ export function StoryIntroScreen({ introContent, theme, onStart }: StoryIntroScr
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-100 to-purple-200 p-4">
+    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-100 to-purple-200 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -54,10 +62,22 @@ export function StoryIntroScreen({ introContent, theme, onStart }: StoryIntroScr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mb-8"
+          className="mb-6"
         >
           <p className="text-xl text-gray-700 leading-relaxed text-center">
             {introContent.narrative}
+          </p>
+        </motion.div>
+
+        {/* Word List Info */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mb-8"
+        >
+          <p className="text-lg text-purple-600 font-semibold text-center">
+            Word List: &quot;{wordListName}&quot;
           </p>
         </motion.div>
 
@@ -82,6 +102,21 @@ export function StoryIntroScreen({ introContent, theme, onStart }: StoryIntroScr
           Theme: {theme}
         </div>
       </motion.div>
+
+      {/* Skip Intro Button */}
+      {onSkip && (
+        <motion.button
+          onClick={onSkip}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="absolute bottom-4 right-4 px-4 py-2 bg-gray-700/50 text-white text-sm rounded-lg hover:bg-gray-600/70 transition-colors backdrop-blur-sm"
+        >
+          Skip Intro →
+        </motion.button>
+      )}
     </div>
   )
 }
