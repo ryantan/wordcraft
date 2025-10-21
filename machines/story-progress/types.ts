@@ -4,25 +4,25 @@
 
 export interface StoryProgressContext {
   /** Current checkpoint level (0-4: intro, checkpoint1, checkpoint2, checkpoint3, finale) */
-  currentCheckpoint: number
+  currentCheckpoint: number;
 
   /** Total number of games completed in the story journey */
-  gamesCompleted: number
+  gamesCompleted: number;
 
   /** Total games planned for this session */
-  totalGamesInSession: number
+  totalGamesInSession: number;
 
   /** Array of unlocked checkpoint numbers */
-  checkpointsUnlocked: number[]
+  checkpointsUnlocked: number[];
 
   /** Game count when last checkpoint was reached */
-  lastCheckpointAt: number
+  lastCheckpointAt: number;
 
   /** Selected story theme (e.g., 'space', 'treasure') */
-  storyTheme: string
+  storyTheme: string;
 
   /** When the story session started */
-  sessionStartTime: Date
+  sessionStartTime: Date;
 }
 
 export type StoryProgressEvent =
@@ -31,7 +31,7 @@ export type StoryProgressEvent =
   | { type: 'CONTINUE_STORY' }
   | { type: 'SKIP_CHECKPOINT' }
   | { type: 'STORY_RESET' }
-  | { type: 'FINALE_REACHED' }
+  | { type: 'FINALE_REACHED' };
 
 export type StoryProgressState =
   | { value: 'intro'; context: StoryProgressContext }
@@ -39,4 +39,4 @@ export type StoryProgressState =
   | { value: 'checkpoint1'; context: StoryProgressContext }
   | { value: 'checkpoint2'; context: StoryProgressContext }
   | { value: 'checkpoint3'; context: StoryProgressContext }
-  | { value: 'finale'; context: StoryProgressContext }
+  | { value: 'finale'; context: StoryProgressContext };

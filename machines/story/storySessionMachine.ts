@@ -5,24 +5,24 @@
  * Handles multiple beat types: game, choice, narrative, checkpoint
  */
 
-import { createMachine, assign } from 'xstate'
+import { markStoryIntroAsSeen } from '@/lib/storage/story-progress-storage';
+import { getStoryContent } from '@/lib/story/content';
+import { storyProgressMachine } from '@/lib/story/machines/storyProgressMachine';
+import {
+  allWordsMastered,
+  getWordsNeedingPractice,
+  initializeWordStats,
+  updateWordStats,
+} from '@/lib/story/word-stats';
 import type {
+  CheckpointBeat,
+  GameBeat,
   StorySessionContext,
   StorySessionEvent,
   StorySessionInput,
-  GameBeat,
-  CheckpointBeat,
   WordStats,
-} from '@/types/story'
-import { storyProgressMachine } from '@/lib/story/machines/storyProgressMachine'
-import { getStoryContent } from '@/lib/story/content'
-import {
-  initializeWordStats,
-  updateWordStats,
-  allWordsMastered,
-  getWordsNeedingPractice,
-} from '@/lib/story/word-stats'
-import { markStoryIntroAsSeen } from '@/lib/storage/story-progress-storage'
+} from '@/types/story';
+import { assign, createMachine } from 'xstate';
 
 /**
  * Story Session Machine
@@ -36,9 +36,9 @@ export const storySessionMachine = createMachine(
     initial: 'idle',
 
     types: {} as {
-      context: StorySessionContext
-      events: StorySessionEvent
-      input: StorySessionInput
+      context: StorySessionContext;
+      events: StorySessionEvent;
+      input: StorySessionInput;
     },
 
     context: ({ input }: { input: StorySessionInput }) => ({
@@ -79,11 +79,7 @@ export const storySessionMachine = createMachine(
 
     states: {
       idle: {
-        entry: [
-          'spawnStoryProgressActor',
-          'initializeWordStats',
-          'loadIntroContent',
-        ],
+        entry: ['spawnStoryProgressActor', 'initializeWordStats', 'loadIntroContent'],
         always: 'showingIntro',
       },
 
@@ -202,10 +198,8 @@ export const storySessionMachine = createMachine(
        * Spawn StoryProgressMachine as child actor
        */
       spawnStoryProgressActor: assign({
-        storyProgressActor: ({ spawn }) =>
-          spawn(storyProgressMachine, { id: 'storyProgress' }),
+        storyProgressActor: ({ spawn }) => spawn(storyProgressMachine, { id: 'storyProgress' }),
       }),
-
 
       /**
        * Initialize word stats for all words in list
@@ -218,29 +212,29 @@ export const storySessionMachine = createMachine(
        * Load intro content from story theme
        */
       loadIntroContent: assign(({ context }) => {
-        const content = getStoryContent(context.storyTheme as any)
+        const content = getStoryContent(context.storyTheme as any);
         return {
           introContent: content.intro,
-        }
+        };
       }),
 
       /**
        * Load current beat from generated story
        */
       loadCurrentBeat: assign(({ context }) => {
-        if (!context.generatedStory) return {}
+        if (!context.generatedStory) return {};
 
-        const beat = context.generatedStory.stage1Beats[context.currentBeatIndex]
+        const beat = context.generatedStory.stage1Beats[context.currentBeatIndex];
         return {
           currentBeat: beat || null,
-        }
+        };
       }),
 
       /**
        * Record user's choice selection
        */
       recordChoice: assign(({ context, event }) => {
-        if (event.type !== 'CHOICE_MADE') return {}
+        if (event.type !== 'CHOICE_MADE') return {};
 
         return {
           userChoices: [
@@ -250,37 +244,37 @@ export const storySessionMachine = createMachine(
               choice: event.choice,
             },
           ],
-        }
+        };
       }),
 
       /**
        * Update word stats after game completion
        */
       updateWordStatsAfterGame: assign(({ context, event }) => {
-        if (event.type !== 'GAME_COMPLETED') return {}
+        if (event.type !== 'GAME_COMPLETED') return {};
 
-        const currentBeat = context.currentBeat as GameBeat | null
-        if (!currentBeat || currentBeat.type !== 'game') return {}
+        const currentBeat = context.currentBeat as GameBeat | null;
+        if (!currentBeat || currentBeat.type !== 'game') return {};
 
-        const word = currentBeat.word
-        const currentStats = context.wordStats.get(word)
+        const word = currentBeat.word;
+        const currentStats = context.wordStats.get(word);
 
-        if (!currentStats) return {}
+        if (!currentStats) return {};
 
-        const updatedStats = updateWordStats(currentStats, event.result)
-        const newWordStats = new Map(context.wordStats)
-        newWordStats.set(word, updatedStats)
+        const updatedStats = updateWordStats(currentStats, event.result);
+        const newWordStats = new Map(context.wordStats);
+        newWordStats.set(word, updatedStats);
 
         return {
           wordStats: newWordStats,
-        }
+        };
       }),
 
       /**
        * Notify StoryProgressMachine of game completion
        */
       notifyStoryProgress: ({ context }) => {
-        context.storyProgressActor?.send({ type: 'GAME_COMPLETED' })
+        context.storyProgressActor?.send({ type: 'GAME_COMPLETED' });
       },
 
       /**
@@ -294,12 +288,12 @@ export const storySessionMachine = createMachine(
        * Load checkpoint data from current beat
        */
       loadCheckpointData: assign(({ context }) => {
-        const beat = context.currentBeat as CheckpointBeat | null
-        if (!beat || beat.type !== 'checkpoint') return {}
+        const beat = context.currentBeat as CheckpointBeat | null;
+        if (!beat || beat.type !== 'checkpoint') return {};
 
         return {
           currentCheckpoint: beat,
-        }
+        };
       }),
 
       /**
@@ -320,17 +314,17 @@ export const storySessionMachine = createMachine(
        * Acknowledge checkpoint with child machine
        */
       acknowledgeCheckpoint: ({ context }) => {
-        context.storyProgressActor?.send({ type: 'CONTINUE_STORY' })
+        context.storyProgressActor?.send({ type: 'CONTINUE_STORY' });
       },
 
       /**
        * Load finale content from story theme
        */
       loadFinaleContent: assign(({ context }) => {
-        const content = getStoryContent(context.storyTheme as any)
+        const content = getStoryContent(context.storyTheme as any);
         return {
           finaleContent: content.finale,
-        }
+        };
       }),
 
       /**
@@ -338,13 +332,13 @@ export const storySessionMachine = createMachine(
        */
       markIntroAsSeen: assign(({ context }) => {
         // Async storage operation (fire and forget)
-        markStoryIntroAsSeen(context.wordListId).catch((error) => {
-          console.error('Error marking intro as seen:', error)
-        })
+        markStoryIntroAsSeen(context.wordListId).catch(error => {
+          console.error('Error marking intro as seen:', error);
+        });
 
         return {
           hasSeenIntro: true,
-        }
+        };
       }),
 
       /**
@@ -352,7 +346,7 @@ export const storySessionMachine = createMachine(
        */
       navigateToWordLists: () => {
         if (typeof window !== 'undefined') {
-          window.location.href = '/word-lists'
+          window.location.href = '/word-lists';
         }
       },
     },
@@ -362,28 +356,28 @@ export const storySessionMachine = createMachine(
        * Check if current beat is a narrative beat
        */
       isNarrativeBeat: ({ context }) => {
-        return context.currentBeat?.type === 'narrative'
+        return context.currentBeat?.type === 'narrative';
       },
 
       /**
        * Check if current beat is a choice beat
        */
       isChoiceBeat: ({ context }) => {
-        return context.currentBeat?.type === 'choice'
+        return context.currentBeat?.type === 'choice';
       },
 
       /**
        * Check if current beat is a game beat
        */
       isGameBeat: ({ context }) => {
-        return context.currentBeat?.type === 'game'
+        return context.currentBeat?.type === 'game';
       },
 
       /**
        * Check if current beat is a checkpoint beat
        */
       isCheckpointBeat: ({ context }) => {
-        return context.currentBeat?.type === 'checkpoint'
+        return context.currentBeat?.type === 'checkpoint';
       },
 
       /**
@@ -392,42 +386,42 @@ export const storySessionMachine = createMachine(
        * - All words mastered
        */
       shouldShowFinale: ({ context }) => {
-        if (!context.generatedStory) return false
+        if (!context.generatedStory) return false;
 
         // Check if all beats exhausted
         const beatsExhausted =
-          context.currentBeatIndex >= context.generatedStory.stage1Beats.length
+          context.currentBeatIndex >= context.generatedStory.stage1Beats.length;
 
         // Check if all words mastered
-        const wordsMastered = allWordsMastered(context.wordStats, 80)
+        const wordsMastered = allWordsMastered(context.wordStats, 80);
 
-        return beatsExhausted || wordsMastered
+        return beatsExhausted || wordsMastered;
       },
 
       /**
        * Check if there are more beats
        */
       hasMoreBeats: ({ context }) => {
-        if (!context.generatedStory) return false
-        return context.currentBeatIndex < context.generatedStory.stage1Beats.length
+        if (!context.generatedStory) return false;
+        return context.currentBeatIndex < context.generatedStory.stage1Beats.length;
       },
 
       /**
        * Check if should transition to Stage 2
        */
       shouldTransitionToStage2: ({ context }) => {
-        if (context.currentPhase === 'stage2') return false
-        if (!context.generatedStory) return false
+        if (context.currentPhase === 'stage2') return false;
+        if (!context.generatedStory) return false;
 
         // Stage 1 complete when all Stage 1 beats done
         const stage1Complete =
-          context.currentBeatIndex >= context.generatedStory.stage1Beats.length
+          context.currentBeatIndex >= context.generatedStory.stage1Beats.length;
 
         // Check if there are words needing practice
-        const needsPractice = getWordsNeedingPractice(context.wordStats, 70)
+        const needsPractice = getWordsNeedingPractice(context.wordStats, 70);
 
-        return stage1Complete && needsPractice.length > 0
+        return stage1Complete && needsPractice.length > 0;
       },
     },
-  }
-)
+  },
+);
