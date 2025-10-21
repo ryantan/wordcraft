@@ -2,8 +2,8 @@
  * Missing Letters Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { MissingLetters } from '@/components/games/MissingLetters'
+import { MissingLetters } from '@/components/games/MissingLetters';
+import type { GameMechanic } from '@/types';
 
 export const missingLettersMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const missingLettersMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: MissingLetters,
-}
+};

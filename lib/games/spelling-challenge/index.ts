@@ -2,8 +2,8 @@
  * Spelling Challenge Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { SpellingChallenge } from '@/components/games/SpellingChallenge'
+import { SpellingChallenge } from '@/components/games/SpellingChallenge';
+import type { GameMechanic } from '@/types';
 
 export const spellingChallengeMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const spellingChallengeMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: SpellingChallenge,
-}
+};

@@ -2,8 +2,8 @@
  * Word Building Blocks Game Mechanic
  */
 
-import type { GameMechanic } from '@/types'
-import { WordBuildingBlocks } from '@/components/games/WordBuildingBlocks'
+import { WordBuildingBlocks } from '@/components/games/WordBuildingBlocks';
+import type { GameMechanic } from '@/types';
 
 export const wordBuildingMechanic: GameMechanic = {
   meta: {
@@ -14,4 +14,4 @@ export const wordBuildingMechanic: GameMechanic = {
     supportsHints: true,
   },
   Component: WordBuildingBlocks,
-}
+};
