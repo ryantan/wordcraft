@@ -8,19 +8,24 @@
  * Supports both OpenAI-powered dynamic generation and template fallback.
  */
 
+import { generateStoryServerAction } from '@/lib/actions/generate-story.action';
+import { env } from '@/lib/env';
+import {
+  logStoryMetrics,
+  validateStoryContent,
+  type StoryGenerationMetrics,
+} from '@/lib/openai/story-service';
 import type {
-  StoryGenerationInput,
-  GeneratedStory,
-  StoryBeat,
-  GameBeat,
-  ChoiceBeat,
-  NarrativeBeat,
   CheckpointBeat,
-} from '@/types/story'
-import { getStoryContent } from './content'
-import { validateStoryContent, logStoryMetrics, type StoryGenerationMetrics } from '@/lib/openai/story-service'
-import { generateStoryServerAction } from '@/lib/actions/story-generation'
-import { env } from '@/lib/env'
+  ChoiceBeat,
+  GameBeat,
+  GeneratedStory,
+  NarrativeBeat,
+  StoryBeat,
+  StoryGenerationInput,
+} from '@/types/story';
+
+import { getStoryContent } from './content';
 
 /**
  * Generate a complete story with beats for word practice
@@ -35,11 +40,9 @@ import { env } from '@/lib/env'
  * @param input - Story generation parameters
  * @returns Generated story with Stage 1 and Stage 2 beats
  */
-export function generateStory(
-  input: StoryGenerationInput
-): GeneratedStory {
+export function generateStory(input: StoryGenerationInput): GeneratedStory {
   console.log('generateStory start');
-  const startTime = Date.now()
+  const startTime = Date.now();
   const metrics: StoryGenerationMetrics = {
     startTime,
     endTime: 0,
@@ -48,19 +51,19 @@ export function generateStory(
     fallbackUsed: true, // Always fallback in sync mode for now
     wordCount: input.wordList.length,
     beatCount: 0,
-  }
+  };
 
   // For now, always use template system to maintain sync compatibility
   // TODO: Convert story session machine to async for OpenAI integration
-  const templateResult = generateTemplateStory(input)
+  const templateResult = generateTemplateStory(input);
 
-  metrics.endTime = Date.now()
-  metrics.duration = metrics.endTime - metrics.startTime
-  metrics.success = true
-  metrics.beatCount = templateResult.stage1Beats.length
-  logStoryMetrics(metrics)
+  metrics.endTime = Date.now();
+  metrics.duration = metrics.endTime - metrics.startTime;
+  metrics.success = true;
+  metrics.beatCount = templateResult.stage1Beats.length;
+  logStoryMetrics(metrics);
 
-  return templateResult
+  return templateResult;
 }
 
 /**
@@ -69,7 +72,7 @@ export function generateStory(
  */
 export async function generateStoryAsync(input: StoryGenerationInput): Promise<GeneratedStory> {
   console.log('generateStoryAsync start, input:', JSON.stringify(input));
-  const startTime = Date.now()
+  const startTime = Date.now();
   const metrics: StoryGenerationMetrics = {
     startTime,
     endTime: 0,
@@ -78,45 +81,45 @@ export async function generateStoryAsync(input: StoryGenerationInput): Promise<G
     fallbackUsed: false,
     wordCount: input.wordList.length,
     beatCount: 0,
-  }
+  };
 
   // Try OpenAI generation if enabled
   if (env.enableOpenAIStoryGeneration) {
     try {
-      console.info('Attempting OpenAI story generation via server action...')
-      const openAIResult = await generateStoryServerAction(input)
+      console.info('Attempting OpenAI story generation via server action...');
+      const openAIResult = await generateStoryServerAction(input);
       console.log('openAIResult:', openAIResult);
       if (openAIResult && validateStoryContent(openAIResult)) {
-        console.info('OpenAI story generation successful')
-        metrics.endTime = Date.now()
-        metrics.duration = metrics.endTime - metrics.startTime
-        metrics.success = true
-        metrics.beatCount = openAIResult.stage1Beats.length
-        logStoryMetrics(metrics)
-        return openAIResult
+        console.info('OpenAI story generation successful');
+        metrics.endTime = Date.now();
+        metrics.duration = metrics.endTime - metrics.startTime;
+        metrics.success = true;
+        metrics.beatCount = openAIResult.stage1Beats.length;
+        logStoryMetrics(metrics);
+        return openAIResult;
       } else {
-        console.warn('OpenAI generated invalid story content, using template fallback')
+        console.warn('OpenAI generated invalid story content, using template fallback');
       }
     } catch (error) {
-      console.warn('OpenAI story generation failed, using template fallback:', error)
-      metrics.error = error instanceof Error ? error.message : 'Unknown error'
+      console.warn('OpenAI story generation failed, using template fallback:', error);
+      metrics.error = error instanceof Error ? error.message : 'Unknown error';
     }
   } else {
-    console.info('OpenAI story generation disabled, using template system')
+    console.info('OpenAI story generation disabled, using template system');
   }
 
   // Generate using template system (fallback)
-  console.info('Using template story generation')
-  const templateResult = generateTemplateStory(input)
+  console.info('Using template story generation');
+  const templateResult = generateTemplateStory(input);
 
-  metrics.endTime = Date.now()
-  metrics.duration = metrics.endTime - metrics.startTime
-  metrics.success = true
-  metrics.fallbackUsed = true
-  metrics.beatCount = templateResult.stage1Beats.length
-  logStoryMetrics(metrics)
+  metrics.endTime = Date.now();
+  metrics.duration = metrics.endTime - metrics.startTime;
+  metrics.success = true;
+  metrics.fallbackUsed = true;
+  metrics.beatCount = templateResult.stage1Beats.length;
+  logStoryMetrics(metrics);
 
-  return templateResult
+  return templateResult;
 }
 
 /**
@@ -124,21 +127,19 @@ export async function generateStoryAsync(input: StoryGenerationInput): Promise<G
  *
  * Used as a fallback when LLM is not available.
  */
-function generateTemplateStory(
-  input: StoryGenerationInput
-): GeneratedStory {
-  const { wordList, theme } = input
+function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
+  const { wordList, theme } = input;
 
   // Get story content for theme
-  const storyContent = getStoryContent(theme as 'space' | 'treasure' | 'fantasy') // Type assertion for stub
+  const storyContent = getStoryContent(theme as 'space' | 'treasure' | 'fantasy'); // Type assertion for stub
 
-  const stage1Beats: StoryBeat[] = []
-  let beatIndex = 0
+  const stage1Beats: StoryBeat[] = [];
+  let beatIndex = 0;
 
   // Generate beats for each word with narrative flavor
   for (let i = 0; i < wordList.length; i++) {
-    const word = wordList[i]
-    beatIndex++
+    const word = wordList[i];
+    beatIndex++;
 
     // Add narrative beats periodically for story progression
     if (i % 3 === 0 && i > 0) {
@@ -146,9 +147,9 @@ function generateTemplateStory(
         type: 'narrative',
         id: `narrative-${beatIndex}`,
         narrative: getNarrativeForBeat(theme, beatIndex),
-      }
-      stage1Beats.push(narrativeBeat)
-      beatIndex++
+      };
+      stage1Beats.push(narrativeBeat);
+      beatIndex++;
     }
 
     // Add choice beats occasionally for engagement
@@ -159,9 +160,9 @@ function generateTemplateStory(
         narrative: 'You encounter a fork in the path...',
         question: getChoiceQuestion(theme, beatIndex),
         options: getChoiceOptions(theme, beatIndex),
-      }
-      stage1Beats.push(choiceBeat)
-      beatIndex++
+      };
+      stage1Beats.push(choiceBeat);
+      beatIndex++;
     }
 
     // Add game beat for this word
@@ -172,14 +173,14 @@ function generateTemplateStory(
       word,
       gameType: selectGameType(i),
       stage: 1,
-    }
-    stage1Beats.push(gameBeat)
+    };
+    stage1Beats.push(gameBeat);
 
     // Add checkpoint beats at positions 5, 10, 15
-    const gamesCompleted = stage1Beats.filter((b) => b.type === 'game').length
+    const gamesCompleted = stage1Beats.filter(b => b.type === 'game').length;
     if (gamesCompleted === 5 || gamesCompleted === 10 || gamesCompleted === 15) {
-      const checkpointNum = gamesCompleted === 5 ? 1 : gamesCompleted === 10 ? 2 : 3
-      const checkpoint = storyContent.checkpoints[checkpointNum - 1]
+      const checkpointNum = gamesCompleted === 5 ? 1 : gamesCompleted === 10 ? 2 : 3;
+      const checkpoint = storyContent.checkpoints[checkpointNum - 1];
 
       const checkpointBeat: CheckpointBeat = {
         type: 'checkpoint',
@@ -188,23 +189,23 @@ function generateTemplateStory(
         checkpointNumber: checkpointNum as 1 | 2 | 3,
         celebrationEmoji: checkpoint.celebrationEmoji || '🎉',
         title: checkpoint.title,
-      }
-      stage1Beats.push(checkpointBeat)
-      beatIndex++
+      };
+      stage1Beats.push(checkpointBeat);
+      beatIndex++;
     }
   }
 
   // Stage 2: Extra beats for low-confidence words (stub - empty for now)
-  const stage2ExtraBeats = new Map<string, StoryBeat[]>()
+  const stage2ExtraBeats = new Map<string, StoryBeat[]>();
 
   // Stage 2: Fixed sequence for fallback practice (stub)
-  const stage2FixedSequence: StoryBeat[] = []
+  const stage2FixedSequence: StoryBeat[] = [];
 
   return {
     stage1Beats,
     stage2ExtraBeats,
     stage2FixedSequence,
-  }
+  };
 }
 
 /**
@@ -230,13 +231,13 @@ function getNarrativeForBeat(theme: string, beatIndex: number): string {
       'The magical forest grows more enchanted with each step.',
       'A friendly dragon flies overhead, breathing sparkles of encouragement.',
       'Ancient runes glow on nearby stones, celebrating your progress.',
-      'The wizard\'s tower grows closer on the horizon.',
+      "The wizard's tower grows closer on the horizon.",
     ],
-  }
+  };
 
-  const themeNarratives = narratives[theme] || narratives.space
-  const index = beatIndex % themeNarratives.length
-  return themeNarratives[index]
+  const themeNarratives = narratives[theme] || narratives.space;
+  const index = beatIndex % themeNarratives.length;
+  return themeNarratives[index];
 }
 
 /**
@@ -264,11 +265,11 @@ function getGameNarrative(theme: string, word: string, index: number): string {
       `A friendly creature needs help spelling "${word.toUpperCase()}".`,
       `The wizard's scroll glows with the word "${word.toUpperCase()}" - master it!`,
     ],
-  }
+  };
 
-  const themeTemplates = templates[theme] || templates.space
-  const templateIndex = index % themeTemplates.length
-  return themeTemplates[templateIndex]
+  const themeTemplates = templates[theme] || templates.space;
+  const templateIndex = index % themeTemplates.length;
+  return themeTemplates[templateIndex];
 }
 
 /**
@@ -290,10 +291,10 @@ function getChoiceQuestion(theme: string, beatIndex: number): string {
       'Do you take the enchanted forest path or the mountain trail?',
       'Should you ask the dragon for advice or consult your magic book?',
     ],
-  }
+  };
 
-  const themeQuestions = questions[theme] || questions.space
-  return themeQuestions[beatIndex % themeQuestions.length]
+  const themeQuestions = questions[theme] || questions.space;
+  return themeQuestions[beatIndex % themeQuestions.length];
 }
 
 /**
@@ -315,10 +316,10 @@ function getChoiceOptions(theme: string, beatIndex: number): [string, string] {
       ['Forest path', 'Mountain trail'],
       ['Ask the dragon', 'Consult magic book'],
     ],
-  }
+  };
 
-  const themeOptions = options[theme] || options.space
-  return themeOptions[beatIndex % themeOptions.length]
+  const themeOptions = options[theme] || options.space;
+  return themeOptions[beatIndex % themeOptions.length];
 }
 
 /**
@@ -326,28 +327,21 @@ function getChoiceOptions(theme: string, beatIndex: number): [string, string] {
  * Cycles through different game types for variety
  */
 function selectGameType(
-  index: number
+  index: number,
 ): 'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters' {
-  const gameTypes: Array<'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'> = [
-    'letterMatching',
-    'wordScramble',
-    'wordBuilding',
-    'missingLetters',
-    'spellingChallenge',
-  ]
+  const gameTypes: Array<
+    'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'
+  > = ['letterMatching', 'wordScramble', 'wordBuilding', 'missingLetters', 'spellingChallenge'];
 
-  return gameTypes[index % gameTypes.length]
+  return gameTypes[index % gameTypes.length];
 }
 
 /**
  * Generate Stage 2 beats for a specific word
  * Used when word needs additional practice
  */
-export function generateStage2BeatsForWord(
-  _word: string,
-  _theme: string
-): StoryBeat[] {
+export function generateStage2BeatsForWord(_word: string, _theme: string): StoryBeat[] {
   // STUB: Return empty array
   // TODO: Generate contextual practice beats for this specific word
-  return []
+  return [];
 }
