@@ -22,6 +22,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -37,6 +38,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -55,6 +57,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={contentWithoutEmoji}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -70,6 +73,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="treasure"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -84,6 +88,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={null}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -99,6 +104,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -117,6 +123,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -134,6 +141,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={null}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -150,6 +158,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -171,6 +180,7 @@ describe('StoryIntroScreen', () => {
         <StoryIntroScreen
           introContent={mockIntroContent}
           theme="space"
+          wordListName="My Word List"
           onStart={mockOnStart}
         />
       )
@@ -182,6 +192,79 @@ describe('StoryIntroScreen', () => {
       // Simulate Enter key press
       await user.keyboard('{Enter}')
       expect(mockOnStart).toHaveBeenCalled()
+    })
+  })
+
+  describe('New Features (Story 6.5)', () => {
+    it('displays word list name correctly', () => {
+      const mockOnStart = vi.fn()
+
+      render(
+        <StoryIntroScreen
+          introContent={mockIntroContent}
+          theme="space"
+          wordListName="Space Vocabulary"
+          onStart={mockOnStart}
+        />
+      )
+
+      expect(screen.getByText(/Word List:/i)).toBeInTheDocument()
+      expect(screen.getByText(/"Space Vocabulary"/i)).toBeInTheDocument()
+    })
+
+    it('renders skip button when onSkip is provided', () => {
+      const mockOnStart = vi.fn()
+      const mockOnSkip = vi.fn()
+
+      render(
+        <StoryIntroScreen
+          introContent={mockIntroContent}
+          theme="space"
+          wordListName="My Word List"
+          onStart={mockOnStart}
+          onSkip={mockOnSkip}
+        />
+      )
+
+      const skipButton = screen.getByRole('button', { name: /Skip Intro/i })
+      expect(skipButton).toBeInTheDocument()
+    })
+
+    it('does not render skip button when onSkip is not provided', () => {
+      const mockOnStart = vi.fn()
+
+      render(
+        <StoryIntroScreen
+          introContent={mockIntroContent}
+          theme="space"
+          wordListName="My Word List"
+          onStart={mockOnStart}
+        />
+      )
+
+      expect(screen.queryByRole('button', { name: /Skip Intro/i })).not.toBeInTheDocument()
+    })
+
+    it('calls onSkip when skip button is clicked', async () => {
+      const user = userEvent.setup()
+      const mockOnStart = vi.fn()
+      const mockOnSkip = vi.fn()
+
+      render(
+        <StoryIntroScreen
+          introContent={mockIntroContent}
+          theme="space"
+          wordListName="My Word List"
+          onStart={mockOnStart}
+          onSkip={mockOnSkip}
+        />
+      )
+
+      const skipButton = screen.getByRole('button', { name: /Skip Intro/i })
+      await user.click(skipButton)
+
+      expect(mockOnSkip).toHaveBeenCalledTimes(1)
+      expect(mockOnStart).not.toHaveBeenCalled()
     })
   })
 })
