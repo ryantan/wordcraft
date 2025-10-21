@@ -29,7 +29,9 @@ const narrativeBeatSchema = baseBeatSchema.extend({
 // Game beat schema
 const gameBeatSchema = baseBeatSchema.extend({
   type: z.literal('game'),
-  word: z.string().min(1).transform(s => s.toUpperCase()), // Ensure word is uppercase
+  // transforms are not supported in json schema, and zod throws an error. We'll uppercase elsewhere.
+  // word: z.string().min(1).transform(s => s.toUpperCase()), // Ensure word is uppercase
+  word: z.string().min(1),
   gameType: gameTypeSchema,
   stage: z.literal(1), // Always stage 1 for now
 })
@@ -38,7 +40,9 @@ const gameBeatSchema = baseBeatSchema.extend({
 const choiceBeatSchema = baseBeatSchema.extend({
   type: z.literal('choice'),
   question: z.string().min(10),
-  options: z.tuple([z.string().min(1), z.string().min(1)]), // Exactly 2 options
+  // options: z.tuple([z.string().min(1), z.string().min(1)]), // Exactly 2 options
+  // OpenAI doesn't seme to like tuples in JSONSchema.
+  options: z.array(z.string().min(1))
 })
 
 // Checkpoint beat schema
@@ -73,77 +77,7 @@ export type StoryBeatSchema = z.infer<typeof storyBeatSchema>
 export function getStoryGenerationJsonSchema() {
   // Convert Zod schema to JSON Schema format
   // OpenAI expects a specific format for function parameters
-  return {
-    type: "object",
-    properties: {
-      stage1Beats: {
-        type: "array",
-        minItems: 5,
-        items: {
-          type: "object",
-          discriminator: {
-            propertyName: "type"
-          },
-          oneOf: [
-            {
-              properties: {
-                type: { type: "string", enum: ["narrative"] },
-                id: { type: "string", minLength: 1 },
-                narrative: { type: "string", minLength: 10 }
-              },
-              required: ["type", "id", "narrative"],
-              additionalProperties: false
-            },
-            {
-              properties: {
-                type: { type: "string", enum: ["game"] },
-                id: { type: "string", minLength: 1 },
-                narrative: { type: "string", minLength: 10 },
-                word: { type: "string", minLength: 1 },
-                gameType: { 
-                  type: "string", 
-                  enum: ["letterMatching", "wordBuilding", "spellingChallenge", "wordScramble", "missingLetters"] 
-                },
-                stage: { type: "number", enum: [1] }
-              },
-              required: ["type", "id", "narrative", "word", "gameType", "stage"],
-              additionalProperties: false
-            },
-            {
-              properties: {
-                type: { type: "string", enum: ["choice"] },
-                id: { type: "string", minLength: 1 },
-                narrative: { type: "string", minLength: 10 },
-                question: { type: "string", minLength: 10 },
-                options: { 
-                  type: "array",
-                  items: { type: "string", minLength: 1 },
-                  minItems: 2,
-                  maxItems: 2
-                }
-              },
-              required: ["type", "id", "narrative", "question", "options"],
-              additionalProperties: false
-            },
-            {
-              properties: {
-                type: { type: "string", enum: ["checkpoint"] },
-                id: { type: "string", minLength: 1 },
-                narrative: { type: "string", minLength: 10 },
-                checkpointNumber: { type: "number", enum: [1, 2, 3] },
-                celebrationEmoji: { type: "string", default: "🎉" },
-                title: { type: "string", minLength: 1 }
-              },
-              required: ["type", "id", "narrative", "checkpointNumber", "title"],
-              additionalProperties: false
-            }
-          ]
-        }
-      }
-    },
-    required: ["stage1Beats"],
-    additionalProperties: false
-  }
+  return z.toJSONSchema(openAIStoryResponseSchema);
 }
 
 /**

@@ -62,10 +62,12 @@ export async function generateStoryWithOpenAI(
           getStoryGenerationJsonSchema()
         )
       }),
-      STORY_GENERATION_TIMEOUT
+      STORY_GENERATION_TIMEOUT * 100
     )
 
     // Parse JSON response
+    console.log('response.content');
+    console.log(response.content);
     let jsonData: unknown
     try {
       jsonData = JSON.parse(response.content)
