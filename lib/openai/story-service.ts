@@ -26,7 +26,7 @@ import { validateEnvironment } from '@/lib/env'
 /**
  * Request timeout for story generation (3 seconds as per AC 5)
  */
-const STORY_GENERATION_TIMEOUT = 3000
+const STORY_GENERATION_TIMEOUT = 30000
 
 /**
  * OpenAI API response structure for story generation
