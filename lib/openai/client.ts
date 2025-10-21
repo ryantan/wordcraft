@@ -84,13 +84,14 @@ export class OpenAIAPIError extends Error {
  * Generate story content using OpenAI
  * @param client - OpenAI client instance
  * @param request - Story generation parameters
+ * @param jsonSchema
  * @returns Generated story content
  * @throws OpenAIAPIError on API failure
  */
 export async function generateStoryContent(
   client: OpenAI,
   request: StoryGenerationRequest,
-  jsonSchema?: object
+  jsonSchema?: any,
 ): Promise<StoryGenerationResponse> {
   console.log('generateStoryContent start');
   try {
@@ -107,17 +108,12 @@ export async function generateStoryContent(
         },
       ],
       temperature: serverEnv.openai.temperature,
-      max_tokens: serverEnv.openai.maxTokens,
+      // max_tokens: serverEnv.openai.maxTokens,
       // Add structured output if schema provided
       ...(jsonSchema && {
-        response_format: {
-          type: 'json_schema' as const,
-          json_schema: {
-            name: 'story_generation',
-            strict: true,
-            schema: jsonSchema as { [key: string]: unknown }
-          }
-        }
+        // response_format: zodResponseFormat(jsonSchema, 'story_generation')
+        // response_format: jsonSchema
+        response_format: { type: "json_schema", json_schema: {"strict": true, "name": "story_generation", "schema": jsonSchema} }
       })
     }
     console.log('Open AI request: ');

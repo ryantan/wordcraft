@@ -9,6 +9,7 @@ import type {
   StoryGenerationInput,
   GeneratedStory,
   StoryBeat,
+  StoryTheme,
   GameBeat,
   ChoiceBeat,
   NarrativeBeat,
@@ -21,7 +22,6 @@ import {
 } from './client'
 import {
   parseChoiceBeatResponse,
-  type StoryTheme,
 } from './prompts'
 import { validateEnvironment } from '@/lib/env'
 
@@ -234,7 +234,7 @@ async function generateStage1BeatsWithAI(
 /**
  * Fallback narrative generation
  */
-function generateFallbackNarrative(theme: string, index: number): string {
+function generateFallbackNarrative(theme: string, _index: number): string {
   const narratives: Record<string, string[]> = {
     space: ['Your journey through the cosmos continues...'],
     treasure: ['The adventure grows more exciting...'],
