@@ -11,7 +11,6 @@ import {
   testConnection,
   withRetry,
   withTimeout,
-  OpenAIConfigError,
   OpenAIAPIError,
 } from './client'
 
@@ -103,7 +102,7 @@ describe('OpenAI Client', () => {
             }),
           },
         },
-      } as OpenAI
+      } as unknown as OpenAI
 
       const result = await generateStoryContent(mockClient, {
         theme: 'space',
@@ -129,10 +128,10 @@ describe('OpenAI Client', () => {
 
     it('should handle OpenAI API errors', async () => {
       const mockError = new OpenAI.APIError(
-        'API Error',
-        { message: 'API Error' },
+        400,
+        { status: 400, headers: {}, error: { message: 'API Error' } },
         'invalid_request',
-        {},
+        {}
       )
       
       const mockClient = {
@@ -141,7 +140,7 @@ describe('OpenAI Client', () => {
             create: vi.fn().mockRejectedValue(mockError),
           },
         },
-      } as OpenAI
+      } as unknown as OpenAI
 
       await expect(
         generateStoryContent(mockClient, {
@@ -164,7 +163,7 @@ describe('OpenAI Client', () => {
             }),
           },
         },
-      } as OpenAI
+      } as unknown as OpenAI
 
       const result = await generateStoryContent(mockClient, {
         theme: 'space',
@@ -197,7 +196,7 @@ describe('OpenAI Client', () => {
             data: [{ id: 'model-1' }],
           }),
         },
-      } as OpenAI
+      } as unknown as OpenAI
 
       const result = await testConnection(mockClient)
       expect(result).toBe(true)
@@ -208,7 +207,7 @@ describe('OpenAI Client', () => {
         models: {
           list: vi.fn().mockRejectedValue(new Error('Connection failed')),
         },
-      } as OpenAI
+      } as unknown as OpenAI
 
       const result = await testConnection(mockClient)
       expect(result).toBe(false)
