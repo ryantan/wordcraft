@@ -4,29 +4,30 @@
  * Manages game session state and adaptive word/game selection.
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react'
-import type { GameResult, GameMechanicId, WordList, GameDifficulty } from '@/types'
-import { getGame, getGameIds } from '@/lib/games'
-import { selectNextWord } from './word-selector'
-import { initializeGameSession } from './session-manager'
-import { processGameCompletion } from './session-tracker'
-import { detectLearningStyle, selectNextGame } from '@/lib/algorithms/learning-style-detection'
-import { getAllGameResults, getLearningProfile } from '@/lib/storage/sessionStorage'
-import { calculateDifficulty, getInitialDifficulty } from '@/lib/algorithms/difficulty-adjustment'
+import { calculateDifficulty, getInitialDifficulty } from '@/lib/algorithms/difficulty-adjustment';
+import { detectLearningStyle, selectNextGame } from '@/lib/algorithms/learning-style-detection';
+import { getGame, getGameIds } from '@/lib/games';
+import { getAllGameResults, getLearningProfile } from '@/lib/storage/sessionStorage';
+import type { GameDifficulty, GameMechanicId, GameResult, WordList } from '@/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const MAX_ROUNDS = 10
+import { initializeGameSession } from './session-manager';
+import { processGameCompletion } from './session-tracker';
+import { selectNextWord } from './word-selector';
+
+const MAX_ROUNDS = 10;
 
 export interface GameSessionState {
-  wordPool: string[]
-  sessionPerformance: Map<string, GameResult[]>
-  currentWord: string | null
-  currentMechanicId: GameMechanicId | null
-  currentDifficulty: GameDifficulty
-  recentGames: GameMechanicId[]
-  results: GameResult[]
-  roundsCompleted: number
-  gameFinished: boolean
-  roundKey: number
+  wordPool: string[];
+  sessionPerformance: Map<string, GameResult[]>;
+  currentWord: string | null;
+  currentMechanicId: GameMechanicId | null;
+  currentDifficulty: GameDifficulty;
+  recentGames: GameMechanicId[];
+  results: GameResult[];
+  roundsCompleted: number;
+  gameFinished: boolean;
+  roundKey: number;
 }
 
 export function useGameSession(wordList: WordList | null, mechanicId: GameMechanicId | null) {
@@ -41,63 +42,60 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
     roundsCompleted: 0,
     gameFinished: false,
     roundKey: 0,
-  })
-  const initializedRef = useRef(false)
+  });
+  const initializedRef = useRef(false);
 
   // Initialize session when word list loads
   useEffect(() => {
-    if (!wordList) return
+    if (!wordList) return;
 
-    const sessionConfig = initializeGameSession(wordList)
+    const sessionConfig = initializeGameSession(wordList);
     setState(prev => ({
       ...prev,
       wordPool: sessionConfig.wordPool,
       sessionPerformance: sessionConfig.sessionPerformance,
       currentWord: null,
       currentMechanicId: null,
-    }))
-  }, [wordList])
+    }));
+  }, [wordList]);
 
   // Start next round
   const startNextRound = useCallback(() => {
-    if (!wordList) return
+    if (!wordList) return;
 
     setState(prev => {
-      if (prev.wordPool.length === 0) return prev
+      if (prev.wordPool.length === 0) return prev;
 
       // Select next word adaptively
-      const nextWord = selectNextWord(
-        prev.wordPool,
-        prev.sessionPerformance,
-        prev.currentWord
-      )
-      if (!nextWord) return prev
+      const nextWord = selectNextWord(prev.wordPool, prev.sessionPerformance, prev.currentWord);
+      if (!nextWord) return prev;
 
       // Calculate difficulty based on word performance
-      const wordResults = prev.sessionPerformance.get(nextWord) || []
-      const difficulty = wordResults.length === 0
-        ? getInitialDifficulty(nextWord)
-        : calculateDifficulty(wordResults, prev.currentDifficulty)
+      const wordResults = prev.sessionPerformance.get(nextWord) || [];
+      const difficulty =
+        wordResults.length === 0
+          ? getInitialDifficulty(nextWord)
+          : calculateDifficulty(wordResults, prev.currentDifficulty);
 
       // Select game mechanic
-      let mechanic: GameMechanicId
+      let mechanic: GameMechanicId;
       if (mechanicId && getGame(mechanicId)) {
-        mechanic = mechanicId
+        mechanic = mechanicId;
       } else {
-        const allResults = getAllGameResults()
-        const profile = getLearningProfile()
-        const availableIds = getGameIds()
+        const allResults = getAllGameResults();
+        const profile = getLearningProfile();
+        const availableIds = getGameIds();
 
         // Use adaptive selection if enough data
         if (allResults.length >= 12) {
           mechanic = selectNextGame(
             profile || detectLearningStyle(allResults),
             availableIds,
-            prev.recentGames
-          )
+            prev.recentGames,
+          );
         } else {
           // Random for first games
-          mechanic = availableIds[Math.floor(Math.random() * availableIds.length)]
+          mechanic = availableIds[Math.floor(Math.random() * availableIds.length)];
         }
       }
 
@@ -108,26 +106,26 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
         currentDifficulty: difficulty,
         recentGames: [...prev.recentGames.slice(-2), mechanic],
         roundKey: prev.roundKey + 1,
-      }
-    })
-  }, [wordList, mechanicId])
+      };
+    });
+  }, [wordList, mechanicId]);
 
   // Handle game completion
   const handleGameComplete = useCallback(
     (result: GameResult) => {
       // Process with adaptive learning systems
-      processGameCompletion(result)
+      processGameCompletion(result);
 
       // Update local state and determine if we should continue
-      let shouldContinue = false
+      let shouldContinue = false;
       setState(prev => {
-        const newSessionPerformance = new Map(prev.sessionPerformance)
-        const wordResults = newSessionPerformance.get(result.word) || []
-        newSessionPerformance.set(result.word, [...wordResults, result])
+        const newSessionPerformance = new Map(prev.sessionPerformance);
+        const wordResults = newSessionPerformance.get(result.word) || [];
+        newSessionPerformance.set(result.word, [...wordResults, result]);
 
-        const nextRound = prev.roundsCompleted + 1
-        const finished = nextRound >= MAX_ROUNDS
-        shouldContinue = !finished
+        const nextRound = prev.roundsCompleted + 1;
+        const finished = nextRound >= MAX_ROUNDS;
+        shouldContinue = !finished;
 
         return {
           ...prev,
@@ -135,36 +133,36 @@ export function useGameSession(wordList: WordList | null, mechanicId: GameMechan
           roundsCompleted: nextRound,
           sessionPerformance: newSessionPerformance,
           gameFinished: finished,
-        }
-      })
+        };
+      });
 
       // Start next round after delay if not finished
       if (shouldContinue) {
         setTimeout(() => {
-          startNextRound()
-        }, 2000)
+          startNextRound();
+        }, 2000);
       }
     },
-    [startNextRound]
-  )
+    [startNextRound],
+  );
 
   // Initialize first round when word pool is ready
   useEffect(() => {
     if (wordList && state.wordPool.length > 0 && !initializedRef.current) {
-      initializedRef.current = true
-      startNextRound()
+      initializedRef.current = true;
+      startNextRound();
     }
-  }, [wordList, state.wordPool.length, startNextRound])
+  }, [wordList, state.wordPool.length, startNextRound]);
 
   // Reset initialization when word list changes
   useEffect(() => {
-    initializedRef.current = false
-  }, [wordList])
+    initializedRef.current = false;
+  }, [wordList]);
 
   return {
     ...state,
     maxRounds: MAX_ROUNDS,
     startNextRound,
     handleGameComplete,
-  }
+  };
 }

@@ -4,17 +4,17 @@
  * Tracks performance during a game session and updates adaptive learning data.
  */
 
-import type { GameResult } from '@/types'
-import { calculateAllConfidences } from '@/lib/algorithms/confidence-scoring'
-import { updateWordReview } from '@/lib/algorithms/spaced-repetition'
-import { detectLearningStyle } from '@/lib/algorithms/learning-style-detection'
+import { calculateAllConfidences } from '@/lib/algorithms/confidence-scoring';
+import { detectLearningStyle } from '@/lib/algorithms/learning-style-detection';
+import { updateWordReview } from '@/lib/algorithms/spaced-repetition';
 import {
-  saveGameResult,
   getAllGameResults,
   getAllReviewData,
-  saveWordReviewData,
+  saveGameResult,
   saveLearningProfile,
-} from '@/lib/storage/sessionStorage'
+  saveWordReviewData,
+} from '@/lib/storage/sessionStorage';
+import type { GameResult } from '@/types';
 
 /**
  * Process a completed game round
@@ -28,26 +28,26 @@ import {
  */
 export function processGameCompletion(result: GameResult): void {
   // Save result to storage
-  saveGameResult(result)
+  saveGameResult(result);
 
   // Update spaced repetition review data
-  const allResults = getAllGameResults()
-  const confidences = calculateAllConfidences([result.word], allResults)
-  const confidence = confidences.get(result.word)
+  const allResults = getAllGameResults();
+  const confidences = calculateAllConfidences([result.word], allResults);
+  const confidence = confidences.get(result.word);
 
   if (confidence) {
-    const allReviewData = getAllReviewData()
-    const existingReview = allReviewData.get(result.word)
+    const allReviewData = getAllReviewData();
+    const existingReview = allReviewData.get(result.word);
 
     if (existingReview) {
-      const updatedReview = updateWordReview(existingReview, confidence)
-      saveWordReviewData(updatedReview)
+      const updatedReview = updateWordReview(existingReview, confidence);
+      saveWordReviewData(updatedReview);
     }
   }
 
   // Update learning style profile
-  const profile = detectLearningStyle(allResults)
-  saveLearningProfile(profile)
+  const profile = detectLearningStyle(allResults);
+  saveLearningProfile(profile);
 }
 
 /**
@@ -57,17 +57,17 @@ export function processGameCompletion(result: GameResult): void {
  * @returns Statistics about the session
  */
 export function calculateSessionStats(results: GameResult[]) {
-  const totalTime = results.reduce((sum, r) => sum + r.timeMs, 0)
-  const totalHints = results.reduce((sum, r) => sum + r.hintsUsed, 0)
-  const avgTime = Math.round(totalTime / results.length / 1000)
+  const totalTime = results.reduce((sum, r) => sum + r.timeMs, 0);
+  const totalHints = results.reduce((sum, r) => sum + r.hintsUsed, 0);
+  const avgTime = Math.round(totalTime / results.length / 1000);
 
   // Get unique words and their practice counts
-  const uniqueWords = Array.from(new Set(results.map(r => r.word)))
+  const uniqueWords = Array.from(new Set(results.map(r => r.word)));
   const wordPracticeCounts = uniqueWords.map(word => {
-    const wordResults = results.filter(r => r.word === word)
-    const totalWordAttempts = wordResults.reduce((sum, r) => sum + r.attempts, 0)
-    const avgWordAttempts = totalWordAttempts / wordResults.length
-    const totalWordTime = wordResults.reduce((sum, r) => sum + r.timeMs, 0)
+    const wordResults = results.filter(r => r.word === word);
+    const totalWordAttempts = wordResults.reduce((sum, r) => sum + r.attempts, 0);
+    const avgWordAttempts = totalWordAttempts / wordResults.length;
+    const totalWordTime = wordResults.reduce((sum, r) => sum + r.timeMs, 0);
 
     return {
       word,
@@ -75,8 +75,8 @@ export function calculateSessionStats(results: GameResult[]) {
       results: wordResults,
       avgAttempts: avgWordAttempts,
       avgTime: Math.round(totalWordTime / wordResults.length / 1000),
-    }
-  })
+    };
+  });
 
   return {
     totalRounds: results.length,
@@ -84,5 +84,5 @@ export function calculateSessionStats(results: GameResult[]) {
     avgTime,
     totalHints,
     wordPracticeCounts,
-  }
+  };
 }

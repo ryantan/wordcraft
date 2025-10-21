@@ -5,11 +5,11 @@
  * Ensures all words are practiced at least once before repetition.
  */
 
-import type { GameResult } from '@/types'
+import type { GameResult } from '@/types';
 
 export interface WordScore {
-  word: string
-  score: number
+  word: string;
+  score: number;
 }
 
 /**
@@ -27,37 +27,37 @@ export interface WordScore {
 export function selectNextWord(
   wordPool: string[],
   sessionPerformance: Map<string, GameResult[]>,
-  currentWord: string | null
+  currentWord: string | null,
 ): string | null {
-  if (wordPool.length === 0) return null
+  if (wordPool.length === 0) return null;
 
   // Phase 1: Prioritize unpracticed words
   const unpracticedWords = wordPool.filter(word => {
-    const performance = sessionPerformance.get(word)
-    return !performance || performance.length === 0
-  })
+    const performance = sessionPerformance.get(word);
+    return !performance || performance.length === 0;
+  });
 
   if (unpracticedWords.length > 0) {
     // Avoid immediate repeat if possible
     if (unpracticedWords.length > 1 && currentWord && unpracticedWords.includes(currentWord)) {
-      const otherWords = unpracticedWords.filter(w => w !== currentWord)
-      return otherWords[0]
+      const otherWords = unpracticedWords.filter(w => w !== currentWord);
+      return otherWords[0];
     }
-    return unpracticedWords[0]
+    return unpracticedWords[0];
   }
 
   // Phase 2: All words practiced at least once - prioritize by performance
-  const wordScores = calculateWordScores(wordPool, sessionPerformance)
+  const wordScores = calculateWordScores(wordPool, sessionPerformance);
 
   // Sort by priority (lowest score = highest priority for practice)
-  wordScores.sort((a, b) => a.score - b.score)
+  wordScores.sort((a, b) => a.score - b.score);
 
   // Avoid immediate repeats if possible
   if (currentWord && wordScores.length > 1 && wordScores[0].word === currentWord) {
-    return wordScores[1].word
+    return wordScores[1].word;
   }
 
-  return wordScores[0].word
+  return wordScores[0].word;
 }
 
 /**
@@ -73,29 +73,29 @@ export function selectNextWord(
  */
 function calculateWordScores(
   wordPool: string[],
-  sessionPerformance: Map<string, GameResult[]>
+  sessionPerformance: Map<string, GameResult[]>,
 ): WordScore[] {
   return wordPool.map(word => {
-    const performance = sessionPerformance.get(word) || []
+    const performance = sessionPerformance.get(word) || [];
 
     // Calculate average performance
-    const avgAttempts = performance.reduce((sum, r) => sum + r.attempts, 0) / performance.length
-    const avgHints = performance.reduce((sum, r) => sum + r.hintsUsed, 0) / performance.length
-    const recentResult = performance[performance.length - 1]
+    const avgAttempts = performance.reduce((sum, r) => sum + r.attempts, 0) / performance.length;
+    const avgHints = performance.reduce((sum, r) => sum + r.hintsUsed, 0) / performance.length;
+    const recentResult = performance[performance.length - 1];
 
     // Lower score = struggled = higher priority for repetition
-    let priorityScore = 100
-    priorityScore -= (avgAttempts - 1) * 20 // Extra attempts penalty
-    priorityScore -= avgHints * 15 // Hints penalty
+    let priorityScore = 100;
+    priorityScore -= (avgAttempts - 1) * 20; // Extra attempts penalty
+    priorityScore -= avgHints * 15; // Hints penalty
 
     // Recent poor performance
     if (recentResult.attempts > 1) {
-      priorityScore -= 20
+      priorityScore -= 20;
     }
 
     // Reduce priority if practiced many times (give other words a chance)
-    priorityScore -= performance.length * 5
+    priorityScore -= performance.length * 5;
 
-    return { word, score: Math.max(0, priorityScore) }
-  })
+    return { word, score: Math.max(0, priorityScore) };
+  });
 }

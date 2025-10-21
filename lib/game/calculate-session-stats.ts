@@ -4,9 +4,9 @@
  * Helper function to calculate session statistics for story mode finale
  */
 
-import type { SessionStats } from '@/types/session'
-import type { WordStats } from '@/types/story'
-import type { GameResult } from '@/types/game'
+import type { GameResult } from '@/types/game';
+import type { SessionStats } from '@/types/session';
+import type { WordStats } from '@/types/story';
 
 /**
  * Calculate session statistics from word stats and game results
@@ -30,31 +30,28 @@ import type { GameResult } from '@/types/game'
 export function calculateSessionStats(
   wordStats: Map<string, WordStats>,
   gameResults: GameResult[],
-  sessionStartTime: number
+  sessionStartTime: number,
 ): SessionStats {
   // Calculate total words
-  const totalWords = wordStats.size
+  const totalWords = wordStats.size;
 
   // Calculate words mastered (confidence >= 80)
   const wordsMastered = Array.from(wordStats.values()).filter(
-    (stats) => stats.confidence >= 80
-  ).length
+    stats => stats.confidence >= 80,
+  ).length;
 
   // Calculate average confidence
-  const confidenceValues = Array.from(wordStats.values()).map(
-    (stats) => stats.confidence
-  )
+  const confidenceValues = Array.from(wordStats.values()).map(stats => stats.confidence);
   const averageConfidence =
     confidenceValues.length > 0
-      ? confidenceValues.reduce((sum, val) => sum + val, 0) /
-        confidenceValues.length
-      : 0
+      ? confidenceValues.reduce((sum, val) => sum + val, 0) / confidenceValues.length
+      : 0;
 
   // Calculate games played
-  const gamesPlayed = gameResults.length
+  const gamesPlayed = gameResults.length;
 
   // Calculate time spent (convert milliseconds to seconds)
-  const timeSpent = Math.floor((Date.now() - sessionStartTime) / 1000)
+  const timeSpent = Math.floor((Date.now() - sessionStartTime) / 1000);
 
   return {
     totalWords,
@@ -62,7 +59,7 @@ export function calculateSessionStats(
     gamesPlayed,
     timeSpent,
     averageConfidence,
-  }
+  };
 }
 
 /**
@@ -79,14 +76,14 @@ export function calculateSessionStats(
  * ```
  */
 export function formatTime(seconds: number): string {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
 
   if (minutes === 0) {
-    return `${seconds}s`
+    return `${seconds}s`;
   } else if (remainingSeconds === 0) {
-    return `${minutes}m`
+    return `${minutes}m`;
   } else {
-    return `${minutes}m ${remainingSeconds}s`
+    return `${minutes}m ${remainingSeconds}s`;
   }
 }
