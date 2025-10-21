@@ -5,7 +5,7 @@
  * Used for Stage 2 mastery phase to identify low-confidence words
  */
 
-import type { WordStats } from '@/types/story'
+import type { WordStats } from '@/types/story';
 
 /**
  * Initialize word stats for all words in the list
@@ -14,7 +14,7 @@ import type { WordStats } from '@/types/story'
  * @returns Map of word to initial stats
  */
 export function initializeWordStats(words: string[]): Map<string, WordStats> {
-  const statsMap = new Map<string, WordStats>()
+  const statsMap = new Map<string, WordStats>();
 
   for (const word of words) {
     statsMap.set(word, {
@@ -26,10 +26,10 @@ export function initializeWordStats(words: string[]): Map<string, WordStats> {
       streak: 0,
       lastPracticed: new Date(),
       attemptsCount: 0,
-    })
+    });
   }
 
-  return statsMap
+  return statsMap;
 }
 
 /**
@@ -42,32 +42,32 @@ export function initializeWordStats(words: string[]): Map<string, WordStats> {
 export function updateWordStats(
   stats: WordStats,
   result: {
-    isCorrect: boolean
-    timeSpent: number
-    hintsUsed: number
-    errors: number
-  }
+    isCorrect: boolean;
+    timeSpent: number;
+    hintsUsed: number;
+    errors: number;
+  },
 ): WordStats {
-  const updated = { ...stats }
+  const updated = { ...stats };
 
   // Update counters
-  updated.errors += result.errors
-  updated.hints += result.hintsUsed
-  updated.timeSpent += result.timeSpent
-  updated.attemptsCount += 1
-  updated.lastPracticed = new Date()
+  updated.errors += result.errors;
+  updated.hints += result.hintsUsed;
+  updated.timeSpent += result.timeSpent;
+  updated.attemptsCount += 1;
+  updated.lastPracticed = new Date();
 
   // Update streak
   if (result.isCorrect) {
-    updated.streak += 1
+    updated.streak += 1;
   } else {
-    updated.streak = 0
+    updated.streak = 0;
   }
 
   // Recalculate confidence
-  updated.confidence = calculateConfidence(updated, result)
+  updated.confidence = calculateConfidence(updated, result);
 
-  return updated
+  return updated;
 }
 
 /**
@@ -88,43 +88,43 @@ export function updateWordStats(
 function calculateConfidence(
   stats: WordStats,
   result: {
-    isCorrect: boolean
-    timeSpent: number
-    hintsUsed: number
-    errors: number
-  }
+    isCorrect: boolean;
+    timeSpent: number;
+    hintsUsed: number;
+    errors: number;
+  },
 ): number {
-  let confidence = stats.confidence
+  let confidence = stats.confidence;
 
   // Correctness impact (±15 points)
   if (result.isCorrect) {
-    confidence += 15
+    confidence += 15;
   } else {
-    confidence -= 20
+    confidence -= 20;
   }
 
   // Errors impact (-5 per error, up to -15)
-  confidence -= Math.min(result.errors * 5, 15)
+  confidence -= Math.min(result.errors * 5, 15);
 
   // Hints impact (-3 per hint, up to -9)
-  confidence -= Math.min(result.hintsUsed * 3, 9)
+  confidence -= Math.min(result.hintsUsed * 3, 9);
 
   // Streak bonus (+2 per streak level, up to +10)
   if (stats.streak > 0) {
-    confidence += Math.min(stats.streak * 2, 10)
+    confidence += Math.min(stats.streak * 2, 10);
   }
 
   // Time efficiency bonus/penalty
   // Fast completion (< 10s): +5
   // Slow completion (> 30s): -5
   if (result.timeSpent < 10000) {
-    confidence += 5
+    confidence += 5;
   } else if (result.timeSpent > 30000) {
-    confidence -= 5
+    confidence -= 5;
   }
 
   // Clamp to 0-100 range
-  return Math.max(0, Math.min(100, confidence))
+  return Math.max(0, Math.min(100, confidence));
 }
 
 /**
@@ -138,26 +138,25 @@ function calculateConfidence(
  */
 export function calculateDifficultyScore(stats: WordStats): number {
   // Invert confidence (low confidence = high difficulty)
-  let difficulty = 100 - stats.confidence
+  let difficulty = 100 - stats.confidence;
 
   // Increase difficulty based on errors
-  difficulty += stats.errors * 3
+  difficulty += stats.errors * 3;
 
   // Increase difficulty if hints were needed
-  difficulty += stats.hints * 2
+  difficulty += stats.hints * 2;
 
   // Decrease difficulty if there's a good streak
-  difficulty -= Math.min(stats.streak * 5, 20)
+  difficulty -= Math.min(stats.streak * 5, 20);
 
   // Recent practice reduces perceived difficulty
-  const hoursSinceLastPractice =
-    (Date.now() - stats.lastPracticed.getTime()) / (1000 * 60 * 60)
+  const hoursSinceLastPractice = (Date.now() - stats.lastPracticed.getTime()) / (1000 * 60 * 60);
   if (hoursSinceLastPractice < 1) {
-    difficulty -= 10
+    difficulty -= 10;
   }
 
   // Clamp to 0-100 range
-  return Math.max(0, Math.min(100, difficulty))
+  return Math.max(0, Math.min(100, difficulty));
 }
 
 /**
@@ -170,23 +169,23 @@ export function calculateDifficultyScore(stats: WordStats): number {
  */
 export function getWordsNeedingPractice(
   wordStats: Map<string, WordStats>,
-  threshold: number = 70
+  threshold: number = 70,
 ): string[] {
-  const needsPractice: Array<{ word: string; difficulty: number }> = []
+  const needsPractice: Array<{ word: string; difficulty: number }> = [];
 
   for (const [word, stats] of wordStats.entries()) {
     if (stats.confidence < threshold) {
       needsPractice.push({
         word,
         difficulty: calculateDifficultyScore(stats),
-      })
+      });
     }
   }
 
   // Sort by difficulty (highest first)
-  needsPractice.sort((a, b) => b.difficulty - a.difficulty)
+  needsPractice.sort((a, b) => b.difficulty - a.difficulty);
 
-  return needsPractice.map((item) => item.word)
+  return needsPractice.map(item => item.word);
 }
 
 /**
@@ -198,14 +197,14 @@ export function getWordsNeedingPractice(
  */
 export function allWordsMastered(
   wordStats: Map<string, WordStats>,
-  masteryThreshold: number = 80
+  masteryThreshold: number = 80,
 ): boolean {
   for (const stats of wordStats.values()) {
     if (stats.confidence < masteryThreshold) {
-      return false
+      return false;
     }
   }
-  return true
+  return true;
 }
 
 /**
@@ -215,28 +214,28 @@ export function allWordsMastered(
  * @returns Summary object
  */
 export function getWordStatsSummary(wordStats: Map<string, WordStats>): {
-  totalWords: number
-  masteredWords: number
-  averageConfidence: number
-  totalAttempts: number
-  totalErrors: number
+  totalWords: number;
+  masteredWords: number;
+  averageConfidence: number;
+  totalAttempts: number;
+  totalErrors: number;
 } {
-  let totalConfidence = 0
-  let masteredCount = 0
-  let totalAttempts = 0
-  let totalErrors = 0
+  let totalConfidence = 0;
+  let masteredCount = 0;
+  let totalAttempts = 0;
+  let totalErrors = 0;
 
   for (const stats of wordStats.values()) {
-    totalConfidence += stats.confidence
-    totalAttempts += stats.attemptsCount
-    totalErrors += stats.errors
+    totalConfidence += stats.confidence;
+    totalAttempts += stats.attemptsCount;
+    totalErrors += stats.errors;
 
     if (stats.confidence >= 80) {
-      masteredCount++
+      masteredCount++;
     }
   }
 
-  const totalWords = wordStats.size
+  const totalWords = wordStats.size;
 
   return {
     totalWords,
@@ -244,5 +243,5 @@ export function getWordStatsSummary(wordStats: Map<string, WordStats>): {
     averageConfidence: totalWords > 0 ? totalConfidence / totalWords : 0,
     totalAttempts,
     totalErrors,
-  }
+  };
 }

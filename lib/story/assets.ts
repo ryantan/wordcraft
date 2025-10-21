@@ -7,22 +7,22 @@
 
 export interface StoryAssetPaths {
   characters: {
-    neutral: string
-    celebrating: string
-    thinking: string
-  }
+    neutral: string;
+    celebrating: string;
+    thinking: string;
+  };
   backgrounds: {
-    intro: string
-    checkpoint1: string
-    checkpoint2: string
-    checkpoint3: string
-    finale: string
-  }
+    intro: string;
+    checkpoint1: string;
+    checkpoint2: string;
+    checkpoint3: string;
+    finale: string;
+  };
   icons: {
-    checkpoint: string
-    progress: string
-    lock: string
-  }
+    checkpoint: string;
+    progress: string;
+    lock: string;
+  };
 }
 
 /**
@@ -72,7 +72,7 @@ export const STORY_ASSETS: Record<string, StoryAssetPaths> = {
       lock: '/story-assets/icons/treasure-lock.svg',
     },
   },
-}
+};
 
 /**
  * Get asset paths for a specific theme
@@ -81,7 +81,7 @@ export const STORY_ASSETS: Record<string, StoryAssetPaths> = {
  * @returns Asset paths object
  */
 export function getStoryAssets(theme: string = 'space'): StoryAssetPaths {
-  return STORY_ASSETS[theme] || STORY_ASSETS.space
+  return STORY_ASSETS[theme] || STORY_ASSETS.space;
 }
 
 /**
@@ -92,12 +92,8 @@ export function getStoryAssets(theme: string = 'space'): StoryAssetPaths {
  * @returns true if assets can be loaded (basic check)
  */
 export function validateStoryAssets(theme: string): boolean {
-  const assets = getStoryAssets(theme)
+  const assets = getStoryAssets(theme);
 
   // Basic validation - check if paths are defined
-  return !!(
-    assets.characters.neutral &&
-    assets.backgrounds.intro &&
-    assets.icons.checkpoint
-  )
+  return !!(assets.characters.neutral && assets.backgrounds.intro && assets.icons.checkpoint);
 }

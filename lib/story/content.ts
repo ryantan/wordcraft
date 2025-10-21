@@ -8,17 +8,17 @@
  */
 
 export interface StoryCheckpoint {
-  id: string
-  title: string
-  narrative: string
-  celebrationEmoji?: string
+  id: string;
+  title: string;
+  narrative: string;
+  celebrationEmoji?: string;
 }
 
 export interface StoryThemeContent {
-  themeName: string
-  intro: StoryCheckpoint
-  checkpoints: StoryCheckpoint[]
-  finale: StoryCheckpoint
+  themeName: string;
+  intro: StoryCheckpoint;
+  checkpoints: StoryCheckpoint[];
+  finale: StoryCheckpoint;
 }
 
 /**
@@ -66,7 +66,7 @@ const spaceTheme: StoryThemeContent = {
       "Mission Complete, Space Explorer! You've traveled across the galaxy and mastered all your words. You're a true Word Champion! Ready for your next adventure?",
     celebrationEmoji: '⭐',
   },
-}
+};
 
 /**
  * Treasure Hunt Theme (Alternative)
@@ -113,7 +113,7 @@ const treasureTheme: StoryThemeContent = {
       "Treasure Complete! You've found all the word treasures and filled your chest. You're a Master Treasure Hunter! What adventure awaits next?",
     celebrationEmoji: '💎',
   },
-}
+};
 
 /**
  * Fantasy Quest Theme (Future)
@@ -160,7 +160,7 @@ const fantasyTheme: StoryThemeContent = {
       "Victory! You've saved the kingdom and mastered all the magic words. You're a true Hero! Ready for your next quest?",
     celebrationEmoji: '👑',
   },
-}
+};
 
 /**
  * All available themes
@@ -169,7 +169,7 @@ export const STORY_THEMES: Record<string, StoryThemeContent> = {
   space: spaceTheme,
   treasure: treasureTheme,
   fantasy: fantasyTheme,
-}
+};
 
 /**
  * Get story content for a theme
@@ -178,7 +178,7 @@ export const STORY_THEMES: Record<string, StoryThemeContent> = {
  * @returns Story content for the theme
  */
 export function getStoryContent(theme: string = 'space'): StoryThemeContent {
-  return STORY_THEMES[theme] || STORY_THEMES.space
+  return STORY_THEMES[theme] || STORY_THEMES.space;
 }
 
 /**
@@ -189,13 +189,13 @@ export function getStoryContent(theme: string = 'space'): StoryThemeContent {
  * @returns Checkpoint narrative text
  */
 export function getCheckpointNarrative(theme: string, checkpointIndex: number): string {
-  const content = getStoryContent(theme)
+  const content = getStoryContent(theme);
 
   if (checkpointIndex < 0 || checkpointIndex >= content.checkpoints.length) {
-    return ''
+    return '';
   }
 
-  return content.checkpoints[checkpointIndex].narrative
+  return content.checkpoints[checkpointIndex].narrative;
 }
 
 /**
@@ -209,11 +209,11 @@ export function getCheckpointNarrative(theme: string, checkpointIndex: number): 
  */
 export function interpolateContent(
   template: string,
-  vars: Record<string, string | number>
+  vars: Record<string, string | number>,
 ): string {
   return template.replace(/\{(\w+)\}/g, (match, key) => {
-    return vars[key]?.toString() || match
-  })
+    return vars[key]?.toString() || match;
+  });
 }
 
 /**
@@ -227,20 +227,20 @@ export function interpolateContent(
 export function getCheckpointContent(
   theme: string,
   checkpointIndex: number,
-  vars: Record<string, string | number> = {}
+  vars: Record<string, string | number> = {},
 ): StoryCheckpoint | null {
-  const content = getStoryContent(theme)
+  const content = getStoryContent(theme);
 
   if (checkpointIndex < 0 || checkpointIndex >= content.checkpoints.length) {
-    return null
+    return null;
   }
 
-  const checkpoint = content.checkpoints[checkpointIndex]
+  const checkpoint = content.checkpoints[checkpointIndex];
 
   return {
     ...checkpoint,
     narrative: interpolateContent(checkpoint.narrative, vars),
-  }
+  };
 }
 
 /**
@@ -248,14 +248,14 @@ export function getCheckpointContent(
  */
 export function getIntroContent(
   theme: string,
-  vars: Record<string, string | number> = {}
+  vars: Record<string, string | number> = {},
 ): StoryCheckpoint {
-  const content = getStoryContent(theme)
+  const content = getStoryContent(theme);
 
   return {
     ...content.intro,
     narrative: interpolateContent(content.intro.narrative, vars),
-  }
+  };
 }
 
 /**
@@ -263,12 +263,12 @@ export function getIntroContent(
  */
 export function getFinaleContent(
   theme: string,
-  vars: Record<string, string | number> = {}
+  vars: Record<string, string | number> = {},
 ): StoryCheckpoint {
-  const content = getStoryContent(theme)
+  const content = getStoryContent(theme);
 
   return {
     ...content.finale,
     narrative: interpolateContent(content.finale.narrative, vars),
-  }
+  };
 }
