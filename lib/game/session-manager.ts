@@ -4,16 +4,13 @@
  * Handles initialization of game sessions with adaptive word selection.
  */
 
-import type { WordList, GameResult } from '@/types'
-import { initializeWordReview } from '@/lib/algorithms/spaced-repetition'
-import {
-  getAllReviewData,
-  saveWordReviewData,
-} from '@/lib/storage/sessionStorage'
+import { initializeWordReview } from '@/lib/algorithms/spaced-repetition';
+import { getAllReviewData, saveWordReviewData } from '@/lib/storage/sessionStorage';
+import type { GameResult, WordList } from '@/types';
 
 export interface SessionConfig {
-  wordPool: string[]
-  sessionPerformance: Map<string, GameResult[]>
+  wordPool: string[];
+  sessionPerformance: Map<string, GameResult[]>;
 }
 
 /**
@@ -32,20 +29,20 @@ export interface SessionConfig {
  */
 export function initializeGameSession(wordList: WordList): SessionConfig {
   // Initialize review data for any new words (for spaced repetition tracking)
-  const allReviewData = getAllReviewData()
+  const allReviewData = getAllReviewData();
 
   wordList.words.forEach(word => {
     if (!allReviewData.has(word)) {
-      const reviewData = initializeWordReview(word)
-      saveWordReviewData(reviewData)
-      allReviewData.set(word, reviewData)
+      const reviewData = initializeWordReview(word);
+      saveWordReviewData(reviewData);
+      allReviewData.set(word, reviewData);
     }
-  })
+  });
 
   // Always include all words in the session
   // Word repetition will be determined by current session performance
   return {
     wordPool: wordList.words,
     sessionPerformance: new Map(),
-  }
+  };
 }
