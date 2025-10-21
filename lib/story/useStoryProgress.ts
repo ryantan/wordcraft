@@ -4,10 +4,11 @@
  * React hook for interacting with the Story Progress state machine
  */
 
-'use client'
+'use client';
 
-import { useMachine } from '@xstate/react'
-import { storyProgressMachine } from './machines/storyProgressMachine'
+import { useMachine } from '@xstate/react';
+
+import { storyProgressMachine } from './machines/storyProgressMachine';
 
 /**
  * Hook for managing story progression state
@@ -15,7 +16,7 @@ import { storyProgressMachine } from './machines/storyProgressMachine'
  * @returns Story progress state and control functions
  */
 export function useStoryProgress() {
-  const [state, send] = useMachine(storyProgressMachine)
+  const [state, send] = useMachine(storyProgressMachine);
 
   return {
     // Context values
@@ -29,9 +30,7 @@ export function useStoryProgress() {
 
     // State queries
     isAtCheckpoint:
-      state.matches('checkpoint1') ||
-      state.matches('checkpoint2') ||
-      state.matches('checkpoint3'),
+      state.matches('checkpoint1') || state.matches('checkpoint2') || state.matches('checkpoint3'),
     isIntro: state.matches('intro'),
     isPlaying: state.matches('playing'),
     isCheckpoint1: state.matches('checkpoint1'),
@@ -48,5 +47,5 @@ export function useStoryProgress() {
     // Raw state for advanced use
     state,
     send,
-  }
+  };
 }

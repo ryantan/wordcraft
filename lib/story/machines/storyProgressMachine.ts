@@ -4,12 +4,12 @@
  * XState 5.x machine for managing story progression and checkpoints
  */
 
-import { createMachine, assign } from 'xstate'
-import type { StoryProgressContext } from '@/types'
-import { saveStoryProgress, loadStoryProgress } from '@/lib/storage/story-progress-storage'
-import { getMasteredWords, calculateWordConfidence } from '@/lib/algorithms/confidence-scoring'
-import { getAllGameResults } from '@/lib/storage/sessionStorage'
-import { getAllWordLists } from '@/lib/storage/localStorage'
+import { calculateWordConfidence, getMasteredWords } from '@/lib/algorithms/confidence-scoring';
+import { getAllWordLists } from '@/lib/storage/localStorage';
+import { getAllGameResults } from '@/lib/storage/sessionStorage';
+import { loadStoryProgress, saveStoryProgress } from '@/lib/storage/story-progress-storage';
+import type { StoryProgressContext } from '@/types';
+import { assign, createMachine } from 'xstate';
 
 /**
  * Initial context for story progress
@@ -22,7 +22,7 @@ const initialContext: StoryProgressContext = {
   lastCheckpointAt: 0,
   storyTheme: 'space',
   sessionStartTime: new Date(),
-}
+};
 
 /**
  * Story Progress Machine
@@ -37,17 +37,17 @@ export const storyProgressMachine = createMachine({
 
   context: ({ input }: { input?: Partial<StoryProgressContext> }) => {
     // Try to load persisted progress
-    const persisted = loadStoryProgress()
+    const persisted = loadStoryProgress();
 
     if (persisted) {
-      return persisted
+      return persisted;
     }
 
     // Otherwise use initial context with any provided input
     return {
       ...initialContext,
       ...input,
-    }
+    };
   },
 
   states: {
@@ -136,42 +136,39 @@ export const storyProgressMachine = createMachine({
 }).provide({
   guards: {
     shouldReachCheckpoint1: ({ context }) => {
-      return context.gamesCompleted >= 5 && context.currentCheckpoint < 1
+      return context.gamesCompleted >= 5 && context.currentCheckpoint < 1;
     },
 
     shouldReachCheckpoint2: ({ context }) => {
-      return context.gamesCompleted >= 10 && context.currentCheckpoint < 2
+      return context.gamesCompleted >= 10 && context.currentCheckpoint < 2;
     },
 
     shouldReachCheckpoint3: ({ context }) => {
-      return context.gamesCompleted >= 15 && context.currentCheckpoint < 3
+      return context.gamesCompleted >= 15 && context.currentCheckpoint < 3;
     },
 
     shouldReachFinale: ({ context }) => {
       // Check if all words have >80% confidence
       try {
-        const results = getAllGameResults()
-        const wordLists = getAllWordLists()
+        const results = getAllGameResults();
+        const wordLists = getAllWordLists();
 
-        if (wordLists.length === 0) return false
+        if (wordLists.length === 0) return false;
 
-        const allWords = wordLists.flatMap(list => list.words)
-        const uniqueWords = Array.from(new Set(allWords))
+        const allWords = wordLists.flatMap(list => list.words);
+        const uniqueWords = Array.from(new Set(allWords));
 
-        if (uniqueWords.length === 0) return false
+        if (uniqueWords.length === 0) return false;
 
         const confidenceMap = new Map(
-          uniqueWords.map(word => [
-            word,
-            calculateWordConfidence(word, results)
-          ])
-        )
+          uniqueWords.map(word => [word, calculateWordConfidence(word, results)]),
+        );
 
-        const masteredWords = getMasteredWords(confidenceMap)
-        return masteredWords.length === uniqueWords.length && context.gamesCompleted >= 20
+        const masteredWords = getMasteredWords(confidenceMap);
+        return masteredWords.length === uniqueWords.length && context.gamesCompleted >= 20;
       } catch (error) {
-        console.error('Error checking finale condition:', error)
-        return false
+        console.error('Error checking finale condition:', error);
+        return false;
       }
     },
   },
@@ -185,9 +182,9 @@ export const storyProgressMachine = createMachine({
       currentCheckpoint: 1,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(1)) {
-          return [...context.checkpointsUnlocked, 1]
+          return [...context.checkpointsUnlocked, 1];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -196,9 +193,9 @@ export const storyProgressMachine = createMachine({
       currentCheckpoint: 2,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(2)) {
-          return [...context.checkpointsUnlocked, 2]
+          return [...context.checkpointsUnlocked, 2];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -207,9 +204,9 @@ export const storyProgressMachine = createMachine({
       currentCheckpoint: 3,
       checkpointsUnlocked: ({ context }) => {
         if (!context.checkpointsUnlocked.includes(3)) {
-          return [...context.checkpointsUnlocked, 3]
+          return [...context.checkpointsUnlocked, 3];
         }
-        return context.checkpointsUnlocked
+        return context.checkpointsUnlocked;
       },
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
@@ -224,7 +221,7 @@ export const storyProgressMachine = createMachine({
     }),
 
     persistProgress: ({ context }) => {
-      saveStoryProgress(context)
+      saveStoryProgress(context);
     },
   },
-})
+});
