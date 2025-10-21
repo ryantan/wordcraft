@@ -243,6 +243,14 @@ export type TryNewWordsEvent = {
 }
 
 /**
+ * Event sent when story generation is complete
+ */
+export type StoryGeneratedEvent = {
+  type: 'STORY_GENERATED'
+  story: GeneratedStory
+}
+
+/**
  * Union type of all StorySessionMachine events
  */
 export type StorySessionEvent =
@@ -255,6 +263,7 @@ export type StorySessionEvent =
   | RestartStoryEvent
   | SkipIntroEvent
   | TryNewWordsEvent
+  | StoryGeneratedEvent
 
 /**
  * Input provided when creating StorySessionMachine
@@ -264,4 +273,5 @@ export interface StorySessionInput {
   theme?: string
   wordListId?: string
   hasSeenIntro?: boolean
+  generatedStory?: GeneratedStory
 }

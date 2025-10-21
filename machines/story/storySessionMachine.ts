@@ -15,7 +15,6 @@ import type {
   WordStats,
 } from '@/types/story'
 import { storyProgressMachine } from '@/lib/story/machines/storyProgressMachine'
-import { generateStory } from '@/lib/story/story-generator'
 import { getStoryContent } from '@/lib/story/content'
 import {
   initializeWordStats,
@@ -47,8 +46,8 @@ export const storySessionMachine = createMachine(
       wordList: input.wordList,
       storyTheme: input.theme || 'space',
 
-      // Generated story structure
-      generatedStory: null,
+      // Generated story structure (passed in from outside)
+      generatedStory: input.generatedStory || null,
       currentBeatIndex: 0,
       currentBeat: null,
 
@@ -81,12 +80,26 @@ export const storySessionMachine = createMachine(
     states: {
       idle: {
         entry: [
-          'generateStory',
           'spawnStoryProgressActor',
           'initializeWordStats',
           'loadIntroContent',
         ],
-        always: 'showingIntro',
+        on: {
+          STORY_GENERATED: {
+            actions: 'updateGeneratedStory',
+            target: 'showingIntro',
+          },
+        },
+        always: [
+          {
+            guard: 'hasGeneratedStory',
+            target: 'showingIntro',
+          },
+          {
+            // If no story provided, stay in idle (loading state)
+            target: 'idle',
+          },
+        ],
       },
 
       showingIntro: {
@@ -201,26 +214,23 @@ export const storySessionMachine = createMachine(
   {
     actions: {
       /**
-       * Generate story beats using LLM stub
-       */
-      generateStory: assign(({ context }) => {
-        const story = generateStory({
-          wordList: context.wordList.words,
-          theme: context.storyTheme,
-          targetBeats: 20,
-        })
-
-        return {
-          generatedStory: story,
-        }
-      }),
-
-      /**
        * Spawn StoryProgressMachine as child actor
        */
       spawnStoryProgressActor: assign({
         storyProgressActor: ({ spawn }) =>
           spawn(storyProgressMachine, { id: 'storyProgress' }),
+      }),
+
+      /**
+       * Update the generated story in context
+       */
+      updateGeneratedStory: assign({
+        generatedStory: ({ event }) => {
+          if (event.type === 'STORY_GENERATED') {
+            return event.story
+          }
+          return null
+        },
       }),
 
       /**
@@ -374,6 +384,14 @@ export const storySessionMachine = createMachine(
     },
 
     guards: {
+      /**
+       * Check if a story has been generated and provided
+       */
+      hasGeneratedStory: ({ context }) => {
+        return context.generatedStory !== null && 
+               context.generatedStory.stage1Beats.length > 0
+      },
+
       /**
        * Check if current beat is a narrative beat
        */
