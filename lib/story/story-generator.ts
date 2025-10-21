@@ -15,7 +15,8 @@ import type {
   CheckpointBeat,
 } from '@/types/story'
 import { getStoryContent } from './content'
-import { generateStoryWithOpenAI, validateStoryContent, logStoryMetrics, type StoryGenerationMetrics } from '@/lib/openai/story-service'
+import { validateStoryContent, logStoryMetrics, type StoryGenerationMetrics } from '@/lib/openai/story-service'
+import { generateStoryServerAction } from '@/lib/actions/story-generation'
 import { env } from '@/lib/env'
 
 /**
@@ -79,8 +80,8 @@ export async function generateStoryAsync(input: StoryGenerationInput): Promise<G
   // Try OpenAI generation if enabled
   if (env.enableOpenAIStoryGeneration) {
     try {
-      console.info('Attempting OpenAI story generation...')
-      const openAIResult = await generateStoryWithOpenAI(input)
+      console.info('Attempting OpenAI story generation via server action...')
+      const openAIResult = await generateStoryServerAction(input)
       if (openAIResult && validateStoryContent(openAIResult)) {
         console.info('OpenAI story generation successful')
         metrics.endTime = Date.now()
