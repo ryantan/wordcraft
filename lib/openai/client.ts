@@ -89,7 +89,8 @@ export class OpenAIAPIError extends Error {
  */
 export async function generateStoryContent(
   client: OpenAI,
-  request: StoryGenerationRequest
+  request: StoryGenerationRequest,
+  jsonSchema?: object
 ): Promise<StoryGenerationResponse> {
   console.log('generateStoryContent start');
   try {
@@ -98,7 +99,7 @@ export async function generateStoryContent(
       messages: [
         {
           role: 'system',
-          content: 'You are a creative children\'s story writer specializing in educational adventures.',
+          content: 'You are a creative children\'s story writer specializing in educational adventures. Generate structured story data in JSON format.',
         },
         {
           role: 'user',
@@ -107,6 +108,17 @@ export async function generateStoryContent(
       ],
       temperature: serverEnv.openai.temperature,
       max_tokens: serverEnv.openai.maxTokens,
+      // Add structured output if schema provided
+      ...(jsonSchema && {
+        response_format: {
+          type: 'json_schema' as const,
+          json_schema: {
+            name: 'story_generation',
+            strict: true,
+            schema: jsonSchema as { [key: string]: unknown }
+          }
+        }
+      })
     }
     console.log('Open AI request: ');
     console.log(JSON.stringify(openAiRequest, null, 2));
