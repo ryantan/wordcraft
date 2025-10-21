@@ -35,7 +35,7 @@ export function generateStory(
 ): GeneratedStory {
   console.log('generateStory start');
   const startTime = Date.now()
-  let metrics: StoryGenerationMetrics = {
+  const metrics: StoryGenerationMetrics = {
     startTime,
     endTime: 0,
     duration: 0,
@@ -67,7 +67,7 @@ export function generateStory(
 export async function generateStoryAsync(input: StoryGenerationInput): Promise<GeneratedStory> {
   console.log('generateStoryAsync start');
   const startTime = Date.now()
-  let metrics: StoryGenerationMetrics = {
+  const metrics: StoryGenerationMetrics = {
     startTime,
     endTime: 0,
     duration: 0,
