@@ -5,15 +5,15 @@
  * Uses localStorage for persistence across browser sessions.
  */
 
-import type { GameResult } from '@/types'
-import type { WordReviewData } from '@/lib/algorithms/spaced-repetition'
-import type { LearningStyleProfile } from '@/lib/algorithms/learning-style-detection'
+import type { LearningStyleProfile } from '@/lib/algorithms/learning-style-detection';
+import type { WordReviewData } from '@/lib/algorithms/spaced-repetition';
+import type { GameResult } from '@/types';
 
 const STORAGE_KEYS = {
   GAME_RESULTS: 'wordcraft_game_results',
   REVIEW_DATA: 'wordcraft_review_data',
   LEARNING_PROFILE: 'wordcraft_learning_profile',
-} as const
+} as const;
 
 /**
  * Serialize Date objects for storage
@@ -22,7 +22,7 @@ function serializeGameResult(result: GameResult): any {
   return {
     ...result,
     completedAt: result.completedAt.toISOString(),
-  }
+  };
 }
 
 /**
@@ -32,7 +32,7 @@ function deserializeGameResult(data: any): GameResult {
   return {
     ...data,
     completedAt: new Date(data.completedAt),
-  }
+  };
 }
 
 /**
@@ -43,7 +43,7 @@ function serializeReviewData(data: WordReviewData): any {
     ...data,
     lastReviewDate: data.lastReviewDate.toISOString(),
     nextReviewDate: data.nextReviewDate.toISOString(),
-  }
+  };
 }
 
 /**
@@ -54,7 +54,7 @@ function deserializeReviewData(data: any): WordReviewData {
     ...data,
     lastReviewDate: new Date(data.lastReviewDate),
     nextReviewDate: new Date(data.nextReviewDate),
-  }
+  };
 }
 
 // ============================================================================
@@ -65,16 +65,16 @@ function deserializeReviewData(data: any): WordReviewData {
  * Save a game result
  */
 export function saveGameResult(result: GameResult): void {
-  const results = getAllGameResults()
-  results.push(result)
+  const results = getAllGameResults();
+  results.push(result);
 
   // Keep last 500 results (prevent unlimited growth)
-  const trimmedResults = results.slice(-500)
+  const trimmedResults = results.slice(-500);
 
   localStorage.setItem(
     STORAGE_KEYS.GAME_RESULTS,
-    JSON.stringify(trimmedResults.map(serializeGameResult))
-  )
+    JSON.stringify(trimmedResults.map(serializeGameResult)),
+  );
 }
 
 /**
@@ -82,14 +82,14 @@ export function saveGameResult(result: GameResult): void {
  */
 export function getAllGameResults(): GameResult[] {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.GAME_RESULTS)
-    if (!data) return []
+    const data = localStorage.getItem(STORAGE_KEYS.GAME_RESULTS);
+    if (!data) return [];
 
-    const parsed = JSON.parse(data)
-    return Array.isArray(parsed) ? parsed.map(deserializeGameResult) : []
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed.map(deserializeGameResult) : [];
   } catch (error) {
-    console.error('Error loading game results:', error)
-    return []
+    console.error('Error loading game results:', error);
+    return [];
   }
 }
 
@@ -97,8 +97,8 @@ export function getAllGameResults(): GameResult[] {
  * Get game results for a specific word
  */
 export function getWordResults(word: string): GameResult[] {
-  const allResults = getAllGameResults()
-  return allResults.filter(r => r.word.toLowerCase() === word.toLowerCase())
+  const allResults = getAllGameResults();
+  return allResults.filter(r => r.word.toLowerCase() === word.toLowerCase());
 }
 
 /**
@@ -109,14 +109,14 @@ export function getWordResults(word: string): GameResult[] {
 export function getWordListResults(_wordListId: string): GameResult[] {
   // For now, we don't store wordListId in results
   // This could be enhanced to filter by word list
-  return getAllGameResults()
+  return getAllGameResults();
 }
 
 /**
  * Clear all game results
  */
 export function clearAllGameResults(): void {
-  localStorage.removeItem(STORAGE_KEYS.GAME_RESULTS)
+  localStorage.removeItem(STORAGE_KEYS.GAME_RESULTS);
 }
 
 // ============================================================================
@@ -127,15 +127,15 @@ export function clearAllGameResults(): void {
  * Save review data for a word
  */
 export function saveWordReviewData(data: WordReviewData): void {
-  const allData = getAllReviewData()
-  allData.set(data.word.toLowerCase(), data)
+  const allData = getAllReviewData();
+  allData.set(data.word.toLowerCase(), data);
 
   const serialized = Array.from(allData.entries()).map(([word, reviewData]) => [
     word,
     serializeReviewData(reviewData),
-  ])
+  ]);
 
-  localStorage.setItem(STORAGE_KEYS.REVIEW_DATA, JSON.stringify(serialized))
+  localStorage.setItem(STORAGE_KEYS.REVIEW_DATA, JSON.stringify(serialized));
 }
 
 /**
@@ -143,21 +143,18 @@ export function saveWordReviewData(data: WordReviewData): void {
  */
 export function getAllReviewData(): Map<string, WordReviewData> {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.REVIEW_DATA)
-    if (!data) return new Map()
+    const data = localStorage.getItem(STORAGE_KEYS.REVIEW_DATA);
+    if (!data) return new Map();
 
-    const parsed = JSON.parse(data)
-    if (!Array.isArray(parsed)) return new Map()
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed)) return new Map();
 
     return new Map(
-      parsed.map(([word, reviewData]: [string, any]) => [
-        word,
-        deserializeReviewData(reviewData),
-      ])
-    )
+      parsed.map(([word, reviewData]: [string, any]) => [word, deserializeReviewData(reviewData)]),
+    );
   } catch (error) {
-    console.error('Error loading review data:', error)
-    return new Map()
+    console.error('Error loading review data:', error);
+    return new Map();
   }
 }
 
@@ -165,15 +162,15 @@ export function getAllReviewData(): Map<string, WordReviewData> {
  * Get review data for a specific word
  */
 export function getWordReviewData(word: string): WordReviewData | null {
-  const allData = getAllReviewData()
-  return allData.get(word.toLowerCase()) || null
+  const allData = getAllReviewData();
+  return allData.get(word.toLowerCase()) || null;
 }
 
 /**
  * Clear all review data
  */
 export function clearAllReviewData(): void {
-  localStorage.removeItem(STORAGE_KEYS.REVIEW_DATA)
+  localStorage.removeItem(STORAGE_KEYS.REVIEW_DATA);
 }
 
 // ============================================================================
@@ -184,7 +181,7 @@ export function clearAllReviewData(): void {
  * Save learning style profile
  */
 export function saveLearningProfile(profile: LearningStyleProfile): void {
-  localStorage.setItem(STORAGE_KEYS.LEARNING_PROFILE, JSON.stringify(profile))
+  localStorage.setItem(STORAGE_KEYS.LEARNING_PROFILE, JSON.stringify(profile));
 }
 
 /**
@@ -192,13 +189,13 @@ export function saveLearningProfile(profile: LearningStyleProfile): void {
  */
 export function getLearningProfile(): LearningStyleProfile | null {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.LEARNING_PROFILE)
-    if (!data) return null
+    const data = localStorage.getItem(STORAGE_KEYS.LEARNING_PROFILE);
+    if (!data) return null;
 
-    return JSON.parse(data)
+    return JSON.parse(data);
   } catch (error) {
-    console.error('Error loading learning profile:', error)
-    return null
+    console.error('Error loading learning profile:', error);
+    return null;
   }
 }
 
@@ -206,7 +203,7 @@ export function getLearningProfile(): LearningStyleProfile | null {
  * Clear learning profile
  */
 export function clearLearningProfile(): void {
-  localStorage.removeItem(STORAGE_KEYS.LEARNING_PROFILE)
+  localStorage.removeItem(STORAGE_KEYS.LEARNING_PROFILE);
 }
 
 // ============================================================================
@@ -217,18 +214,18 @@ export function clearLearningProfile(): void {
  * Clear all adaptive data (results, reviews, profile)
  */
 export function clearAllAdaptiveData(): void {
-  clearAllGameResults()
-  clearAllReviewData()
-  clearLearningProfile()
+  clearAllGameResults();
+  clearAllReviewData();
+  clearLearningProfile();
 }
 
 /**
  * Get storage statistics
  */
 export function getStorageStats() {
-  const results = getAllGameResults()
-  const reviewData = getAllReviewData()
-  const profile = getLearningProfile()
+  const results = getAllGameResults();
+  const reviewData = getAllReviewData();
+  const profile = getLearningProfile();
 
   return {
     totalResults: results.length,
@@ -236,21 +233,21 @@ export function getStorageStats() {
     hasLearningProfile: profile !== null,
     oldestResult: results.length > 0 ? results[0].completedAt : null,
     newestResult: results.length > 0 ? results[results.length - 1].completedAt : null,
-  }
+  };
 }
 
 // ============================================================================
 // Story Session State Persistence (Story 6.4a)
 // ============================================================================
 
-const STORY_SESSION_KEY = 'wordcraft_story_session_state'
+const STORY_SESSION_KEY = 'wordcraft_story_session_state';
 
 /**
  * Save story session state to sessionStorage
  * Handles serialization of Maps and Dates
  */
 export function saveStorySessionState(state: any): void {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') return;
 
   try {
     // Convert Maps to arrays for serialization
@@ -258,15 +255,17 @@ export function saveStorySessionState(state: any): void {
       ...state,
       wordStats: Array.from(state.wordStats || []),
       sessionStartTime: state.sessionStartTime?.toISOString(),
-      generatedStory: state.generatedStory ? {
-        ...state.generatedStory,
-        stage2ExtraBeats: Array.from(state.generatedStory.stage2ExtraBeats || []),
-      } : null,
-    }
+      generatedStory: state.generatedStory
+        ? {
+            ...state.generatedStory,
+            stage2ExtraBeats: Array.from(state.generatedStory.stage2ExtraBeats || []),
+          }
+        : null,
+    };
 
-    sessionStorage.setItem(STORY_SESSION_KEY, JSON.stringify(serialized))
+    sessionStorage.setItem(STORY_SESSION_KEY, JSON.stringify(serialized));
   } catch (error) {
-    console.error('Error saving story session state:', error)
+    console.error('Error saving story session state:', error);
   }
 }
 
@@ -275,29 +274,31 @@ export function saveStorySessionState(state: any): void {
  * Handles deserialization of Maps and Dates
  */
 export function loadStorySessionState(): any | null {
-  if (typeof window === 'undefined') return null
+  if (typeof window === 'undefined') return null;
 
   try {
-    const data = sessionStorage.getItem(STORY_SESSION_KEY)
-    if (!data) return null
+    const data = sessionStorage.getItem(STORY_SESSION_KEY);
+    if (!data) return null;
 
-    const parsed = JSON.parse(data)
+    const parsed = JSON.parse(data);
 
     // Convert arrays back to Maps
     const deserialized = {
       ...parsed,
       wordStats: new Map(parsed.wordStats || []),
       sessionStartTime: parsed.sessionStartTime ? new Date(parsed.sessionStartTime) : new Date(),
-      generatedStory: parsed.generatedStory ? {
-        ...parsed.generatedStory,
-        stage2ExtraBeats: new Map(parsed.generatedStory.stage2ExtraBeats || []),
-      } : null,
-    }
+      generatedStory: parsed.generatedStory
+        ? {
+            ...parsed.generatedStory,
+            stage2ExtraBeats: new Map(parsed.generatedStory.stage2ExtraBeats || []),
+          }
+        : null,
+    };
 
-    return deserialized
+    return deserialized;
   } catch (error) {
-    console.error('Error loading story session state:', error)
-    return null
+    console.error('Error loading story session state:', error);
+    return null;
   }
 }
 
@@ -305,6 +306,6 @@ export function loadStorySessionState(): any | null {
  * Clear story session state from sessionStorage
  */
 export function clearStorySessionState(): void {
-  if (typeof window === 'undefined') return
-  sessionStorage.removeItem(STORY_SESSION_KEY)
+  if (typeof window === 'undefined') return;
+  sessionStorage.removeItem(STORY_SESSION_KEY);
 }
