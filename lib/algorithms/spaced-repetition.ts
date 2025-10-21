@@ -6,15 +6,15 @@
  * with successful recalls and decrease with failures.
  */
 
-import type { WordConfidence } from './confidence-scoring'
+import type { WordConfidence } from './confidence-scoring';
 
 export interface WordReviewData {
-  word: string
-  reviewCount: number
-  lastReviewDate: Date
-  nextReviewDate: Date
-  currentInterval: number // in days
-  boxLevel: number // Leitner box (1-5)
+  word: string;
+  reviewCount: number;
+  lastReviewDate: Date;
+  nextReviewDate: Date;
+  currentInterval: number; // in days
+  boxLevel: number; // Leitner box (1-5)
 }
 
 /**
@@ -25,13 +25,13 @@ export interface WordReviewData {
  * Box 4: Review weekly
  * Box 5: Review bi-weekly (mastered words)
  */
-const LEITNER_INTERVALS = [1, 2, 4, 7, 14] as const
+const LEITNER_INTERVALS = [1, 2, 4, 7, 14] as const;
 
 /**
  * Initialize review data for a word
  */
 export function initializeWordReview(word: string): WordReviewData {
-  const now = new Date()
+  const now = new Date();
 
   return {
     word,
@@ -40,7 +40,7 @@ export function initializeWordReview(word: string): WordReviewData {
     nextReviewDate: now, // Due immediately
     currentInterval: 1,
     boxLevel: 1, // Start in box 1 (needs most practice)
-  }
+  };
 }
 
 /**
@@ -52,32 +52,32 @@ export function initializeWordReview(word: string): WordReviewData {
  */
 export function updateWordReview(
   reviewData: WordReviewData,
-  confidence: WordConfidence
+  confidence: WordConfidence,
 ): WordReviewData {
-  const now = new Date()
+  const now = new Date();
 
   // Determine if word should move up or down in Leitner boxes
-  let newBoxLevel = reviewData.boxLevel
+  let newBoxLevel = reviewData.boxLevel;
 
   if (confidence.level === 'mastered') {
     // Move up a box (max box 5)
-    newBoxLevel = Math.min(5, reviewData.boxLevel + 1)
+    newBoxLevel = Math.min(5, reviewData.boxLevel + 1);
   } else if (confidence.level === 'needs-work') {
     // Move down to box 1 (needs immediate practice)
-    newBoxLevel = 1
+    newBoxLevel = 1;
   } else if (confidence.level === 'progressing') {
     // Stay in current box or move up slowly
     if (confidence.score > 70 && reviewData.boxLevel < 5) {
-      newBoxLevel = reviewData.boxLevel + 1
+      newBoxLevel = reviewData.boxLevel + 1;
     }
   }
 
   // Calculate next review interval based on box level
-  const interval = LEITNER_INTERVALS[newBoxLevel - 1]
+  const interval = LEITNER_INTERVALS[newBoxLevel - 1];
 
   // Calculate next review date
-  const nextReviewDate = new Date(now)
-  nextReviewDate.setDate(nextReviewDate.getDate() + interval)
+  const nextReviewDate = new Date(now);
+  nextReviewDate.setDate(nextReviewDate.getDate() + interval);
 
   return {
     ...reviewData,
@@ -86,14 +86,14 @@ export function updateWordReview(
     nextReviewDate,
     currentInterval: interval,
     boxLevel: newBoxLevel,
-  }
+  };
 }
 
 /**
  * Check if a word is due for review
  */
 export function isWordDueForReview(reviewData: WordReviewData, now: Date = new Date()): boolean {
-  return reviewData.nextReviewDate <= now
+  return reviewData.nextReviewDate <= now;
 }
 
 /**
@@ -107,36 +107,36 @@ export function isWordDueForReview(reviewData: WordReviewData, now: Date = new D
 export function getWordsForReview(
   reviewDataMap: Map<string, WordReviewData>,
   confidenceMap: Map<string, WordConfidence>,
-  limit?: number
+  limit?: number,
 ): string[] {
-  const now = new Date()
+  const now = new Date();
 
   // Get all due words with priority scores
   const dueWords = Array.from(reviewDataMap.values())
     .filter(data => isWordDueForReview(data, now))
     .map(data => {
-      const confidence = confidenceMap.get(data.word.toLowerCase())
+      const confidence = confidenceMap.get(data.word.toLowerCase());
       const overdueDays = Math.max(
         0,
-        (now.getTime() - data.nextReviewDate.getTime()) / (1000 * 60 * 60 * 24)
-      )
+        (now.getTime() - data.nextReviewDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
 
       // Priority score (higher = more urgent)
       const priorityScore =
         overdueDays * 10 + // Overdue gets high priority
         (6 - data.boxLevel) * 5 + // Lower boxes get higher priority
-        (confidence?.level === 'needs-work' ? 20 : 0) // Struggling words highest priority
+        (confidence?.level === 'needs-work' ? 20 : 0); // Struggling words highest priority
 
       return {
         word: data.word,
         priorityScore,
-      }
+      };
     })
-    .sort((a, b) => b.priorityScore - a.priorityScore) // Highest priority first
+    .sort((a, b) => b.priorityScore - a.priorityScore); // Highest priority first
 
-  const words = dueWords.map(w => w.word)
+  const words = dueWords.map(w => w.word);
 
-  return limit ? words.slice(0, limit) : words
+  return limit ? words.slice(0, limit) : words;
 }
 
 /**
@@ -151,53 +151,53 @@ export function selectWordsForSession(
   allWords: string[],
   reviewDataMap: Map<string, WordReviewData>,
   confidenceMap: Map<string, WordConfidence>,
-  sessionSize: number = 5
+  sessionSize: number = 5,
 ): string[] {
-  const selectedWords: string[] = []
+  const selectedWords: string[] = [];
 
   // 1. Prioritize struggling words (needs-work)
   const strugglingWords = allWords.filter(word => {
-    const confidence = confidenceMap.get(word.toLowerCase())
-    return confidence && confidence.level === 'needs-work'
-  })
+    const confidence = confidenceMap.get(word.toLowerCase());
+    return confidence && confidence.level === 'needs-work';
+  });
 
   // Add struggling words (2-3 times if session size allows)
   const strugglingQuota = Math.min(
     Math.ceil(sessionSize * 0.6), // 60% of session
-    strugglingWords.length * 2
-  )
+    strugglingWords.length * 2,
+  );
 
   for (let i = 0; i < strugglingQuota && selectedWords.length < sessionSize; i++) {
-    const word = strugglingWords[i % strugglingWords.length]
+    const word = strugglingWords[i % strugglingWords.length];
     if (word) {
-      selectedWords.push(word)
+      selectedWords.push(word);
     }
   }
 
   // 2. Add words due for review
   const dueWords = getWordsForReview(reviewDataMap, confidenceMap)
     .filter(word => !selectedWords.includes(word))
-    .slice(0, sessionSize - selectedWords.length)
+    .slice(0, sessionSize - selectedWords.length);
 
-  selectedWords.push(...dueWords)
+  selectedWords.push(...dueWords);
 
   // 3. Fill remaining slots with random words (variety)
   const remainingWords = allWords
     .filter(word => !selectedWords.includes(word))
     .sort(() => Math.random() - 0.5)
-    .slice(0, sessionSize - selectedWords.length)
+    .slice(0, sessionSize - selectedWords.length);
 
-  selectedWords.push(...remainingWords)
+  selectedWords.push(...remainingWords);
 
   // Shuffle to avoid predictable patterns
-  return selectedWords.sort(() => Math.random() - 0.5).slice(0, sessionSize)
+  return selectedWords.sort(() => Math.random() - 0.5).slice(0, sessionSize);
 }
 
 /**
  * Get statistics for review data
  */
 export function getReviewStats(reviewDataMap: Map<string, WordReviewData>) {
-  const allData = Array.from(reviewDataMap.values())
+  const allData = Array.from(reviewDataMap.values());
 
   const boxDistribution = {
     box1: allData.filter(d => d.boxLevel === 1).length,
@@ -205,15 +205,14 @@ export function getReviewStats(reviewDataMap: Map<string, WordReviewData>) {
     box3: allData.filter(d => d.boxLevel === 3).length,
     box4: allData.filter(d => d.boxLevel === 4).length,
     box5: allData.filter(d => d.boxLevel === 5).length,
-  }
+  };
 
-  const dueCount = allData.filter(d => isWordDueForReview(d)).length
+  const dueCount = allData.filter(d => isWordDueForReview(d)).length;
 
   return {
     totalWords: allData.length,
     dueForReview: dueCount,
     boxDistribution,
-    averageInterval:
-      allData.reduce((sum, d) => sum + d.currentInterval, 0) / allData.length || 0,
-  }
+    averageInterval: allData.reduce((sum, d) => sum + d.currentInterval, 0) / allData.length || 0,
+  };
 }
