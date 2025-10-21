@@ -41,5 +41,8 @@ test-results/
 playwright-report/
 playwright/.cache/
 
+# Working files
+.ignore
+
 # vitest
 .vitest
