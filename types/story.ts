@@ -1,3 +1,9 @@
+// ============================================================================
+// Story 6.4a: StorySessionMachine Types
+// ============================================================================
+
+import type { WordList } from './word';
+
 /**
  * Story Mode Type Definitions
  *
@@ -8,13 +14,13 @@
  * Story progress context maintained by the state machine
  */
 export interface StoryProgressContext {
-  currentCheckpoint: number // 0-4 (intro to finale)
-  gamesCompleted: number
-  totalGamesInSession: number
-  checkpointsUnlocked: number[] // [0, 1, 2, ...]
-  lastCheckpointAt: number // games count when last checkpoint reached
-  storyTheme: string // 'space', 'treasure', etc.
-  sessionStartTime: Date
+  currentCheckpoint: number; // 0-4 (intro to finale)
+  gamesCompleted: number;
+  totalGamesInSession: number;
+  checkpointsUnlocked: number[]; // [0, 1, 2, ...]
+  lastCheckpointAt: number; // games count when last checkpoint reached
+  storyTheme: string; // 'space', 'treasure', etc.
+  sessionStartTime: Date;
 }
 
 /**
@@ -26,63 +32,62 @@ export type StoryProgressEvent =
   | { type: 'CONTINUE_STORY' }
   | { type: 'SKIP_CHECKPOINT' }
   | { type: 'STORY_RESET' }
-  | { type: 'FINALE_REACHED' }
+  | { type: 'FINALE_REACHED' };
 
 /**
  * Story theme options
  */
-export type StoryTheme = 'space' | 'treasure' | 'fantasy' | 'ocean' | 'jungle'
+export type StoryTheme = 'space' | 'treasure' | 'fantasy' | 'ocean' | 'jungle';
 
 /**
  * Checkpoint milestone information
  */
 export interface StoryCheckpoint {
-  id: number
-  name: string
-  gamesRequired: number
-  description: string
-  unlocked: boolean
+  id: number;
+  name: string;
+  gamesRequired: number;
+  description: string;
+  unlocked: boolean;
 }
-
-// ============================================================================
-// Story 6.4a: StorySessionMachine Types
-// ============================================================================
-
-import type { WordList } from './word'
 
 /**
  * Base interface for all story beats
  */
 export interface BaseBeat {
-  type: 'game' | 'choice' | 'narrative' | 'checkpoint'
-  id: string
-  narrative: string
+  type: 'game' | 'choice' | 'narrative' | 'checkpoint';
+  id: string;
+  narrative: string;
 }
 
 /**
  * Game Beat - User plays a spelling game with a specific word
  */
 export interface GameBeat extends BaseBeat {
-  type: 'game'
-  word: string
-  gameType: 'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'
-  stage: 1 | 2  // Stage 1: Assessment, Stage 2: Mastery
+  type: 'game';
+  word: string;
+  gameType:
+    | 'letterMatching'
+    | 'wordBuilding'
+    | 'spellingChallenge'
+    | 'wordScramble'
+    | 'missingLetters';
+  stage: 1 | 2; // Stage 1: Assessment, Stage 2: Mastery
 }
 
 /**
  * Choice Beat - User makes a story decision
  */
 export interface ChoiceBeat extends BaseBeat {
-  type: 'choice'
-  question: string
-  options: [string, string]  // Two choices
+  type: 'choice';
+  question: string;
+  options: [string, string]; // Two choices
 }
 
 /**
  * Narrative Beat - Pure story advancement, no interaction
  */
 export interface NarrativeBeat extends BaseBeat {
-  type: 'narrative'
+  type: 'narrative';
   // Just narrative text, user clicks continue
 }
 
@@ -90,47 +95,47 @@ export interface NarrativeBeat extends BaseBeat {
  * Checkpoint Beat - Major milestone celebration
  */
 export interface CheckpointBeat extends BaseBeat {
-  type: 'checkpoint'
-  checkpointNumber: 1 | 2 | 3
-  celebrationEmoji: string
-  title: string
+  type: 'checkpoint';
+  checkpointNumber: 1 | 2 | 3;
+  celebrationEmoji: string;
+  title: string;
 }
 
 /**
  * Union type of all beat types
  */
-export type StoryBeat = GameBeat | ChoiceBeat | NarrativeBeat | CheckpointBeat
+export type StoryBeat = GameBeat | ChoiceBeat | NarrativeBeat | CheckpointBeat;
 
 /**
  * Statistics tracked for each word during story mode
  */
 export interface WordStats {
-  word: string
-  confidence: number        // 0-100 confidence score
-  errors: number           // Number of mistakes
-  hints: number            // Number of hints used
-  timeSpent: number        // Total time in milliseconds
-  streak: number           // Current correct streak
-  lastPracticed: Date      // Last time word was practiced
-  attemptsCount: number    // Total number of attempts
+  word: string;
+  confidence: number; // 0-100 confidence score
+  errors: number; // Number of mistakes
+  hints: number; // Number of hints used
+  timeSpent: number; // Total time in milliseconds
+  streak: number; // Current correct streak
+  lastPracticed: Date; // Last time word was practiced
+  attemptsCount: number; // Total number of attempts
 }
 
 /**
  * Input for LLM story generation
  */
 export interface StoryGenerationInput {
-  wordList: string[]
+  wordList: string[];
   theme: StoryTheme;
-  targetBeats: number
+  targetBeats: number;
 }
 
 /**
  * Generated story structure
  */
 export interface GeneratedStory {
-  stage1Beats: StoryBeat[]                      // One beat per word (story order)
-  stage2ExtraBeats: Map<string, StoryBeat[]>    // Extra beats per word for mastery
-  stage2FixedSequence: StoryBeat[]             // Fallback sequence for Stage 2
+  stage1Beats: StoryBeat[]; // One beat per word (story order)
+  stage2ExtraBeats: Map<string, StoryBeat[]>; // Extra beats per word for mastery
+  stage2FixedSequence: StoryBeat[]; // Fallback sequence for Stage 2
 }
 
 /**
@@ -138,109 +143,109 @@ export interface GeneratedStory {
  */
 export interface StorySessionContext {
   // Input (provided at machine creation)
-  wordList: WordList
-  storyTheme: string
+  wordList: WordList;
+  storyTheme: string;
 
   // Generated story structure
-  generatedStory: GeneratedStory | null
-  currentBeatIndex: number
-  currentBeat: StoryBeat | null
+  generatedStory: GeneratedStory | null;
+  currentBeatIndex: number;
+  currentBeat: StoryBeat | null;
 
   // Phase tracking
-  currentPhase: 'stage1' | 'stage2'
+  currentPhase: 'stage1' | 'stage2';
 
   // Word stats tracking
-  wordStats: Map<string, WordStats>
-  userChoices: Array<{ beatId: string; choice: string }>
-  gameResults: Array<any> // GameResult array for stats calculation
+  wordStats: Map<string, WordStats>;
+  userChoices: Array<{ beatId: string; choice: string }>;
+  gameResults: Array<any>; // GameResult array for stats calculation
 
   // Story integration
-  storyProgressActor: any | null  // XState ActorRef
+  storyProgressActor: any | null; // XState ActorRef
 
   // Checkpoint data
-  currentCheckpoint: any | null
-  canContinueStory: boolean
+  currentCheckpoint: any | null;
+  canContinueStory: boolean;
 
   // Content
-  introContent: any | null
-  finaleContent: any | null
+  introContent: any | null;
+  finaleContent: any | null;
 
   // Session tracking
-  sessionStartTime: Date
-  sessionStartTimeMs: number // Timestamp for stats calculation
-  wordListId: string
-  hasSeenIntro: boolean
+  sessionStartTime: Date;
+  sessionStartTimeMs: number; // Timestamp for stats calculation
+  wordListId: string;
+  hasSeenIntro: boolean;
 }
 
 /**
  * Event: User starts the story from intro screen
  */
 export type StartStoryEvent = {
-  type: 'START_STORY'
-}
+  type: 'START_STORY';
+};
 
 /**
  * Event: User clicked continue after narrative beat
  */
 export type NarrativeSeenEvent = {
-  type: 'NARRATIVE_SEEN'
-}
+  type: 'NARRATIVE_SEEN';
+};
 
 /**
  * Event: User made a choice
  */
 export type ChoiceMadeEvent = {
-  type: 'CHOICE_MADE'
-  choice: string
-}
+  type: 'CHOICE_MADE';
+  choice: string;
+};
 
 /**
  * Event: Game completed with results
  */
 export type GameCompletedEvent = {
-  type: 'GAME_COMPLETED'
+  type: 'GAME_COMPLETED';
   result: {
-    isCorrect: boolean
-    timeSpent: number
-    hintsUsed: number
-    errors: number
-  }
-}
+    isCorrect: boolean;
+    timeSpent: number;
+    hintsUsed: number;
+    errors: number;
+  };
+};
 
 /**
  * Event: Continue from checkpoint
  */
 export type ContinueStoryEvent = {
-  type: 'CONTINUE_STORY'
-}
+  type: 'CONTINUE_STORY';
+};
 
 /**
  * Event: Skip checkpoint screen
  */
 export type SkipCheckpointEvent = {
-  type: 'SKIP_CHECKPOINT'
-}
+  type: 'SKIP_CHECKPOINT';
+};
 
 /**
  * Event: Restart the entire story
  */
 export type RestartStoryEvent = {
-  type: 'RESTART_STORY'
-}
+  type: 'RESTART_STORY';
+};
 
 /**
  * Event: Skip intro screen
  */
 export type SkipIntroEvent = {
-  type: 'SKIP_INTRO'
-}
+  type: 'SKIP_INTRO';
+};
 
 /**
  * Event: Navigate to word lists from finale
  */
 export type TryNewWordsEvent = {
-  type: 'TRY_NEW_WORDS'
-}
+  type: 'TRY_NEW_WORDS';
+};
 
 /**
  * Union type of all StorySessionMachine events
@@ -254,15 +259,15 @@ export type StorySessionEvent =
   | SkipCheckpointEvent
   | RestartStoryEvent
   | SkipIntroEvent
-  | TryNewWordsEvent
+  | TryNewWordsEvent;
 
 /**
  * Input provided when creating StorySessionMachine
  */
 export interface StorySessionInput {
-  wordList: WordList
-  theme?: string
-  wordListId?: string
-  hasSeenIntro?: boolean
-  generatedStory?: GeneratedStory
+  wordList: WordList;
+  theme?: string;
+  wordListId?: string;
+  hasSeenIntro?: boolean;
+  generatedStory?: GeneratedStory;
 }
