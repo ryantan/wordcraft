@@ -65,7 +65,7 @@ export function generateStory(
  * This is the future interface for async story generation
  */
 export async function generateStoryAsync(input: StoryGenerationInput): Promise<GeneratedStory> {
-  console.log('generateStoryAsync start');
+  console.log('generateStoryAsync start, input:', JSON.stringify(input));
   const startTime = Date.now()
   const metrics: StoryGenerationMetrics = {
     startTime,
@@ -82,6 +82,7 @@ export async function generateStoryAsync(input: StoryGenerationInput): Promise<G
     try {
       console.info('Attempting OpenAI story generation via server action...')
       const openAIResult = await generateStoryServerAction(input)
+      console.log('openAIResult:', openAIResult);
       if (openAIResult && validateStoryContent(openAIResult)) {
         console.info('OpenAI story generation successful')
         metrics.endTime = Date.now()

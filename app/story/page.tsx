@@ -8,7 +8,7 @@
 
 import { useMachine } from '@xstate/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { storySessionMachine } from '@/machines/story'
 import { StoryIntroScreen } from '@/components/story/StoryIntroScreen'
 import { NarrativeBeatScreen } from '@/components/story/NarrativeBeatScreen'
@@ -16,23 +16,23 @@ import { ChoiceBeatScreen } from '@/components/story/ChoiceBeatScreen'
 import { CheckpointScreen } from '@/components/story/CheckpointScreen'
 import { StoryFinaleScreen } from '@/components/story/StoryFinaleScreen'
 import { GameRenderer } from '@/components/story/GameRenderer'
-import type { GameBeat, ChoiceBeat } from '@/types/story'
+import type { ChoiceBeat, GameBeat } from '@/types/story'
 import { Button } from '@/components/ui/button'
 import { useStoryIntro } from '@/lib/hooks/useStoryIntro'
 import { calculateSessionStats } from '@/lib/game/calculate-session-stats'
 import { getWordList } from '@/lib/storage/localStorage'
 import { generateStoryAsync } from '@/lib/story/story-generator'
-import type { WordList, GeneratedStory } from '@/types'
+import type { GeneratedStory, WordList } from '@/types'
 
 // Story Session Component - only rendered when story is ready
-function StorySession({ 
-  wordList, 
-  generatedStory, 
-  hasSeenIntro 
-}: { 
+function StorySession({
+                        wordList,
+                        generatedStory,
+                        hasSeenIntro
+                      }: {
   wordList: WordList
   generatedStory: GeneratedStory
-  hasSeenIntro: boolean 
+  hasSeenIntro: boolean
 }) {
   const router = useRouter()
   const [showExitDialog, setShowExitDialog] = useState(false)
@@ -206,48 +206,60 @@ function StorySession({
   )
 }
 
+// Demo word list for fallback.
+const createDemoWordList = () => {
+  const now = new Date()
+  return {
+    id: 'demo-story',
+    name: 'Space Adventure Words',
+    description: 'Words for space adventure',
+    words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
+    createdAt: now,
+    lastModifiedAt: now,
+    updatedAt: now,
+  }
+}
+
 export default function StoryModePage() {
   const searchParams = useSearchParams()
   const [generatedStory, setGeneratedStory] = useState<GeneratedStory | null>(null)
   const [isGeneratingStory, setIsGeneratingStory] = useState(false)
-  
-  // Initialize with demo word list to avoid conditional hooks
-  const createDemoWordList = () => {
-    const now = new Date()
-    return {
-      id: 'demo-story',
-      name: 'Space Adventure Words',
-      description: 'Words for space adventure',
-      words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
-      createdAt: now,
-      lastModifiedAt: now,
-      updatedAt: now,
-    }
-  }
 
-  const [wordList, setWordList] = useState<WordList>(createDemoWordList)
+  const [wordList, setWordList] = useState<WordList>()
+
+  const listId = searchParams.get('listId')
+  if (!listId) {
+    throw new Error('No listId provided')
+  }
 
   // Get word list from URL params or use demo
   useEffect(() => {
-    const listId = searchParams.get('listId')
-    if (listId) {
-      const userWordList = getWordList(listId)
-      if (userWordList) {
-        setWordList(userWordList)
-        return
-      }
+    if (!listId) {
+      // Fallback to demo word list
+      setWordList(createDemoWordList())
+      return;
     }
-    
-    // Fallback to demo word list
-    setWordList(createDemoWordList())
+    const userWordList = getWordList(listId)
+    if (!userWordList) {
+      // Fallback to demo word list
+      setWordList(createDemoWordList())
+      return;
+    }
+    setWordList(userWordList)
+
   }, [searchParams])
 
   // Generate story whenever wordList changes
   useEffect(() => {
     async function generateStory() {
+      if (!wordList) {
+        return;
+      }
+
       setIsGeneratingStory(true)
       try {
         console.log('🚀 Generating story for word list:', wordList.name)
+        console.log('🚀 Generating story for words:', wordList.words)
         const story = await generateStoryAsync({
           wordList: wordList.words,
           theme: 'space',
@@ -263,11 +275,22 @@ export default function StoryModePage() {
       }
     }
 
-    generateStory()
+    generateStory().then()
   }, [wordList])
 
   // Check if intro has been seen for this word list
-  const { hasSeenIntro } = useStoryIntro(wordList.id)
+  const { hasSeenIntro } = useStoryIntro(wordList?.id)
+
+  if (!wordList) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🚀</div>
+          <p className="text-xl font-semibold">Getting word list...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Loading state - show while generating story
   if (isGeneratingStory || !generatedStory) {
@@ -290,9 +313,9 @@ export default function StoryModePage() {
 
   // Render StorySession component with generated story
   return (
-    <StorySession 
-      wordList={wordList} 
-      generatedStory={generatedStory} 
+    <StorySession
+      wordList={wordList}
+      generatedStory={generatedStory}
       hasSeenIntro={hasSeenIntro}
     />
   )

@@ -48,13 +48,17 @@ export interface UseStoryIntroReturn {
  * }
  * ```
  */
-export function useStoryIntro(wordListId: string): UseStoryIntroReturn {
+export function useStoryIntro(wordListId: string | undefined): UseStoryIntroReturn {
   const [hasSeenIntro, setHasSeenIntro] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   // Load intro seen status from storage on mount
   useEffect(() => {
     async function loadIntroStatus() {
+      if (!wordListId) {
+        return;
+      }
+
       try {
         setIsLoading(true)
         const seen = await hasSeenStoryIntro(wordListId)
@@ -73,6 +77,10 @@ export function useStoryIntro(wordListId: string): UseStoryIntroReturn {
 
   // Function to mark intro as seen
   const markAsSeen = useCallback(async () => {
+    if (!wordListId) {
+      return;
+    }
+
     try {
       await markStoryIntroAsSeen(wordListId)
       setHasSeenIntro(true)
