@@ -5,8 +5,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  BASE_STORY_CONTEXT,
-  buildSystemPrompt,
   generateCheckpointPrompt,
   generateChoiceBeatPrompt,
   generateGameBeatPrompt,
@@ -18,16 +16,6 @@ import {
 } from './prompts';
 
 describe('OpenAI Prompts', () => {
-  describe('BASE_STORY_CONTEXT', () => {
-    it('should have correct role and guidelines', () => {
-      expect(BASE_STORY_CONTEXT.role).toBe(
-        "You are a creative children's story writer specializing in educational adventures.",
-      );
-      expect(BASE_STORY_CONTEXT.guidelines).toHaveLength(5);
-      expect(BASE_STORY_CONTEXT.guidelines[0]).toContain('age-appropriate');
-    });
-  });
-
   describe('THEME_CONTEXTS', () => {
     it('should have all required themes', () => {
       const themes = ['space', 'treasure', 'fantasy', 'ocean', 'jungle'];
@@ -134,17 +122,6 @@ describe('OpenAI Prompts', () => {
     it('should trim whitespace', () => {
       const input = '  Trimmed text  ';
       expect(sanitizePromptInput(input)).toBe('Trimmed text');
-    });
-  });
-
-  describe('buildSystemPrompt', () => {
-    it('should build complete system prompt', () => {
-      const prompt = buildSystemPrompt();
-
-      expect(prompt).toContain(BASE_STORY_CONTEXT.role);
-      expect(prompt).toContain('Guidelines:');
-      expect(prompt).toContain('WordCraft');
-      expect(prompt).toContain('story continuity');
     });
   });
 

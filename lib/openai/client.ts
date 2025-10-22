@@ -6,7 +6,7 @@
  */
 
 import { serverEnv } from '@/lib/env';
-import { customStorySystemV1 } from '@/lib/openai/prompts';
+import { buildSystemPrompt, buildUserPrompt } from '@/lib/openai/prompts';
 import { StoryTheme } from '@/types';
 import OpenAI from 'openai';
 import type { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions';
@@ -96,8 +96,8 @@ export async function generateStoryContent(
 ): Promise<StoryGenerationResponse> {
   console.log('generateStoryContent start');
 
-  const systemPrompt = customStorySystemV1;
-  const userPrompt = buildPrompt(request);
+  const systemPrompt = buildSystemPrompt(request);
+  const userPrompt = buildUserPrompt(request);
 
   try {
     const openAiRequest: ChatCompletionCreateParamsBase = {
@@ -156,46 +156,6 @@ export async function generateStoryContent(
     }
     throw error;
   }
-}
-
-/**
- * Build prompt from request parameters
- * @param request - Story generation request
- * @returns Formatted prompt string
- */
-function buildPrompt(request: StoryGenerationRequest): string {
-  const {
-    // v
-    theme,
-    wordList,
-    // beatType = 'narrative',
-    // context = '',
-  } = request;
-
-  let prompt = `Generate a ${theme}-themed story beat for a children's educational spelling game.\n\n`;
-
-  // if (context) {
-  //   prompt += `Previous story context: ${context}\n\n`;
-  // }
-
-  prompt += `Words to practice: ${wordList.join(', ')}\n\n`;
-
-  // switch (beatType) {
-  //   case 'narrative':
-  //     prompt += 'Create a short narrative paragraph (2-3 sentences) that advances the story.';
-  //     break;
-  //   case 'game':
-  //     prompt += `Create an engaging prompt that introduces a spelling challenge for the word "${wordList[0]}".`;
-  //     break;
-  //   case 'choice':
-  //     prompt +=
-  //       'Create a story choice with a question and two options for the player to choose from.';
-  //     break;
-  // }
-  //
-  // prompt += '\n\nKeep the language age-appropriate for children learning to spell.';
-
-  return prompt;
 }
 
 /**
