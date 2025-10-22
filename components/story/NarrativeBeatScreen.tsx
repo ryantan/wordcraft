@@ -4,14 +4,14 @@
  * Displays pure narrative beats without interaction
  */
 
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 interface NarrativeBeatScreenProps {
-  narrative: string
-  onContinue: () => void
+  narrative: string;
+  onContinue: () => void;
 }
 
 export function NarrativeBeatScreen({ narrative, onContinue }: NarrativeBeatScreenProps) {
@@ -48,5 +48,5 @@ export function NarrativeBeatScreen({ narrative, onContinue }: NarrativeBeatScre
         </motion.div>
       </motion.div>
     </div>
-  )
+  );
 }
