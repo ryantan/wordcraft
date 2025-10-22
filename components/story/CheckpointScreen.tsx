@@ -4,20 +4,20 @@
  * Displays story checkpoints with character, background, narrative, and celebrations
  */
 
-'use client'
+'use client';
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState } from 'react'
-import Confetti from 'react-confetti'
-import type { StoryCheckpoint } from '@/lib/story/content'
+import type { StoryCheckpoint } from '@/lib/story/content';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import Confetti from 'react-confetti';
 
 export interface CheckpointScreenProps {
-  checkpoint: StoryCheckpoint
-  backgroundImage: string
-  characterImage: string
-  onContinue: () => void
-  onSkip: () => void
-  canContinue: boolean
+  checkpoint: StoryCheckpoint;
+  backgroundImage: string;
+  characterImage: string;
+  onContinue: () => void;
+  onSkip: () => void;
+  canContinue: boolean;
 }
 
 /**
@@ -40,34 +40,34 @@ export function CheckpointScreen({
   onSkip,
   canContinue,
 }: CheckpointScreenProps) {
-  const [showConfetti, setShowConfetti] = useState(true)
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
+  const [showConfetti, setShowConfetti] = useState(true);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   // Setup window size for confetti
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') return;
 
     setWindowSize({
       width: window.innerWidth,
       height: window.innerHeight,
-    })
+    });
 
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
         height: window.innerHeight,
-      })
-    }
+      });
+    };
 
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Stop confetti after 5 seconds
   useEffect(() => {
-    const timer = setTimeout(() => setShowConfetti(false), 5000)
-    return () => clearTimeout(timer)
-  }, [])
+    const timer = setTimeout(() => setShowConfetti(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -222,5 +222,5 @@ export function CheckpointScreen({
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }
