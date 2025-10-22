@@ -6,6 +6,7 @@
  */
 
 import { validateEnvironment } from '@/lib/env';
+import { generateStoryContent } from '@/lib/openai/story-integration';
 import type {
   CheckpointBeat,
   ChoiceBeat,
@@ -16,13 +17,7 @@ import type {
   StoryGenerationInput,
 } from '@/types/story';
 
-import {
-  createOpenAIClient,
-  generateStoryContent,
-  OpenAIAPIError,
-  withRetry,
-  withTimeout,
-} from './client';
+import { createOpenAIClient, OpenAIAPIError, withRetry, withTimeout } from './client';
 import {
   getStoryGenerationJsonSchema,
   validateAndTransformOpenAIResponse,

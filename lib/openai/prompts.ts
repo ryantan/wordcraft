@@ -5,7 +5,7 @@
  * Provides structured templates for different beat types
  */
 
-import { StoryGenerationRequest } from '@/lib/openai/client';
+import { StoryGenerationRequest } from '@/lib/openai/story-integration';
 import type { StoryBeat, StoryTheme } from '@/types/story';
 
 /**
