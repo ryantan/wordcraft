@@ -2,6 +2,8 @@
 // Story 6.4a: StorySessionMachine Types
 // ============================================================================
 
+import { GameMechanics } from '@/lib/games';
+
 import type { WordList } from './word';
 
 /**
@@ -65,12 +67,7 @@ export interface BaseBeat {
 export interface GameBeat extends BaseBeat {
   type: 'game';
   word: string;
-  gameType:
-    | 'letterMatching'
-    | 'wordBuilding'
-    | 'spellingChallenge'
-    | 'wordScramble'
-    | 'missingLetters';
+  gameType: GameMechanics;
   stage: 1 | 2; // Stage 1: Assessment, Stage 2: Mastery
 }
 
