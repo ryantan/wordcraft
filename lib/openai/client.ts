@@ -2,14 +2,10 @@
  * OpenAI API Client
  *
  * Manages connection and authentication with OpenAI API
- * Provides typed methods for story generation requests
  */
 
-import { serverEnv } from '@/lib/env';
-import { buildSystemPrompt, buildUserPrompt } from '@/lib/openai/prompts';
-import { StoryTheme } from '@/types';
+import { serverEnv, validateEnvironment } from '@/lib/env';
 import OpenAI from 'openai';
-import type { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions';
 
 // Retry configuration
 const MAX_RETRIES = 3;
@@ -35,26 +31,30 @@ export function createOpenAIClient(): OpenAI {
   });
 }
 
-/**
- * OpenAI request configuration for story generation
- */
-export interface StoryGenerationRequest {
-  theme: StoryTheme;
-  wordList: string[];
-  beatType?: 'narrative' | 'game' | 'choice';
-  context?: string;
-}
+// TODO: Consider caching the OpenAI client instance so there's only 1 created.
+let openAIClient: ReturnType<typeof createOpenAIClient> | null = null;
 
 /**
- * OpenAI response for story generation
+ * Get or create OpenAI client with environment validation
+ * @returns OpenAI client instance or null if disabled
  */
-export interface StoryGenerationResponse {
-  content: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
+export function getOpenAIClient(): ReturnType<typeof createOpenAIClient> | null {
+  // Skip in test/development without API key
+  if (process.env.NODE_ENV === 'test' || !process.env.OPENAI_API_KEY) {
+    return null;
+  }
+
+  if (!openAIClient) {
+    try {
+      validateEnvironment();
+      openAIClient = createOpenAIClient();
+    } catch (error) {
+      console.error('Failed to initialize OpenAI client:', error);
+      return null;
+    }
+  }
+
+  return openAIClient;
 }
 
 /**
@@ -78,83 +78,6 @@ export class OpenAIAPIError extends Error {
   ) {
     super(message);
     this.name = 'OpenAIAPIError';
-  }
-}
-
-/**
- * Generate story content using OpenAI
- * @param client - OpenAI client instance
- * @param request - Story generation parameters
- * @param jsonSchema
- * @returns Generated story content
- * @throws OpenAIAPIError on API failure
- */
-export async function generateStoryContent(
-  client: OpenAI,
-  request: StoryGenerationRequest,
-  jsonSchema?: any,
-): Promise<StoryGenerationResponse> {
-  console.log('generateStoryContent start');
-
-  const systemPrompt = buildSystemPrompt(request);
-  const userPrompt = buildUserPrompt(request);
-
-  try {
-    const openAiRequest: ChatCompletionCreateParamsBase = {
-      model: serverEnv.openai.model,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-      temperature: serverEnv.openai.temperature,
-      // max_tokens: serverEnv.openai.maxTokens,
-      // Add structured output if schema provided
-      ...(jsonSchema && {
-        // response_format: zodResponseFormat(jsonSchema, 'story_generation')
-        // response_format: jsonSchema
-        response_format: {
-          type: 'json_schema',
-          json_schema: { strict: true, name: 'story_generation', schema: jsonSchema },
-        },
-      }),
-    };
-    console.log('Open AI request: ');
-    console.log(JSON.stringify(openAiRequest, null, 2));
-
-    const completion = (await client.chat.completions.create(
-      openAiRequest,
-    )) as OpenAI.Chat.Completions.ChatCompletion;
-    console.log('Open AI response: ');
-    console.log(JSON.stringify(completion, null, 2));
-
-    const content = completion.choices[0]?.message?.content || '';
-    const usage = completion.usage;
-
-    return {
-      content,
-      usage: usage
-        ? {
-            promptTokens: usage.prompt_tokens,
-            completionTokens: usage.completion_tokens,
-            totalTokens: usage.total_tokens,
-          }
-        : undefined,
-    };
-  } catch (error) {
-    if (error instanceof OpenAI.APIError) {
-      throw new OpenAIAPIError(
-        `OpenAI API error: ${error.message}`,
-        error.status,
-        error.code || undefined,
-      );
-    }
-    throw error;
   }
 }
 
