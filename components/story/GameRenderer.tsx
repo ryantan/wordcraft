@@ -6,9 +6,12 @@
 
 'use client';
 
+import { LetterHunt } from '@/components/games/LetterHunt';
 import { LetterMatching } from '@/components/games/LetterMatching';
 import { MissingLetters } from '@/components/games/MissingLetters';
+import { PictureReveal } from '@/components/games/PictureReveal';
 import { SpellingChallenge } from '@/components/games/SpellingChallenge';
+import { TraceAndWrite } from '@/components/games/TraceAndWrite';
 import { WordBuildingBlocks } from '@/components/games/WordBuildingBlocks';
 import { WordScramble } from '@/components/games/WordScramble';
 import type { GameResult } from '@/types';
@@ -57,7 +60,7 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
 
       {/* Game component */}
       <div className="max-w-4xl mx-auto">
-        {gameType === 'letterMatching' && (
+        {gameType === 'letter-matching' && (
           <LetterMatching
             word={word}
             onComplete={handleGameComplete}
@@ -65,7 +68,7 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
           />
         )}
 
-        {gameType === 'wordScramble' && (
+        {gameType === 'word-scramble' && (
           <WordScramble
             word={word}
             onComplete={handleGameComplete}
@@ -73,7 +76,7 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
           />
         )}
 
-        {gameType === 'spellingChallenge' && (
+        {gameType === 'spelling-challenge' && (
           <SpellingChallenge
             word={word}
             onComplete={handleGameComplete}
@@ -81,7 +84,7 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
           />
         )}
 
-        {gameType === 'wordBuilding' && (
+        {gameType === 'word-building' && (
           <WordBuildingBlocks
             word={word}
             onComplete={handleGameComplete}
@@ -89,8 +92,32 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
           />
         )}
 
-        {gameType === 'missingLetters' && (
+        {gameType === 'missing-letters' && (
           <MissingLetters
+            word={word}
+            onComplete={handleGameComplete}
+            onHintRequest={handleHintRequest}
+          />
+        )}
+
+        {gameType === 'letter-hunt' && (
+          <LetterHunt
+            word={word}
+            onComplete={handleGameComplete}
+            onHintRequest={handleHintRequest}
+          />
+        )}
+
+        {gameType === 'picture-reveal' && (
+          <PictureReveal
+            word={word}
+            onComplete={handleGameComplete}
+            onHintRequest={handleHintRequest}
+          />
+        )}
+
+        {gameType === 'trace-write' && (
+          <TraceAndWrite
             word={word}
             onComplete={handleGameComplete}
             onHintRequest={handleHintRequest}
