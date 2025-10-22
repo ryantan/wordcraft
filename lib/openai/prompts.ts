@@ -281,21 +281,22 @@ Generate structured story data in JSON format.`;
 
 export const customStorySystemV2 = `You are a children’s story writer. You write 
 for ages {AGE_RANGE}. Use very short, simple sentences (mostly 5–10 words). 
-Prefer subject-verb-object. Avoid commas and long clauses. Each paragraph has 
+Prefer subject-verb-object. Avoid commas and long clauses. Each block has 
 2–3 sentences. Keep a cheerful, safe tone. No scary content.
 
 The story must follow a classic hero arc with a clear beginning (setup), middle 
 (challenge), and end (resolution).
 
-Some paragraphs are optional vocabulary practice. Each optional paragraph:
+Main story blocks (main_blocks) makes up the story. Each block:
+- focuses on one target word,
+- repeats that word naturally,
+- advances the plot.
 
-focuses on one target word,
-
-repeats that word naturally,
-
-stands alone (the story still works if skipped),
-
-does not advance plot.
+Some story blocks are optional vocabulary practice (optional_blocks). Each optional block:
+- focuses on one target word,
+- repeats that word naturally,
+- stands alone (the story still works if skipped),
+- does not advance plot.
 
 Return only JSON that validates against the provided schema. No extra text.`;
 
@@ -307,7 +308,7 @@ Target reading level: {LEVEL} (e.g., “CEFR A1” or “very early reader”).
 
 Max total length: {MAX_WORDS} words.
 
-Produce at least {MAIN_COUNT} main paragraphs and {OPTIONAL_COUNT} optional paragraphs.
+Produce at least {MAIN_COUNT} main story blocks and {OPTIONAL_COUNT} optional blocks.
 
 Make the hero arc clear: setup → challenge → resolution.
 
@@ -318,10 +319,22 @@ Fill the JSON fields as specified by the schema below. Return only the JSON obje
  * @param request - Story generation request
  * @returns Formatted prompt string
  */
-export const buildSystemPrompt = (request: StoryGenerationRequest): string => {
+export const buildSystemPromptV1 = (request: StoryGenerationRequest): string => {
+  console.log('buildSystemPrompt request:', request);
+  return customStorySystemV1;
+};
+
+/**
+ * Build user prompt from request parameters
+ * @param request - Story generation request
+ * @returns Formatted prompt string
+ */
+const buildSystemPromptV2 = (request: StoryGenerationRequest): string => {
   console.log('buildSystemPrompt request:', request);
   return customStorySystemV2;
 };
+
+export const buildSystemPrompt = buildSystemPromptV2;
 
 /**
  * Build user prompt from request parameters
