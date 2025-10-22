@@ -4,26 +4,26 @@
  * Displays story completion with session summary
  */
 
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import type { SessionStats } from '@/types/session'
-import { formatTime } from '@/lib/game/calculate-session-stats'
-import Confetti from 'react-confetti'
-import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button';
+import { formatTime } from '@/lib/game/calculate-session-stats';
+import type { SessionStats } from '@/types/session';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import Confetti from 'react-confetti';
 
 interface StoryFinaleScreenProps {
   finaleContent: {
-    title: string
-    narrative: string
-    celebrationEmoji?: string
-  } | null
-  wordListName: string
-  stats: SessionStats
-  onPlayAgain: () => void
-  onTryNewWords: () => void
-  onViewProgress: () => void
+    title: string;
+    narrative: string;
+    celebrationEmoji?: string;
+  } | null;
+  wordListName: string;
+  stats: SessionStats;
+  onPlayAgain: () => void;
+  onTryNewWords: () => void;
+  onViewProgress: () => void;
 }
 
 export function StoryFinaleScreen({
@@ -34,26 +34,28 @@ export function StoryFinaleScreen({
   onTryNewWords,
   onViewProgress,
 }: StoryFinaleScreenProps) {
-  const [showConfetti, setShowConfetti] = useState(true)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const [showConfetti, setShowConfetti] = useState(true);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     setDimensions({
       width: window.innerWidth,
       height: window.innerHeight,
-    })
+    });
 
-    const timer = setTimeout(() => setShowConfetti(false), 5000)
-    return () => clearTimeout(timer)
-  }, [])
+    const timer = setTimeout(() => setShowConfetti(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!finaleContent) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-green-100 to-green-200 p-4">
-      {showConfetti && <Confetti width={dimensions.width} height={dimensions.height} recycle={false} />}
+      {showConfetti && (
+        <Confetti width={dimensions.width} height={dimensions.height} recycle={false} />
+      )}
 
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -105,9 +107,7 @@ export function StoryFinaleScreen({
           transition={{ delay: 0.6 }}
           className="bg-green-50 rounded-xl p-6 mb-8"
         >
-          <h3 className="text-xl font-bold text-green-800 mb-4 text-center">
-            Your Achievement
-          </h3>
+          <h3 className="text-xl font-bold text-green-800 mb-4 text-center">Your Achievement</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
             <div>
               <div className="text-3xl font-bold text-green-600">{stats.totalWords}</div>
@@ -126,7 +126,9 @@ export function StoryFinaleScreen({
               <div className="text-sm text-gray-600">Time Spent</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-green-600">{Math.round(stats.averageConfidence)}%</div>
+              <div className="text-3xl font-bold text-green-600">
+                {Math.round(stats.averageConfidence)}%
+              </div>
               <div className="text-sm text-gray-600">Avg Score</div>
             </div>
           </div>
@@ -164,5 +166,5 @@ export function StoryFinaleScreen({
         </motion.div>
       </motion.div>
     </div>
-  )
+  );
 }

@@ -4,19 +4,19 @@
  * Displays choice moments where user selects between two options
  */
 
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import type { ChoiceBeat } from '@/types/story'
+import { Button } from '@/components/ui/button';
+import type { ChoiceBeat } from '@/types/story';
+import { motion } from 'framer-motion';
 
 interface ChoiceBeatScreenProps {
-  choiceBeat: ChoiceBeat
-  onChoice: (choice: string) => void
+  choiceBeat: ChoiceBeat;
+  onChoice: (choice: string) => void;
 }
 
 export function ChoiceBeatScreen({ choiceBeat, onChoice }: ChoiceBeatScreenProps) {
-  const { narrative, question, options } = choiceBeat
+  const { narrative, question, options } = choiceBeat;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-amber-100 to-amber-200 p-4">
@@ -67,5 +67,5 @@ export function ChoiceBeatScreen({ choiceBeat, onChoice }: ChoiceBeatScreenProps
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

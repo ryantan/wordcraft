@@ -4,21 +4,21 @@
  * Displays story introduction before beginning the adventure
  */
 
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 interface StoryIntroScreenProps {
   introContent: {
-    title: string
-    narrative: string
-    celebrationEmoji?: string
-  } | null
-  theme: string
-  wordListName: string
-  onStart: () => void
-  onSkip?: () => void
+    title: string;
+    narrative: string;
+    celebrationEmoji?: string;
+  } | null;
+  theme: string;
+  wordListName: string;
+  onStart: () => void;
+  onSkip?: () => void;
 }
 
 export function StoryIntroScreen({
@@ -33,7 +33,7 @@ export function StoryIntroScreen({
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading story...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -98,9 +98,7 @@ export function StoryIntroScreen({
         </motion.div>
 
         {/* Theme indicator */}
-        <div className="mt-6 text-center text-sm text-gray-500">
-          Theme: {theme}
-        </div>
+        <div className="mt-6 text-center text-sm text-gray-500">Theme: {theme}</div>
       </motion.div>
 
       {/* Skip Intro Button */}
@@ -118,5 +116,5 @@ export function StoryIntroScreen({
         </motion.button>
       )}
     </div>
-  )
+  );
 }
