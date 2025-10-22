@@ -10,6 +10,7 @@
 
 import { generateStoryServerAction } from '@/lib/actions/generate-story.action';
 import { env } from '@/lib/env';
+import { gameMechanics, GameMechanics } from '@/lib/games';
 import {
   logStoryMetrics,
   validateStoryContent,
@@ -326,14 +327,8 @@ function getChoiceOptions(theme: string, beatIndex: number): [string, string] {
  * Select appropriate game type based on progression
  * Cycles through different game types for variety
  */
-function selectGameType(
-  index: number,
-): 'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters' {
-  const gameTypes: Array<
-    'letterMatching' | 'wordBuilding' | 'spellingChallenge' | 'wordScramble' | 'missingLetters'
-  > = ['letterMatching', 'wordScramble', 'wordBuilding', 'missingLetters', 'spellingChallenge'];
-
-  return gameTypes[index % gameTypes.length];
+export function selectGameType(index: number): GameMechanics {
+  return gameMechanics[index % gameMechanics.length];
 }
 
 /**
