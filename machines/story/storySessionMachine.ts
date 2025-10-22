@@ -280,9 +280,15 @@ export const storySessionMachine = createMachine(
       /**
        * Advance to next beat
        */
-      advanceBeatIndex: assign(({ context }) => ({
-        currentBeatIndex: context.currentBeatIndex + 1,
-      })),
+      advanceBeatIndex: assign(({ context }) => {
+        // TODO: If we are done with middle phase beats, add 5 of the least confident words, or 5 of the highest difficulty words from stage 2 beats, before following up with the end phase beats.
+
+        // const beat = context.generatedStory.stage1Beats[context.currentBeatIndex];
+
+        return {
+          currentBeatIndex: context.currentBeatIndex + 1,
+        };
+      }),
 
       /**
        * Load checkpoint data from current beat
