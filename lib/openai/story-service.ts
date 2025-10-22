@@ -7,6 +7,7 @@
 
 import { validateEnvironment } from '@/lib/env';
 import { generateStoryContent } from '@/lib/openai/story-integration';
+import { selectGameType } from '@/lib/story/story-generator';
 import type {
   CheckpointBeat,
   ChoiceBeat,
@@ -19,8 +20,11 @@ import type {
 
 import { createOpenAIClient, OpenAIAPIError, withRetry, withTimeout } from './client';
 import {
-  getStoryGenerationJsonSchema,
-  validateAndTransformOpenAIResponse,
+  ChildrenStory,
+  getStoryGenerationJsonSchemaV1,
+  getStoryGenerationJsonSchemaV2,
+  validateAndTransformOpenAIResponseV1,
+  validateAndTransformOpenAIResponseV2,
   type OpenAIStoryResponse,
 } from './story-schema';
 
@@ -34,10 +38,10 @@ const STORY_GENERATION_TIMEOUT = 30000;
  * @param input - Story generation parameters
  * @returns Generated story structure or null if generation fails
  */
-export async function generateStoryWithOpenAI(
+async function generateStoryWithOpenAIV1(
   input: StoryGenerationInput,
 ): Promise<GeneratedStory | null> {
-  console.log('generateStoryWithOpenAI start, input:', JSON.stringify(input));
+  console.log('generateStoryWithOpenAIV1 start, input:', JSON.stringify(input));
   try {
     // Validate environment and create client
     validateEnvironment();
@@ -54,7 +58,7 @@ export async function generateStoryWithOpenAI(
             beatType: 'narrative',
             context: buildStoryGenerationPrompt(input),
           },
-          getStoryGenerationJsonSchema(),
+          getStoryGenerationJsonSchemaV1(),
         );
       }),
       STORY_GENERATION_TIMEOUT * 100,
@@ -73,7 +77,7 @@ export async function generateStoryWithOpenAI(
     }
 
     // Validate with Zod schema
-    const validatedResponse = validateAndTransformOpenAIResponse(jsonData);
+    const validatedResponse = validateAndTransformOpenAIResponseV1(jsonData);
     if (!validatedResponse) {
       console.warn('OpenAI response failed validation');
       return null;
@@ -81,7 +85,7 @@ export async function generateStoryWithOpenAI(
     console.info('OpenAI response passed validation');
 
     // Transform to our internal GeneratedStory format
-    return transformToGeneratedStory(validatedResponse, input);
+    return transformToGeneratedStoryV1(validatedResponse, input);
   } catch (error) {
     if (error instanceof OpenAIAPIError) {
       console.error('OpenAI API error during story generation:', error.message);
@@ -91,6 +95,70 @@ export async function generateStoryWithOpenAI(
     return null;
   }
 }
+
+/**
+ * Generate a complete story using OpenAI
+ * @param input - Story generation parameters
+ * @returns Generated story structure or null if generation fails
+ */
+async function generateStoryWithOpenAIV2(
+  input: StoryGenerationInput,
+): Promise<GeneratedStory | null> {
+  console.log('generateStoryWithOpenAIV2 start, input:', JSON.stringify(input));
+  try {
+    // Validate environment and create client
+    validateEnvironment();
+    const client = createOpenAIClient();
+
+    // Generate story content with timeout and JSON schema
+    const response = await withTimeout(
+      withRetry(async () => {
+        return await generateStoryContent(
+          client,
+          {
+            theme: input.theme,
+            wordList: input.wordList,
+          },
+          getStoryGenerationJsonSchemaV2(),
+        );
+      }),
+      STORY_GENERATION_TIMEOUT * 100,
+    );
+
+    // Parse JSON response
+    console.log('response.content');
+    console.log(response.content);
+    let jsonData: unknown;
+    try {
+      jsonData = JSON.parse(response.content);
+    } catch (error) {
+      console.error('Failed to parse OpenAI JSON response:', error);
+      console.error('Response content:', response.content);
+      return null;
+    }
+
+    // Validate with Zod schema
+    const validatedResponse = validateAndTransformOpenAIResponseV2(jsonData);
+    if (!validatedResponse) {
+      console.warn('OpenAI response failed validation');
+      return null;
+    }
+    console.info('OpenAI response passed validation');
+
+    // Transform to our internal GeneratedStory format
+    return transformToGeneratedStoryV2(validatedResponse, input);
+  } catch (error) {
+    if (error instanceof OpenAIAPIError) {
+      console.error('OpenAI API error during story generation:', error.message);
+    } else {
+      console.error('Story generation failed:', error);
+    }
+    return null;
+  }
+}
+
+export const generateStoryWithOpenAILegacy = generateStoryWithOpenAIV1;
+export const generateStoryWithOpenAI = generateStoryWithOpenAIV2;
 
 /**
  * Build comprehensive prompt for story generation
@@ -148,7 +216,7 @@ function getThemeElements(theme: string): string {
 /**
  * Transform validated OpenAI response to our internal GeneratedStory format
  */
-function transformToGeneratedStory(
+function transformToGeneratedStoryV1(
   validatedResponse: OpenAIStoryResponse,
   input: StoryGenerationInput,
 ): GeneratedStory {
@@ -157,6 +225,8 @@ function transformToGeneratedStory(
     const baseProps = {
       id: beat.id,
       narrative: beat.narrative,
+      isOptional: false,
+      phase: 'middle',
     };
 
     switch (beat.type) {
@@ -198,7 +268,7 @@ function transformToGeneratedStory(
   // Validate that all required words are covered
   const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[];
   const requiredWords = new Set(input.wordList);
-  const coveredWords = new Set(gameBeats.map(b => b.word));
+  const coveredWords = new Set(gameBeats.filter(item => item.type === 'game').map(b => b.word));
 
   // Add missing words as game beats
   for (const word of requiredWords) {
@@ -209,7 +279,7 @@ function transformToGeneratedStory(
         id: `game-${word.toLowerCase()}-generated`,
         narrative: `Time to spell "${word.toUpperCase()}"!`,
         word,
-        gameType: 'letterMatching',
+        gameType: 'letter-matching',
         stage: 1,
       });
     }
@@ -218,6 +288,111 @@ function transformToGeneratedStory(
   return {
     stage1Beats,
     stage2ExtraBeats: new Map(),
+    stage2FixedSequence: [],
+  };
+}
+
+/**
+ * Transform validated OpenAI response to our internal GeneratedStory format
+ */
+function transformToGeneratedStoryV2(
+  validatedResponse: ChildrenStory,
+  input: StoryGenerationInput,
+): GeneratedStory {
+  // Convert validated schema types to our internal types
+  let gameTypeIndex = 0;
+  const wordsCoveredInMain = new Set<string>();
+  const wordsCoveredInOptional = new Set<string>();
+  const stage1Beats: StoryBeat[] = [];
+  const stage2ExtraBeats = new Map<string, StoryBeat[]>();
+
+  validatedResponse.main_blocks.forEach(beat => {
+    const baseProps = {
+      id: beat.id,
+      narrative: beat.text,
+      isOptional: false,
+      phase: beat.stage,
+    };
+
+    const word = beat.focus_word || null;
+
+    // For now we take the first word that has not been used yet.
+    // const word = selectItemFromListThatIsNotInSet(words, wordsCoveredInMain);
+    if (!word) {
+      // If no word, this is a pure narrative.
+      stage1Beats.push({
+        ...baseProps,
+        type: 'narrative',
+      } as NarrativeBeat);
+      return;
+    }
+    wordsCoveredInMain.add(word);
+    gameTypeIndex++;
+    stage1Beats.push({
+      ...baseProps,
+      type: 'game',
+      word,
+      gameType: selectGameType(gameTypeIndex),
+      stage: 1,
+    } as GameBeat);
+    return;
+  });
+
+  validatedResponse.optional_blocks.forEach(beat => {
+    const baseProps = {
+      id: beat.id,
+      narrative: beat.text,
+      isOptional: true,
+      phase: 'middle',
+    };
+
+    const word = beat.focus_word || null;
+
+    // For now we take the first word that has not been used yet.
+    // const word = selectItemFromListThatIsNotInSet(words, wordsCoveredInOptional);
+    if (!word) {
+      // If no word, we skip this item
+      return;
+    }
+    wordsCoveredInOptional.add(word);
+    gameTypeIndex++;
+
+    const existingBeatsForWord = stage2ExtraBeats.get(word) || [];
+    existingBeatsForWord.push({
+      ...baseProps,
+      type: 'game',
+      word,
+      gameType: selectGameType(gameTypeIndex),
+      stage: 2,
+    } as GameBeat);
+    stage2ExtraBeats.set(word, existingBeatsForWord);
+
+    return;
+  });
+
+  // Validate that all required words are covered
+  const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[];
+  const requiredWords = new Set(input.wordList);
+  const coveredWords = new Set(gameBeats.filter(item => item.stage === 1).map(b => b.word));
+
+  // Add missing words as game beats
+  for (const word of requiredWords) {
+    if (!coveredWords.has(word)) {
+      console.warn(`Missing game beat for word: ${word}`);
+      stage1Beats.push({
+        type: 'game',
+        id: `game-${word.toLowerCase()}-generated`,
+        narrative: `Time to spell "${word.toUpperCase()}"!`,
+        word,
+        gameType: 'letter-matching',
+        stage: 1,
+      });
+    }
+  }
+
+  return {
+    stage1Beats,
+    stage2ExtraBeats,
     stage2FixedSequence: [],
   };
 }
