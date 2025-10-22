@@ -280,37 +280,41 @@ Keep the language age-appropriate for children learning to spell.
 Generate structured story data in JSON format.`;
 
 export const customStorySystemV2 = `You are a children’s story writer. You write 
-for ages {AGE_RANGE}. Use very short, simple sentences (mostly 5–10 words). 
+for ages 5-10. Use very short, simple sentences (mostly 6–12 words). 
 Prefer subject-verb-object. Avoid commas and long clauses. Each block has 
 2–3 sentences. Keep a cheerful, safe tone. No scary content.
 
 The story must follow a classic hero arc with a clear beginning (setup), middle 
 (challenge), and end (resolution).
 
-Main story blocks (main_blocks) makes up the story. Each block:
+Main story blocks makes up the story. Each block:
 - focuses on one target word,
-- repeats that word naturally,
+- uses the target word naturally,
 - advances the plot.
 
-Some story blocks are optional vocabulary practice (optional_blocks). Each optional block:
+Optional story blocks (optional_blocks) are optional vocabulary practice. Each optional block:
 - focuses on one target word,
-- repeats that word naturally,
+- uses the target word naturally,
 - stands alone (the story still works if skipped),
 - does not advance plot.
 
 Return only JSON that validates against the provided schema. No extra text.`;
 
-export const customStoryUser = `Write a children’s story that:
+export const customStoryUser = `Write a children’s story with theme {THEME} that:
 
-Uses these exact 10 words naturally at least once: {WORDS_JSON_ARRAY_OF_10}.
+Uses these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
 
 Target reading level: {LEVEL} (e.g., “CEFR A1” or “very early reader”).
 
 Max total length: {MAX_WORDS} words.
 
-Produce at least {MAIN_COUNT} main story blocks and {OPTIONAL_COUNT} optional blocks.
+Make the hero arc clear: setup (beginning) → challenge (middle) → resolution (end).
 
-Make the hero arc clear: setup → challenge → resolution.
+- Please produce 2 main narrative-only blocks that introduce the setting.
+- Please produce 4 main blocks should be used to build the setup stage. 
+- Please produce 6 blocks for the middle challenge stage.
+- Please produce {OPTIONAL_COUNT} optional blocks that we may use where required.
+- And lastly please produce 4 blocks for a satisfying resolution stage. 
 
 Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
 
@@ -388,11 +392,15 @@ export const buildUserPrompt = (request: StoryGenerationRequest): string => {
     wordList,
   } = request;
 
-  return customStoryUser
-    .replace('{THEME}', theme)
-    .replace('{WORDS_JSON_ARRAY_OF_10}', JSON.stringify(wordList))
-    .replace('{LEVEL}', 'CEFR A1')
-    .replace('{MAX_WORDS}', '400')
-    .replace('{MAIN_COUNT}', '12')
-    .replace('{OPTIONAL_COUNT}', '10');
+  return (
+    customStoryUser
+      .replace('{THEME}', theme)
+      .replace('{WORDS_LENGTH}', `${wordList.length}`)
+      .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
+      // .replace('{LEVEL}', 'CEFR A1')
+      .replace('{LEVEL}', 'CEFR B2')
+      .replace('{MAX_WORDS}', '600')
+      .replace('{MAIN_COUNT}', '12')
+      .replace('{OPTIONAL_COUNT}', `${wordList.length}`)
+  );
 };
