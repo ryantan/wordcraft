@@ -279,6 +279,40 @@ Keep the language age-appropriate for children learning to spell.
 
 Generate structured story data in JSON format.`;
 
+export const customStorySystemV2 = `You are a children’s story writer. You write 
+for ages {AGE_RANGE}. Use very short, simple sentences (mostly 5–10 words). 
+Prefer subject-verb-object. Avoid commas and long clauses. Each paragraph has 
+2–3 sentences. Keep a cheerful, safe tone. No scary content.
+
+The story must follow a classic hero arc with a clear beginning (setup), middle 
+(challenge), and end (resolution).
+
+Some paragraphs are optional vocabulary practice. Each optional paragraph:
+
+focuses on one target word,
+
+repeats that word naturally,
+
+stands alone (the story still works if skipped),
+
+does not advance plot.
+
+Return only JSON that validates against the provided schema. No extra text.`;
+
+export const customStoryUser = `Write a children’s story that:
+
+Uses these exact 10 words naturally at least once: {WORDS_JSON_ARRAY_OF_10}.
+
+Target reading level: {LEVEL} (e.g., “CEFR A1” or “very early reader”).
+
+Max total length: {MAX_WORDS} words.
+
+Produce at least {MAIN_COUNT} main paragraphs and {OPTIONAL_COUNT} optional paragraphs.
+
+Make the hero arc clear: setup → challenge → resolution.
+
+Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
+
 /**
  * Build user prompt from request parameters
  * @param request - Story generation request
@@ -286,7 +320,7 @@ Generate structured story data in JSON format.`;
  */
 export const buildSystemPrompt = (request: StoryGenerationRequest): string => {
   console.log('buildSystemPrompt request:', request);
-  return customStorySystemV1;
+  return customStorySystemV2;
 };
 
 /**
@@ -294,7 +328,7 @@ export const buildSystemPrompt = (request: StoryGenerationRequest): string => {
  * @param request - Story generation request
  * @returns Formatted prompt string
  */
-export const buildUserPrompt = (request: StoryGenerationRequest): string => {
+export const buildUserPromptV1 = (request: StoryGenerationRequest): string => {
   const {
     // v
     theme,
@@ -327,4 +361,25 @@ export const buildUserPrompt = (request: StoryGenerationRequest): string => {
   // prompt += '\n\nKeep the language age-appropriate for children learning to spell.';
 
   return prompt;
+};
+
+/**
+ * Build user prompt from request parameters
+ * @param request - Story generation request
+ * @returns Formatted prompt string
+ */
+export const buildUserPrompt = (request: StoryGenerationRequest): string => {
+  const {
+    // v
+    theme,
+    wordList,
+  } = request;
+
+  return customStoryUser
+    .replace('{THEME}', theme)
+    .replace('{WORDS_JSON_ARRAY_OF_10}', JSON.stringify(wordList))
+    .replace('{LEVEL}', 'CEFR A1')
+    .replace('{MAX_WORDS}', '400')
+    .replace('{MAIN_COUNT}', '12')
+    .replace('{OPTIONAL_COUNT}', '10');
 };
