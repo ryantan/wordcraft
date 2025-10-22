@@ -5,6 +5,7 @@
  * Provides structured templates for different beat types
  */
 
+import { StoryGenerationRequest } from '@/lib/openai/client';
 import type { StoryBeat, StoryTheme } from '@/types/story';
 
 /**
@@ -169,7 +170,7 @@ export function sanitizePromptInput(input: string): string {
 /**
  * Build complete system prompt for OpenAI
  */
-export function buildSystemPrompt(): string {
+export function buildSystemPromptLegacy(): string {
   return `${BASE_STORY_CONTEXT.role}
 
 Guidelines:
@@ -277,3 +278,53 @@ final story together.
 Keep the language age-appropriate for children learning to spell.
 
 Generate structured story data in JSON format.`;
+
+/**
+ * Build user prompt from request parameters
+ * @param request - Story generation request
+ * @returns Formatted prompt string
+ */
+export const buildSystemPrompt = (request: StoryGenerationRequest): string => {
+  console.log('buildSystemPrompt request:', request);
+  return customStorySystemV1;
+};
+
+/**
+ * Build user prompt from request parameters
+ * @param request - Story generation request
+ * @returns Formatted prompt string
+ */
+export const buildUserPrompt = (request: StoryGenerationRequest): string => {
+  const {
+    // v
+    theme,
+    wordList,
+    // beatType = 'narrative',
+    // context = '',
+  } = request;
+
+  let prompt = `Generate a ${theme}-themed story beat for a children's educational spelling game.\n\n`;
+
+  // if (context) {
+  //   prompt += `Previous story context: ${context}\n\n`;
+  // }
+
+  prompt += `Words to practice: ${wordList.join(', ')}\n\n`;
+
+  // switch (beatType) {
+  //   case 'narrative':
+  //     prompt += 'Create a short narrative paragraph (2-3 sentences) that advances the story.';
+  //     break;
+  //   case 'game':
+  //     prompt += `Create an engaging prompt that introduces a spelling challenge for the word "${wordList[0]}".`;
+  //     break;
+  //   case 'choice':
+  //     prompt +=
+  //       'Create a story choice with a question and two options for the player to choose from.';
+  //     break;
+  // }
+  //
+  // prompt += '\n\nKeep the language age-appropriate for children learning to spell.';
+
+  return prompt;
+};
