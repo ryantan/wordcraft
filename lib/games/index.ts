@@ -13,6 +13,27 @@ import { traceWriteMechanic } from './trace-write';
 import { wordBuildingMechanic } from './word-building';
 import { wordScrambleMechanic } from './word-scramble';
 
+export type GameMechanics =
+  | 'word-scramble'
+  | 'missing-letters'
+  | 'letter-matching'
+  | 'spelling-challenge'
+  | 'letter-hunt'
+  | 'picture-reveal'
+  | 'word-building'
+  | 'trace-write';
+
+export const gameMechanics: Array<GameMechanics> = [
+  'word-scramble',
+  'missing-letters',
+  'letter-matching',
+  'spelling-challenge',
+  'letter-hunt',
+  'picture-reveal',
+  'word-building',
+  'trace-write',
+];
+
 // Register all game mechanics
 export function initializeGames(): void {
   registerGame('word-scramble', wordScrambleMechanic);
