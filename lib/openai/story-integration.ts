@@ -5,7 +5,7 @@
  * Provides fallback mechanisms and error handling
  */
 
-import { serverEnv } from '@/lib/env';
+// import { serverEnv } from '@/lib/env';
 import { StoryTheme } from '@/types';
 import OpenAI from 'openai';
 import type { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions';
@@ -55,7 +55,12 @@ export async function generateStoryContent(
 
   try {
     const openAiRequest: ChatCompletionCreateParamsBase = {
-      model: serverEnv.openai.model,
+      // model: serverEnv.openai.model,
+      // model: 'gpt-4o-mini',
+      // model: 'gpt-4o',
+      // model: 'gpt-5-mini',
+      // model: 'gpt-5',
+      model: 'gpt-5-nano',
       messages: [
         {
           role: 'system',
@@ -66,7 +71,8 @@ export async function generateStoryContent(
           content: userPrompt,
         },
       ],
-      temperature: serverEnv.openai.temperature,
+      // Not supported in o4-mini
+      // temperature: serverEnv.openai.temperature,
       // max_tokens: serverEnv.openai.maxTokens,
       ...(jsonSchema && {
         response_format: {
@@ -75,14 +81,16 @@ export async function generateStoryContent(
         },
       }),
     };
-    console.log('Open AI request: ');
-    console.log(JSON.stringify(openAiRequest, null, 2));
+    // console.log('Open AI request: ');
+    // console.log(JSON.stringify(openAiRequest, null, 2));
 
+    const start = Date.now();
     const completion = (await client.chat.completions.create(
       openAiRequest,
     )) as OpenAI.Chat.Completions.ChatCompletion;
-    console.log('Open AI response: ');
-    console.log(JSON.stringify(completion, null, 2));
+    const timeTaken = Date.now() - start;
+    console.log(`Open AI response took ${timeTaken}ms on ${openAiRequest.model}:`);
+    // console.log(JSON.stringify(completion, null, 2));
 
     const content = completion.choices[0]?.message?.content || '';
     const usage = completion.usage;
