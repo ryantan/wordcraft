@@ -145,8 +145,10 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
     // Add narrative beats periodically for story progression
     if (i % 3 === 0 && i > 0) {
       const narrativeBeat: NarrativeBeat = {
+        isOptional: false,
+        phase: 'middle',
         type: 'narrative',
-        id: `narrative-${beatIndex}`,
+        // id: `narrative-${beatIndex}`,
         narrative: getNarrativeForBeat(theme, beatIndex),
       };
       stage1Beats.push(narrativeBeat);
@@ -156,8 +158,10 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
     // Add choice beats occasionally for engagement
     if (i === 2 || i === Math.floor(wordList.length / 2)) {
       const choiceBeat: ChoiceBeat = {
+        isOptional: false,
+        phase: 'middle',
         type: 'choice',
-        id: `choice-${beatIndex}`,
+        // id: `choice-${beatIndex}`,
         narrative: 'You encounter a fork in the path...',
         question: getChoiceQuestion(theme, beatIndex),
         options: getChoiceOptions(theme, beatIndex),
@@ -168,8 +172,10 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
 
     // Add game beat for this word
     const gameBeat: GameBeat = {
+      isOptional: false,
+      phase: 'middle',
       type: 'game',
-      id: `game-${word}-stage1`,
+      // id: `game-${word}-stage1`,
       narrative: getGameNarrative(theme, word, i),
       word,
       gameType: selectGameType(i),
@@ -184,8 +190,10 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
       const checkpoint = storyContent.checkpoints[checkpointNum - 1];
 
       const checkpointBeat: CheckpointBeat = {
+        isOptional: false,
+        phase: 'middle',
         type: 'checkpoint',
-        id: `checkpoint-${checkpointNum}`,
+        // id: `checkpoint-${checkpointNum}`,
         narrative: checkpoint.narrative.replace('{wordCount}', String(gamesCompleted)),
         checkpointNumber: checkpointNum as 1 | 2 | 3,
         celebrationEmoji: checkpoint.celebrationEmoji || '🎉',
@@ -203,6 +211,7 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
   const stage2FixedSequence: StoryBeat[] = [];
 
   return {
+    words: new Map(),
     stage1Beats,
     stage2ExtraBeats,
     stage2FixedSequence,
