@@ -320,6 +320,25 @@ Make the hero arc clear: setup (beginning) → challenge (middle) → resolution
 
 Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
 
+export const wordInfoSystemPromptV1 = `You are a children’s story writer. You write 
+for ages 5-10. Use very short, simple sentences (mostly 6–12 words). 
+Prefer subject-verb-object. Keep a cheerful, safe tone. No scary content.
+
+For each target word (store in target_words), 
+- give a simplified definition,
+- come up with a hint
+- rank them 1-10 with 10 being the most difficult out of all target words (store in difficulty).
+- If you can, find 2 common words (store in similar_words) that have similar spelling, sometimes only a few letters off, that might make them confusing. Only use words suitable for kids.
+
+Return only JSON that validates against the provided schema. No extra text.`;
+
+// LEVEL: e.g., “CEFR A1” or “very early reader”
+export const wordInfoUserPromptV1 = `These are the target words: {WORDS_JSON_ARRAY}.
+
+Target reading level: {LEVEL}.
+
+Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
+
 /**
  * Build user prompt from request parameters
  * @param request - Story generation request
@@ -341,6 +360,33 @@ const buildSystemPromptV2 = (request: StoryGenerationRequest): string => {
 };
 
 export const buildSystemPrompt = buildSystemPromptV2;
+
+export const buildSystemPromptForWordInfo = (request: StoryGenerationRequest): string => {
+  console.log('buildSystemPromptForWordInfo request:', request);
+
+  return wordInfoSystemPromptV1;
+};
+export const buildUserPromptForWordInfo = (request: StoryGenerationRequest): string => {
+  console.log('buildUserPromptForWordInfo request:', request);
+
+  const {
+    // v
+    theme,
+    wordList,
+  } = request;
+
+  return (
+    wordInfoUserPromptV1
+      .replace('{THEME}', theme)
+      .replace('{WORDS_LENGTH}', `${wordList.length}`)
+      .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
+      // .replace('{LEVEL}', 'CEFR A1')
+      .replace('{LEVEL}', 'CEFR B2')
+      .replace('{MAX_WORDS}', '600')
+      .replace('{MAIN_COUNT}', '12')
+      .replace('{OPTIONAL_COUNT}', `${wordList.length}`)
+  );
+};
 
 /**
  * Build user prompt from request parameters
