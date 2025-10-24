@@ -5,22 +5,27 @@ import { words } from './words';
 /**
  * Processes word list to all conjugated forms.
  */
-export const wordsWithConjugates = words.flatMap(word => {
-  const doc = nlp(word);
-  const conjugatedVerbs = doc.verbs().conjugate()?.[0];
-  if (!conjugatedVerbs) {
-    return [word];
-  }
+export const generateWordsWithConjugates = () => {
+  const result = words.flatMap(word => {
+    const doc = nlp(word);
+    const conjugatedVerbs = doc.verbs().conjugate()?.[0];
+    if (!conjugatedVerbs) {
+      return [word];
+    }
 
-  delete (conjugatedVerbs as any).FutureTense;
-  // console.log('conjugatedVerbs:', conjugatedVerbs);
+    delete (conjugatedVerbs as any).FutureTense;
+    // console.log('conjugatedVerbs:', conjugatedVerbs);
 
-  let result = [word, ...Object.values(conjugatedVerbs)].filter(v => !!v);
-  result = [...new Set(result)];
-  // console.log('result:', result);
+    let result = [word, ...Object.values(conjugatedVerbs)].filter(v => !!v);
+    result = [...new Set(result)];
+    // console.log('result:', result);
 
-  return result;
-});
+    return result;
+  });
+  return [...new Set(result)];
+};
+
+export const wordsWithConjugates = generateWordsWithConjugates();
 
 // Not tested. Originally wanted to use this when finding similar words, decided to pre-process the words list instead.
 //
