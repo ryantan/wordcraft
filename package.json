@@ -18,7 +18,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run type-check && npm run lint && vitest run && playwright test",
     "clean": "rm -rf .next node_modules",
-    "process-words": "pnpm dlx tsx scripts/process-words.ts"
+    "process-words": "pnpm dlx tsx scripts/process-words.ts",
+    "find-missing-words": "pnpm dlx tsx scripts/find-missing-words.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
