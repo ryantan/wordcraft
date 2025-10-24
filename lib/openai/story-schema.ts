@@ -145,18 +145,11 @@ export function validateAndTransformOpenAIResponseV2(response: unknown): Childre
 
 export const StoryBlockSchema = z
   .object({
-    id: z.string().regex(/^p_[a-z0-9_-]{4,}$/, {
-      message: 'id must match pattern p_[a-z0-9_-]{4,}',
-    }),
     type: z.enum(['main', 'optional']),
     stage: z
       .enum(['beginning', 'middle', 'end', 'none'])
       .describe("Use 'none' for optional practice blocks."),
     focus_word: z.string().describe('The key word for this block'),
-    used_words: z
-      .array(z.string())
-      .default([])
-      .describe('Words used in this block, but not the focus.'),
     text: z
       .string()
       .min(10, 'Paragraph text should be at least 16 characters.')
