@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { GameMechanics } from '@/lib/games';
+import { WordInfo } from '@/lib/openai/word-info/schema';
 
 import type { WordList } from './word';
 
@@ -57,8 +58,11 @@ export interface StoryCheckpoint {
  */
 export interface BaseBeat {
   type: 'game' | 'choice' | 'narrative' | 'checkpoint';
-  id: string;
+  // id: string;
+  isOptional?: boolean;
   narrative: string;
+  // Phase of the story.
+  phase?: 'beginning' | 'middle' | 'end';
 }
 
 /**
@@ -126,10 +130,13 @@ export interface StoryGenerationInput {
   targetBeats: number;
 }
 
+export type WordInfoMap = Map<string, WordInfo>;
+
 /**
  * Generated story structure
  */
 export interface GeneratedStory {
+  words?: WordInfoMap;
   stage1Beats: StoryBeat[]; // One beat per word (story order)
   stage2ExtraBeats: Map<string, StoryBeat[]>; // Extra beats per word for mastery
   stage2FixedSequence: StoryBeat[]; // Fallback sequence for Stage 2
