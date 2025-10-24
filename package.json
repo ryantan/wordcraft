@@ -18,7 +18,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:all": "npm run type-check && npm run lint && vitest run && playwright test",
     "clean": "rm -rf .next node_modules",
-    "process-words": "pnpm dlx tsx scripts/process-words.ts"
+    "process-words": "pnpm dlx tsx scripts/process-words.ts",
+    "find-missing-words": "pnpm dlx tsx scripts/find-missing-words.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
@@ -27,6 +28,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "compromise": "^14.14.4",
+    "csv-parse": "^5.6.0",
     "date-fns": "^4.1.0",
     "fast-levenshtein": "^3.0.0",
     "framer-motion": "^11.11.11",
