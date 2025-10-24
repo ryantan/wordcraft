@@ -9,6 +9,7 @@
  */
 
 import { generateStoryServerAction } from '@/lib/actions/generate-story.action';
+import { generateWordInfoServerAction } from '@/lib/actions/generate-word-info.action';
 import { env } from '@/lib/env';
 import { gameMechanics, GameMechanics } from '@/lib/games';
 import {
@@ -88,8 +89,12 @@ export async function generateStoryAsync(input: StoryGenerationInput): Promise<G
   if (env.enableOpenAIStoryGeneration) {
     try {
       console.info('Attempting OpenAI story generation via server action...');
-      const openAIResult = await generateStoryServerAction(input);
+      const [openAIResult, wordInfo] = await Promise.all([
+        generateStoryServerAction(input),
+        generateWordInfoServerAction(input),
+      ]);
       console.log('openAIResult:', openAIResult);
+      console.log('wordInfo:', wordInfo);
       if (openAIResult && validateStoryContent(openAIResult)) {
         console.info('OpenAI story generation successful');
         metrics.endTime = Date.now();
@@ -145,6 +150,8 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
     // Add narrative beats periodically for story progression
     if (i % 3 === 0 && i > 0) {
       const narrativeBeat: NarrativeBeat = {
+        isOptional: false,
+        phase: 'middle',
         type: 'narrative',
         id: `narrative-${beatIndex}`,
         narrative: getNarrativeForBeat(theme, beatIndex),
@@ -156,6 +163,8 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
     // Add choice beats occasionally for engagement
     if (i === 2 || i === Math.floor(wordList.length / 2)) {
       const choiceBeat: ChoiceBeat = {
+        isOptional: false,
+        phase: 'middle',
         type: 'choice',
         id: `choice-${beatIndex}`,
         narrative: 'You encounter a fork in the path...',
@@ -168,6 +177,8 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
 
     // Add game beat for this word
     const gameBeat: GameBeat = {
+      isOptional: false,
+      phase: 'middle',
       type: 'game',
       id: `game-${word}-stage1`,
       narrative: getGameNarrative(theme, word, i),
@@ -184,6 +195,8 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
       const checkpoint = storyContent.checkpoints[checkpointNum - 1];
 
       const checkpointBeat: CheckpointBeat = {
+        isOptional: false,
+        phase: 'middle',
         type: 'checkpoint',
         id: `checkpoint-${checkpointNum}`,
         narrative: checkpoint.narrative.replace('{wordCount}', String(gamesCompleted)),
@@ -203,6 +216,7 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
   const stage2FixedSequence: StoryBeat[] = [];
 
   return {
+    words: new Map(),
     stage1Beats,
     stage2ExtraBeats,
     stage2FixedSequence,
