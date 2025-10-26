@@ -1,11 +1,9 @@
 import nlp from 'compromise';
 
-import { words } from './words';
-
 /**
  * Processes word list to all conjugated forms.
  */
-export const generateWordsWithConjugates = () => {
+export const generateWordsWithConjugates = (words: string[]) => {
   const result = words.flatMap(word => {
     const doc = nlp(word);
     const conjugatedVerbs = doc.verbs().conjugate()?.[0];
@@ -24,8 +22,6 @@ export const generateWordsWithConjugates = () => {
   });
   return [...new Set(result)];
 };
-
-export const wordsWithConjugates = generateWordsWithConjugates();
 
 // Not tested. Originally wanted to use this when finding similar words, decided to pre-process the words list instead.
 //
