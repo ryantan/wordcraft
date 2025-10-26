@@ -22,9 +22,10 @@ import { createOpenAIClient, OpenAIAPIError, withRetry, withTimeout } from './cl
 import {
   ChildrenStory,
   getStoryGenerationJsonSchemaV1,
-  getStoryGenerationJsonSchemaV2,
+  getStoryGenerationJsonSchemaV3,
+  Story,
   validateAndTransformOpenAIResponseV1,
-  validateAndTransformOpenAIResponseV2,
+  validateAndTransformOpenAIResponseV3,
   type OpenAIStoryResponse,
 } from './story-schema';
 
@@ -113,14 +114,7 @@ async function generateStoryWithOpenAIV2(
     // Generate story content with timeout and JSON schema
     const response = await withTimeout(
       withRetry(async () => {
-        return await generateStoryContent(
-          client,
-          {
-            theme: input.theme,
-            wordList: input.wordList,
-          },
-          getStoryGenerationJsonSchemaV2(),
-        );
+        return await generateStoryContent(client, input, getStoryGenerationJsonSchemaV3());
       }),
       STORY_GENERATION_TIMEOUT * 100,
     );
@@ -138,7 +132,7 @@ async function generateStoryWithOpenAIV2(
     }
 
     // Validate with Zod schema
-    const validatedResponse = validateAndTransformOpenAIResponseV2(jsonData);
+    const validatedResponse = validateAndTransformOpenAIResponseV3(jsonData);
     if (!validatedResponse) {
       console.warn('OpenAI response failed validation');
       return null;
@@ -146,7 +140,7 @@ async function generateStoryWithOpenAIV2(
     console.info('OpenAI response passed validation');
 
     // Transform to our internal GeneratedStory format
-    return transformToGeneratedStoryV2(validatedResponse, input);
+    return transformToGeneratedStoryV3(validatedResponse, input);
   } catch (error) {
     if (error instanceof OpenAIAPIError) {
       console.error('OpenAI API error during story generation:', error.message);
@@ -223,7 +217,6 @@ function transformToGeneratedStoryV1(
   // Convert validated schema types to our internal types
   const stage1Beats: StoryBeat[] = validatedResponse.stage1Beats.map(beat => {
     const baseProps = {
-      id: beat.id,
       narrative: beat.narrative,
       isOptional: false,
       phase: 'middle',
@@ -276,7 +269,6 @@ function transformToGeneratedStoryV1(
       console.warn(`Missing game beat for word: ${word}`);
       stage1Beats.push({
         type: 'game',
-        id: `game-${word.toLowerCase()}-generated`,
         narrative: `Time to spell "${word.toUpperCase()}"!`,
         word,
         gameType: 'letter-matching',
@@ -295,7 +287,7 @@ function transformToGeneratedStoryV1(
 /**
  * Transform validated OpenAI response to our internal GeneratedStory format
  */
-function transformToGeneratedStoryV2(
+export function transformToGeneratedStoryV2(
   validatedResponse: ChildrenStory,
   input: StoryGenerationInput,
 ): GeneratedStory {
@@ -308,7 +300,6 @@ function transformToGeneratedStoryV2(
 
   validatedResponse.main_blocks.forEach(beat => {
     const baseProps = {
-      id: beat.id,
       narrative: beat.text,
       isOptional: false,
       phase: beat.stage,
@@ -340,7 +331,6 @@ function transformToGeneratedStoryV2(
 
   validatedResponse.optional_blocks.forEach(beat => {
     const baseProps = {
-      id: beat.id,
       narrative: beat.text,
       isOptional: true,
       phase: 'middle',
@@ -381,7 +371,76 @@ function transformToGeneratedStoryV2(
       console.warn(`Missing game beat for word: ${word}`);
       stage1Beats.push({
         type: 'game',
-        id: `game-${word.toLowerCase()}-generated`,
+        narrative: `Time to spell "${word.toUpperCase()}"!`,
+        word,
+        gameType: 'letter-matching',
+        stage: 1,
+      });
+    }
+  }
+
+  return {
+    stage1Beats,
+    stage2ExtraBeats,
+    stage2FixedSequence: [],
+  };
+}
+
+/**
+ * Transform validated OpenAI response to our internal GeneratedStory format
+ */
+function transformToGeneratedStoryV3(
+  validatedResponse: Story,
+  input: StoryGenerationInput,
+): GeneratedStory {
+  // Convert validated schema types to our internal types
+  let gameTypeIndex = 0;
+  const wordsCoveredInMain = new Set<string>();
+  const stage1Beats: StoryBeat[] = [];
+  const stage2ExtraBeats = new Map<string, StoryBeat[]>();
+
+  validatedResponse.blocks.forEach(beat => {
+    const baseProps = {
+      narrative: beat.text,
+      isOptional: false,
+      phase: beat.stage,
+    };
+
+    const word = beat.focus_word || null;
+
+    // For now we take the first word that has not been used yet.
+    // const word = selectItemFromListThatIsNotInSet(words, wordsCoveredInMain);
+    if (!word) {
+      // If no word, this is a pure narrative.
+      stage1Beats.push({
+        ...baseProps,
+        type: 'narrative',
+      } as NarrativeBeat);
+      return;
+    }
+    wordsCoveredInMain.add(word);
+    gameTypeIndex++;
+    stage1Beats.push({
+      ...baseProps,
+      type: 'game',
+      word,
+      gameType: selectGameType(gameTypeIndex),
+      stage: 1,
+    } as GameBeat);
+    return;
+  });
+
+  // Validate that all required words are covered
+  const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[];
+  const requiredWords = new Set(input.wordList);
+  const coveredWords = new Set(gameBeats.filter(item => item.stage === 1).map(b => b.word));
+
+  // Add missing words as game beats
+  for (const word of requiredWords) {
+    if (!coveredWords.has(word)) {
+      console.warn(`Missing game beat for word: ${word}`);
+      stage1Beats.push({
+        type: 'game',
         narrative: `Time to spell "${word.toUpperCase()}"!`,
         word,
         gameType: 'letter-matching',
