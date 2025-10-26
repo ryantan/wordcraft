@@ -88,6 +88,18 @@ export function getStoryGenerationJsonSchemaV2() {
 }
 
 /**
+ * Generate JSON Schema for OpenAI function calling
+ */
+export function getStoryGenerationJsonSchemaV3() {
+  // Convert Zod schema to JSON Schema format
+  // OpenAI expects a specific format for function parameters
+  return z.toJSONSchema(storySchema, {
+    // Use older version for openAI support.
+    target: 'draft-4',
+  });
+}
+
+/**
  * Validate OpenAI response and transform to our internal types
  */
 export function validateAndTransformOpenAIResponseV1(
@@ -125,6 +137,32 @@ export function validateAndTransformOpenAIResponseV2(response: unknown): Childre
 
     // Additional validation: ensure all words are covered
     const gameBeats = parsed.main_blocks.filter(beat => beat.type === 'main');
+    if (gameBeats.length === 0) {
+      console.error('No main beats found in OpenAI response');
+      return null;
+    }
+
+    return parsed;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('OpenAI response validation failed:', error.issues);
+    } else {
+      console.error('Unknown error validating OpenAI response:', error);
+    }
+    return null;
+  }
+}
+
+/**
+ * Validate OpenAI response and transform to our internal types
+ */
+export function validateAndTransformOpenAIResponseV3(response: unknown): Story | null {
+  try {
+    // Parse and validate with Zod
+    const parsed: Story = storySchema.parse(response);
+
+    // Additional validation: ensure all words are covered
+    const gameBeats = parsed.blocks;
     if (gameBeats.length === 0) {
       console.error('No main beats found in OpenAI response');
       return null;
@@ -196,3 +234,40 @@ export const ChildrenStorySchema = z
 export type ChildrenStory = z.infer<typeof ChildrenStorySchema>;
 
 // endregion V2 structure
+
+// region V3 structure
+
+export const StoryBlockSchemaV3 = z
+  .object({
+    // type: z.enum(['main', 'optional']),
+    stage: z
+      .enum(['beginning', 'middle', 'challenge', 'end'])
+      .describe('Which phase does this block belong to.'),
+    focus_word: z.string().describe('The word (form the target words list) for this block'),
+    text: z
+      .string()
+      .min(10, 'Paragraph text should be at least 32 characters.')
+      .describe('2–4 short sentences. Very simple vocabulary. No markdown.'),
+  })
+  .strict();
+
+export const storySchema = z
+  .object({
+    title: z.string().min(1),
+    // target_age_range: z.string(), // e.g. "5-10"
+    // level: z.string(), // e.g. "CEFR A1"
+    main_conflict: z.string().min(32).describe('The main conflict of the story'),
+    hero_arc: HeroArcSchema,
+    blocks: z
+      .array(StoryBlockSchemaV3)
+      .min(10)
+      .describe('The main story blocks that make up the hero story.'),
+    // optional_blocks: z.array(StoryBlockSchemaV3).min(10).describe('The optional story blocks'),
+    // stats: StatsSchema,
+  })
+  .strict();
+
+// Inferred TypeScript type
+export type Story = z.infer<typeof storySchema>;
+
+// endregion V3 structure
