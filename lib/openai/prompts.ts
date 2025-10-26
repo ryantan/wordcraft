@@ -302,6 +302,47 @@ Optional story blocks (optional_blocks) are optional vocabulary practice. Each o
 
 Return only JSON that validates against the provided schema. No extra text.`;
 
+export const customStorySystemV3 = `You are a children’s story writer. You write 
+for ages 5-10. Use very short, simple sentences (mostly 6–12 words). 
+Prefer subject-verb-object. Avoid commas and long clauses. Each block has 
+2–3 sentences. Keep language cheerful, exciting, imaginative, and some level of 
+exaggeration for comedic effect. Try to add 1 unexpected twist near the end 
+that would help our hero, let the villain make silly mistakes if it helps, allow 
+some goofing around.
+
+The story must follow a classic hero arc with a clear beginning (setup) -> middle (journey) -> challenge
+(challenge) -> end (resolution) progression. 
+
+The basic framework for the story is: Villain does bad thing. Hero finds out (usually in 1-2 blocks) then setups to help, safe, or otherwise counter the bad thing. After some obstacles, the hero faces off the villain. After some effort, the hero prevails and undo the bad thing. Happily ever after.
+
+Examples of bad things, i.e. the conflict:
+- Villain kidnaps friends
+- Villain kidnaps princesses 
+- Villain steals treasures 
+- Villain wants to destroy something good
+- Villain makes hero's life difficult
+- Villain escapes from jail
+- Villain takes over the world
+- Villain turns hero into a frog
+- Villain turns friends into stone
+- Villain plays their music too loudly
+
+Decide on the main conflict first before coming up with the story - the main conflict does not have to be anything to do with the target words.
+
+Right before the end, add a block where the hero takes on the villain - call this the challenge block. The challenge block does not need to use any of the target words, it's an open ended challenge where we would let the reader play some minigames in order to overcome them. 
+
+Story blocks makes up the story. Each block:
+- focuses on one target word,
+- uses the target word naturally,
+- advances the plot.
+- indicates whether it belongs in the beginning, middle, challenge, or end phase.
+
+Challenge story block (challenge) comes between the middle and end phase:
+- do not use any target words,
+- prompt that the hero would now be doing some challenges - do not go into detail what the challenges are as they would be programmatically generated - but that they would help the hero achieve the goal.
+
+Return only JSON that validates against the provided schema. No extra text.`;
+
 export const customStoryUser = `Write a children’s story with theme {THEME} that:
 
 Uses these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
@@ -317,6 +358,26 @@ Make the hero arc clear: setup (beginning) → challenge (middle) → resolution
 - Please produce 6 blocks for the middle challenge stage.
 - Please produce {OPTIONAL_COUNT} optional blocks that we may use where required.
 - And lastly please produce 4 blocks for a satisfying resolution stage. 
+
+Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
+
+export const customStoryUserV3 = `Write a children’s story that:
+
+Uses these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
+
+Target reading level: {LEVEL} (e.g., “CEFR A1” or “very early reader”).
+
+Max total length: {MAX_WORDS} words.
+
+Make the hero arc clear: beginning (setup) → middle (journey) → challenge → end (resolution).
+
+- Please produce 1 beginning narrative-only block that introduce the hero and setting.
+- Please produce 1 beginning narrative-only block that introduce the conflict and explain the impact.
+- Please produce 1-2 middle block to come up with the plan.
+- Please produce 6-8 middle blocks for the hero journey. 
+- Please produce 1 challenge block for the challenge stage.
+- Please produce 2 end blocks for a satisfying resolution. 
+- Lastly please produce 1 end block for a happily ever after message, or end with a joke. 
 
 Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
 
@@ -354,12 +415,22 @@ export const buildSystemPromptV1 = (request: StoryGenerationRequest): string => 
  * @param request - Story generation request
  * @returns Formatted prompt string
  */
-const buildSystemPromptV2 = (request: StoryGenerationRequest): string => {
-  console.log('buildSystemPrompt request:', request);
-  return customStorySystemV2;
+export const buildSystemPromptV2 = (request: StoryGenerationRequest): string => {
+  const { theme } = request;
+  return customStorySystemV2.replace('{THEME}', theme);
 };
 
-export const buildSystemPrompt = buildSystemPromptV2;
+/**
+ * Build system prompt from request parameters
+ * @param request - Story generation request
+ * @returns Formatted prompt string
+ */
+const buildSystemPromptV3 = (request: StoryGenerationRequest): string => {
+  const { theme } = request;
+  return customStorySystemV3.replace('{THEME}', theme);
+};
+
+export const buildSystemPrompt = buildSystemPromptV3;
 
 export const buildSystemPromptForWordInfo = (request: StoryGenerationRequest): string => {
   const { theme } = request;
@@ -436,14 +507,14 @@ export const buildUserPrompt = (request: StoryGenerationRequest): string => {
   } = request;
 
   return (
-    customStoryUser
+    customStoryUserV3
       .replace('{THEME}', theme)
       .replace('{WORDS_LENGTH}', `${wordList.length}`)
       .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
       // .replace('{LEVEL}', 'CEFR A1')
       .replace('{LEVEL}', 'CEFR B2')
       .replace('{MAX_WORDS}', '600')
-      .replace('{MAIN_COUNT}', '12')
+      .replace('{MAIN_COUNT}', `${wordList.length}`)
       .replace('{OPTIONAL_COUNT}', `${wordList.length}`)
   );
 };
