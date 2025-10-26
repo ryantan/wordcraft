@@ -1,13 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+import { words } from '@/lib/data/words';
 import { generateWordsWithConjugates } from '@/lib/data/wordsWithConjugation';
 
 async function run() {
   const outputPath = path.join(process.cwd(), 'data', 'words-with-conjugates.json');
 
   try {
-    const wordsWithConjugates = generateWordsWithConjugates();
+    const wordsWithConjugates = generateWordsWithConjugates(words);
 
     // Ensure the data directory exists
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
