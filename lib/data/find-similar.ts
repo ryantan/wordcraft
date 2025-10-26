@@ -1,7 +1,7 @@
-// import { words } from '@/lib/data/words';
-import { wordsWithConjugates as words } from '@/lib/data/wordsWithConjugation';
 import sortBy from 'lodash/sortBy';
 import { DamerauLevenshteinDistance, DoubleMetaphone } from 'natural';
+
+import words from '../../data/words-with-conjugates.json';
 
 // const metaphone = new natural.Metaphone();
 const metaphone = new DoubleMetaphone();
