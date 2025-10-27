@@ -8,6 +8,8 @@
 import { StoryGenerationRequest } from '@/lib/openai/story-integration';
 import type { StoryBeat, StoryTheme } from '@/types/story';
 
+import settings from '../data/settings.json';
+
 /**
  * Base prompt context for all story generation
  */
@@ -381,6 +383,36 @@ Make the hero arc clear: beginning (setup) → middle (journey) → challenge �
 
 Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
 
+export const customStoryUserV3B = `Write a children’s story with the following:
+
+Setting: {SETTING}
+
+Hero: {HERO}
+
+Villain: {VILLAIN}
+
+Conflict: {CONFLICT}
+
+What is at stake for our hero: {STAKE}
+
+Uses these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
+
+Target reading level: {LEVEL}
+
+Max total length: {MAX_WORDS} words.
+
+Make the hero arc clear: beginning (setup) → middle (journey) → challenge → end (resolution).
+
+- Please produce 1 beginning narrative-only block that introduce the hero and setting.
+- Please produce 1 beginning narrative-only block that introduce the conflict and explain the impact.
+- Please produce 1-2 middle block to come up with the plan.
+- Please produce 6-8 middle blocks for the hero journey. 
+- Please produce 1 challenge block for the challenge stage.
+- Please produce 2 end blocks for a satisfying resolution. 
+- Lastly please produce 1 end block for a happily ever after message, or end with a joke. 
+
+Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
+
 export const wordInfoSystemPromptV1 = `You are a children’s story writer. You write 
 for ages 5-10. Use very short, simple sentences (mostly 6–12 words). 
 Prefer subject-verb-object. Keep a cheerful, safe tone. No scary content.
@@ -506,8 +538,16 @@ export const buildUserPrompt = (request: StoryGenerationRequest): string => {
     wordList,
   } = request;
 
+  const settingIndex = Math.floor(Math.random() * 36);
+  const setting = settings[settingIndex];
+
   return (
-    customStoryUserV3
+    customStoryUserV3B
+      .replace('{SETTING}', setting.setting)
+      .replace('{HERO}', setting.hero)
+      .replace('{VILLAIN}', setting.villain)
+      .replace('{CONFLICT}', setting.conflict)
+      .replace('{STAKE}', setting.stake)
       .replace('{THEME}', theme)
       .replace('{WORDS_LENGTH}', `${wordList.length}`)
       .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
