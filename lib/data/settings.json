@@ -1,0 +1,311 @@
+[
+  {
+    "id": 1,
+    "setting": "A kingdom inside a giant smoothie blender that keeps spinning slowly.",
+    "hero": "Sir Peel-a-Lot, a banana in shining armor who’s scared of monkeys.",
+    "villain": "Count Slippyfoot, a sneaky penguin who wants to freeze all fruit.",
+    "conflict": "Count Slippyfoot has stolen the blender’s ‘Warm’ button to turn the kingdom into an ice cube.",
+    "stake": "If Sir Peel-a-Lot fails, all fruit will be frozen and smoothies will turn into popsicles forever."
+  },
+  {
+    "id": 2,
+    "setting": "A prehistoric city with traffic lights made of lava lamps.",
+    "hero": "Trudy the Triceratops, who solves mysteries with her magnifying tail.",
+    "villain": "Professor Puddle, a time-traveling duck who steals socks from every era.",
+    "conflict": "All the dinosaurs’ socks keep disappearing right before Sock Day at Dino School.",
+    "stake": "If Trudy can’t solve the case, Sock Day will be canceled and everyone will have cold toes!"
+  },
+  {
+    "id": 3,
+    "setting": "Sweetropolis, a city made of candy clouds and chocolate rivers.",
+    "hero": "Captain Sprinkle, a flying cupcake who shoots frosting blasts.",
+    "villain": "Lord Broccoli, who wants to replace dessert with vegetables forever.",
+    "conflict": "Lord Broccoli has built a giant broccoli blaster to turn all sugar into spinach.",
+    "stake": "If Captain Sprinkle can’t stop him, dessert time will vanish from Sweetropolis forever."
+  },
+  {
+    "id": 4,
+    "setting": "An underwater library guarded by jellyfish lamps and singing seashells.",
+    "hero": "Olivia the Octopus, who can read eight books at once.",
+    "villain": "Cranky Crabbeard, a pirate who wants to turn all books into treasure maps.",
+    "conflict": "Cranky Crabbeard is sneaking into the library to erase every story and draw X marks instead.",
+    "stake": "If Olivia can’t stop him, all the ocean’s stories will be lost and reading will become boring treasure hunting."
+  },
+  {
+    "id": 5,
+    "setting": "A lunar farm floating above Earth with cows in space helmets.",
+    "hero": "Farmer Luna, who grows glow-in-the-dark carrots in zero gravity.",
+    "villain": "Space Cow Rustler Joe, who tries to steal moon-milk for his coffee.",
+    "conflict": "Rustler Joe has lassoed the cows and is pulling them toward his spaceship café.",
+    "stake": "If Farmer Luna can’t stop him, there will be no milk for the moon pancakes at sunrise."
+  },
+  {
+    "id": 6,
+    "setting": "The South Pole Airfield, where snowflakes double as landing lights.",
+    "hero": "Penny the Penguin, who flies a biplane powered by fish smoothies.",
+    "villain": "The Sunburned Snowman, who wants to melt Antarctica for a beach resort.",
+    "conflict": "The Snowman has stolen the weather machine to crank up the temperature.",
+    "stake": "If Penny doesn’t stop him, the South Pole will turn into a giant puddle and all penguins will lose their homes."
+  },
+  {
+    "id": 7,
+    "setting": "A floating school made of balloons drifting above Cotton Candy Mountain.",
+    "hero": "Milo the Mouse, who uses his big ears as parachutes when things go wrong.",
+    "villain": "Principal Pufferfish, who wants to pop all the balloons to make everyone attend underwater school instead.",
+    "conflict": "The balloon school is losing air because Principal Pufferfish poked holes with her spines.",
+    "stake": "If Milo doesn’t fix it, the whole school will crash-land into a sticky pink mountain of candy."
+  },
+  {
+    "id": 8,
+    "setting": "A tiny island shaped like a slice of pizza.",
+    "hero": "Chef Coco, a squirrel who cooks using coconuts and roller skates.",
+    "villain": "Major Anchovy, a grumpy fish who hates all toppings except anchovies.",
+    "conflict": "Major Anchovy is covering the island in anchovy sauce and banning all other flavors.",
+    "stake": "If Chef Coco can’t stop him, pizza will be ruined forever and the islanders will have only fishy dinners!"
+  },
+  {
+    "id": 9,
+    "setting": "A forest where trees tell jokes and the rivers giggle.",
+    "hero": "Lila the Ladybug, a comedian who performs stand-up on mushroom stages.",
+    "villain": "The Serious Snail, who wants to make everyone stop laughing forever.",
+    "conflict": "The Snail is spreading ‘Gloom Goo’ that silences every giggle in the forest.",
+    "stake": "If Lila can’t bring the laughter back, the forest will turn gray and dull forever."
+  },
+  {
+    "id": 10,
+    "setting": "A city inside a giant snow globe that shakes every hour.",
+    "hero": "Fritz the Ferret, an inventor who rides around in a snowflake-powered sled.",
+    "villain": "Blizzard Beard, a mischievous Yeti who loves shaking the globe too hard.",
+    "conflict": "Blizzard Beard has stolen the globe’s ‘Still Switch’ and is causing non-stop snowstorms.",
+    "stake": "If Fritz doesn’t retrieve it, everyone’s homes will be buried under endless snow!"
+  },
+  {
+    "id": 11,
+    "setting": "A gigantic library floating in space, orbiting Planet Storytime.",
+    "hero": "Astronaut Annie, who collects stories from across the galaxy.",
+    "villain": "The Cosmic Cat, who chases constellations and erases star maps with her tail.",
+    "conflict": "The Cosmic Cat has stolen all the storybooks that map the stars’ histories.",
+    "stake": "If Annie doesn’t recover them, every bedtime story in the universe will vanish!"
+  },
+  {
+    "id": 12,
+    "setting": "A mountain made of pancakes stacked up to the clouds.",
+    "hero": "Barry the Bear, who’s training to be the world’s first pancake chef.",
+    "villain": "The Syrup Sorcerer, who wants to flood the world with sticky syrup rivers.",
+    "conflict": "The sorcerer’s syrup spell is making the pancakes soggy and slippery.",
+    "stake": "If Barry can’t stop him, everyone will slide off the pancake mountain forever!"
+  },
+  {
+    "id": 13,
+    "setting": "A hidden jungle where instruments grow on trees and music fills the air.",
+    "hero": "Rafa the Raccoon, who plays every instrument by ear (literally).",
+    "villain": "Madam Mute, a bat who steals sounds to make her cave the quietest place ever.",
+    "conflict": "Madam Mute is bottling all the jungle’s music in jars.",
+    "stake": "If Rafa doesn’t stop her, the jungle will fall silent and dance parties will be no more!"
+  },
+  {
+    "id": 14,
+    "setting": "A bustling train station run entirely by talking animals.",
+    "hero": "Tilly the Tiger, the brave ticket inspector who loves helping passengers.",
+    "villain": "The Sneaky Snake, who’s swapping everyone’s train tickets to cause chaos.",
+    "conflict": "Trains are arriving at the wrong destinations because of Snake’s ticket tricks.",
+    "stake": "If Tilly can’t untangle the mess, no one will ever get home in time for dinner!"
+  },
+  {
+    "id": 15,
+    "setting": "A playground floating on fluffy clouds with slides made of rainbows.",
+    "hero": "Pip the Parrot, who paints the sky with his magical paintbrush feathers.",
+    "villain": "Drizzle the Rain Cloud, who wants to turn all colors into gloomy gray.",
+    "conflict": "Drizzle is soaking the rainbow slides and washing away the colors.",
+    "stake": "If Pip can’t repaint the sky, playtime will be forever dull and rainy."
+  },
+  {
+    "id": 16,
+    "setting": "A coral city shaped like a giant seashell under the sea.",
+    "hero": "Nori the Seahorse, a mail carrier who delivers glittery bubble letters.",
+    "villain": "Captain Clam, a grumpy shellfish who hates mail and steals all the letters.",
+    "conflict": "Captain Clam is clogging the city’s bubble mail tubes with sand.",
+    "stake": "If Nori can’t clear them, nobody in Coral City will ever get their birthday cards again!"
+  },
+  {
+    "id": 17,
+    "level": "early",
+    "setting": "A sunny garden full of talking flowers and friendly bugs.",
+    "hero": "Benny the Bee, who loves to dance while he works.",
+    "villain": "Grumpy Beetle, who wants everyone to stop buzzing so he can nap.",
+    "conflict": "Grumpy Beetle covers the flowers with sleepy dust to make them quiet.",
+    "stake": "If Benny can’t wake them up, the garden will never bloom again."
+  },
+  {
+    "id": 18,
+    "level": "early",
+    "setting": "A cozy treehouse where animals come for story time every night.",
+    "hero": "Ellie the Elephant, who tells the bedtime stories.",
+    "villain": "Sneaky Squirrel, who steals the storybook because he wants all the stories for himself.",
+    "conflict": "Without the book, Ellie can’t tell the animals their favorite tales.",
+    "stake": "If Ellie doesn’t get it back, no one will go to sleep on time!"
+  },
+  {
+    "id": 19,
+    "level": "early",
+    "setting": "A small town made of toy blocks that rebuilds itself every morning.",
+    "hero": "Max the Monkey, who drives the block-building crane.",
+    "villain": "Dusty the Digger, who loves knocking things over for fun.",
+    "conflict": "Dusty keeps breaking the buildings before Max can finish them.",
+    "stake": "If Max can’t stop him, the town will never be ready for playtime."
+  },
+  {
+    "id": 20,
+    "level": "early",
+    "setting": "A bright classroom where crayons and pencils come to life after school.",
+    "hero": "Ruby the Red Crayon, who loves to draw happy faces.",
+    "villain": "Ink the Spilled Pen, who wants to scribble over everything.",
+    "conflict": "Ink is making messy lines all over the classroom drawings.",
+    "stake": "If Ruby doesn’t stop him, the art show will be ruined!"
+  },
+  {
+    "id": 21,
+    "level": "early",
+    "setting": "A playground by the sea with swings made of seaweed and shell slides.",
+    "hero": "Poppy the Penguin, who loves helping everyone take turns.",
+    "villain": "Crabby Crab, who cuts in line and takes over the swings.",
+    "conflict": "Crabby is pushing everyone out of the way and won’t share.",
+    "stake": "If Poppy can’t teach him to play fair, no one will want to visit the playground anymore."
+  },
+  {
+    "id": 22,
+    "level": "early",
+    "setting": "A tiny bakery that smells like cookies all day long.",
+    "hero": "Milo the Mouse, the baker who makes the best chocolate chip cookies.",
+    "villain": "Sneaky Cat, who keeps stealing the cookies at night.",
+    "conflict": "Milo wakes up to find all his cookies gone again!",
+    "stake": "If Milo can’t stop Sneaky Cat, there will be no treats for the big cookie party."
+  },
+  {
+    "id": 23,
+    "level": "early",
+    "setting": "A friendly farm where all the animals sing in the morning.",
+    "hero": "Penny the Pig, who plays the drum in the barn band.",
+    "villain": "Sleepy Sheep, who wants everyone to stay quiet so he can keep snoozing.",
+    "conflict": "Sleepy Sheep hides Penny’s drumsticks before the concert.",
+    "stake": "If Penny can’t find them, the morning music show will be silent!"
+  },
+  {
+    "id": 24,
+    "level": "early",
+    "setting": "A park where all the kites can talk and fly by themselves.",
+    "hero": "Kai the Kite, who loves doing loops and twirls.",
+    "villain": "Windy Wendy, a gust of wind who blows too hard and scares the kites.",
+    "conflict": "Wendy’s wild winds keep tangling all the kite strings.",
+    "stake": "If Kai can’t calm her down, no kite will ever fly straight again."
+  },
+  {
+    "id": 25,
+    "level": "early",
+    "setting": "A colorful fish school under the sea.",
+    "hero": "Finny the Fish, who helps everyone learn to swim in patterns.",
+    "villain": "Bubbles the Pufferfish, who pops up and scares everyone on purpose.",
+    "conflict": "Bubbles keeps puffing up and blocking the swim path.",
+    "stake": "If Finny doesn’t stop him, the swimming show will be canceled."
+  },
+  {
+    "id": 26,
+    "level": "early",
+    "setting": "A little town where teddy bears come alive at night.",
+    "hero": "Tara the Teddy, who watches over the toy shop.",
+    "villain": "Mr. Clock, the old alarm clock who wants everyone to wake up early.",
+    "conflict": "Mr. Clock keeps ringing before bedtime, making everyone tired and grumpy.",
+    "stake": "If Tara can’t quiet him down, no toy will get their nightly rest."
+  },
+  {
+    "id": 27,
+    "level": "early",
+    "setting": "A cozy rainbow village where every house is a different color.",
+    "hero": "Lulu the Lamb, who paints the rainbow paths every morning.",
+    "villain": "Gray Goose, who wants everything to be the same dull gray.",
+    "conflict": "Gray Goose starts painting over all the colors with gray paint.",
+    "stake": "If Lulu can’t stop him, the rainbow village will lose all its cheer and color."
+  },
+  {
+    "id": 28,
+    "level": "early",
+    "setting": "A sunny park where clouds come down to play tag with children.",
+    "hero": "Nina the Cloud, who loves making funny shapes in the sky.",
+    "villain": "Stormy Stan, a dark cloud who brings rain wherever he goes.",
+    "conflict": "Stormy Stan makes it rain every time the clouds try to play.",
+    "stake": "If Nina can’t cheer him up, playtime in the park will be rained out forever."
+  },
+  {
+    "id": 29,
+    "level": "early",
+    "setting": "A tiny train that carries toys around the playroom each night.",
+    "hero": "Tommy the Toy Train, who delivers toys to their shelves on time.",
+    "villain": "Dust Bunny Dan, who blocks the tracks with fluff and crumbs.",
+    "conflict": "Dan keeps building dust piles on the train tracks.",
+    "stake": "If Tommy can’t clear them, the toys won’t reach their beds before morning."
+  },
+  {
+    "id": 30,
+    "level": "early",
+    "setting": "A magical bakery where cupcakes can talk and sing.",
+    "hero": "Cuppy the Cupcake, who loves making everyone smile.",
+    "villain": "Chef Burnt Toast, who wants to turn off the oven forever.",
+    "conflict": "Chef Burnt Toast steals the oven knobs to stop the baking.",
+    "stake": "If Cuppy can’t get them back, the bakery will be cold and empty."
+  },
+  {
+    "id": 31,
+    "level": "early",
+    "setting": "A forest where the leaves glow in the dark.",
+    "hero": "Flick the Firefly, who helps lost animals find their way home.",
+    "villain": "Shadow Fox, who wants to blow out all the lights so he can sneak around.",
+    "conflict": "Shadow Fox is stealing the glowing leaves for his cave.",
+    "stake": "If Flick doesn’t stop him, the forest will be too dark for anyone to see."
+  },
+  {
+    "id": 32,
+    "level": "early",
+    "setting": "A big tree where birds run a tiny post office.",
+    "hero": "Beaky the Bluebird, who delivers letters to all the forest friends.",
+    "villain": "Sly Snake, who hides the letters because he doesn’t like the noise of happy birds.",
+    "conflict": "Sly Snake curls up in the mailbags and won’t let Beaky deliver them.",
+    "stake": "If Beaky can’t find a way, no one will get their forest mail today."
+  },
+  {
+    "id": 33,
+    "level": "early",
+    "setting": "A beach where seashells tell stories when you listen close.",
+    "hero": "Sandy the Crab, who collects the shells and keeps them safe.",
+    "villain": "Greedy Gull, who steals all the shiny shells for his nest.",
+    "conflict": "Greedy Gull is flying away with the biggest storytelling shell.",
+    "stake": "If Sandy doesn’t catch him, the stories of the sea will be lost forever."
+  },
+  {
+    "id": 34,
+    "level": "early",
+    "setting": "A friendly classroom where the chalkboard comes to life.",
+    "hero": "Charlie the Chalk, who loves drawing shapes and smiles.",
+    "villain": "Eraser Ed, who erases everything because he thinks drawing is messy.",
+    "conflict": "Eraser Ed wipes away all the fun pictures Charlie draws.",
+    "stake": "If Charlie can’t teach him to share, there will be nothing left on the board to learn from."
+  },
+  {
+    "id": 35,
+    "level": "early",
+    "setting": "A cozy burrow where rabbits bake carrot cakes every Sunday.",
+    "hero": "Rosie the Rabbit, who loves baking with her family.",
+    "villain": "Mr. Mole, who digs tunnels that make all the cakes fall over.",
+    "conflict": "Mr. Mole’s tunnels are shaking the oven and ruining the cakes.",
+    "stake": "If Rosie can’t fix it, Sunday Cake Day will be ruined for everyone."
+  },
+  {
+    "id": 36,
+    "level": "early",
+    "setting": "A playground inside a big tree with rope swings and slidey branches.",
+    "hero": "Ollie the Owl, who watches over the playground at night.",
+    "villain": "Mischief Mouse, who sneaks in and tangles all the swings.",
+    "conflict": "Ollie wakes up to find the playground a mess before morning.",
+    "stake": "If Ollie can’t untangle it in time, the kids won’t be able to play when the sun comes up."
+  }
+]
+
