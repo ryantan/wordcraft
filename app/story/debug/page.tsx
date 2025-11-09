@@ -3,12 +3,12 @@
  * Visual state machine inspector for testing
  */
 
-'use client'
+'use client';
 
-import { useMachine } from '@xstate/react'
-import { storySessionMachine } from '@/machines/story/storySessionMachine'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { storySessionMachine } from '@/machines/story/storySessionMachine';
+import { useMachine } from '@xstate/react';
 
 export default function StoryDebugPage() {
   const testWordList = {
@@ -19,7 +19,7 @@ export default function StoryDebugPage() {
     createdAt: new Date(),
     lastModifiedAt: new Date(),
     updatedAt: new Date(),
-  }
+  };
 
   const [state, send] = useMachine(storySessionMachine, {
     input: {
@@ -28,12 +28,12 @@ export default function StoryDebugPage() {
       wordListId: 'debug-story',
       hasSeenIntro: false,
     },
-  })
+  });
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-8">Story Machine Debug</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* State Info */}
         <Card className="p-6">
@@ -47,13 +47,28 @@ export default function StoryDebugPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Context</h2>
           <div className="space-y-2 text-sm">
-            <p><strong>Theme:</strong> {state.context.storyTheme}</p>
-            <p><strong>Beat Index:</strong> {state.context.currentBeatIndex}</p>
-            <p><strong>Current Beat:</strong> {state.context.currentBeat?.type || 'none'}</p>
-            <p><strong>Word Stats:</strong> {state.context.wordStats.size} words tracked</p>
-            <p><strong>Games Played:</strong> {state.context.gameResults.length}</p>
-            <p><strong>Has Seen Intro:</strong> {state.context.hasSeenIntro ? 'Yes' : 'No'}</p>
-            <p><strong>Session Time:</strong> {Math.floor((Date.now() - state.context.sessionStartTimeMs) / 1000)}s</p>
+            <p>
+              <strong>Theme:</strong> {state.context.storyTheme}
+            </p>
+            <p>
+              <strong>Beat Index:</strong> {state.context.currentBeatIndex}
+            </p>
+            <p>
+              <strong>Current Beat:</strong> {state.context.currentBeat?.type || 'none'}
+            </p>
+            <p>
+              <strong>Word Stats:</strong> {state.context.wordStats.size} words tracked
+            </p>
+            <p>
+              <strong>Games Played:</strong> {state.context.gameResults.length}
+            </p>
+            <p>
+              <strong>Has Seen Intro:</strong> {state.context.hasSeenIntro ? 'Yes' : 'No'}
+            </p>
+            <p>
+              <strong>Session Time:</strong>{' '}
+              {Math.floor((Date.now() - state.context.sessionStartTimeMs) / 1000)}s
+            </p>
           </div>
         </Card>
 
@@ -61,59 +76,63 @@ export default function StoryDebugPage() {
         <Card className="p-6 md:col-span-2">
           <h2 className="text-xl font-semibold mb-4">Send Events</h2>
           <div className="flex flex-wrap gap-2">
-            <Button 
+            <Button
               onClick={() => send({ type: 'START_STORY' })}
               disabled={!state.matches('showingIntro')}
             >
               START_STORY
             </Button>
-            <Button 
+            <Button
               onClick={() => send({ type: 'SKIP_INTRO' })}
               disabled={!state.matches('showingIntro')}
             >
               SKIP_INTRO
             </Button>
-            <Button 
+            <Button
               onClick={() => send({ type: 'NARRATIVE_SEEN' })}
               disabled={!state.matches({ processingBeat: 'showingNarrative' })}
             >
               NARRATIVE_SEEN
             </Button>
-            <Button 
-              onClick={() => send({ 
-                type: 'GAME_COMPLETED',
-                result: {
-                  isCorrect: true,
-                  timeSpent: 3000,
-                  hintsUsed: 0,
-                  errors: 0,
-                }
-              })}
+            <Button
+              onClick={() =>
+                send({
+                  type: 'GAME_COMPLETED',
+                  result: {
+                    isCorrect: true,
+                    timeSpent: 3000,
+                    hintsUsed: 0,
+                    errors: 0,
+                  },
+                })
+              }
               disabled={!state.matches({ processingBeat: 'playingGame' })}
             >
               GAME_COMPLETED (Success)
             </Button>
-            <Button 
-              onClick={() => send({ 
-                type: 'GAME_COMPLETED',
-                result: {
-                  isCorrect: false,
-                  timeSpent: 5000,
-                  hintsUsed: 2,
-                  errors: 3,
-                }
-              })}
+            <Button
+              onClick={() =>
+                send({
+                  type: 'GAME_COMPLETED',
+                  result: {
+                    isCorrect: false,
+                    timeSpent: 5000,
+                    hintsUsed: 2,
+                    errors: 3,
+                  },
+                })
+              }
               disabled={!state.matches({ processingBeat: 'playingGame' })}
             >
               GAME_COMPLETED (Fail)
             </Button>
-            <Button 
+            <Button
               onClick={() => send({ type: 'RESTART_STORY' })}
               disabled={!state.matches('finale')}
             >
               RESTART_STORY
             </Button>
-            <Button 
+            <Button
               onClick={() => send({ type: 'TRY_NEW_WORDS' })}
               disabled={!state.matches('finale')}
             >
@@ -160,5 +179,5 @@ export default function StoryDebugPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
