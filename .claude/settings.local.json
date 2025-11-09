@@ -9,6 +9,7 @@
       "Bash(git add:*)",
       "Bash(git reset:*)",
       "Bash(git commit:*)",
+      "Bash(npm run type-check:*)",
       "SlashCommand(/BMad:agents:architect)"
     ],
     "deny": [],
