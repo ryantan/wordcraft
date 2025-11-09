@@ -51,6 +51,10 @@ export function StoryFinaleScreen({
     return <div>Loading...</div>;
   }
 
+  // Hardcode for now.
+  finaleContent.title = 'You saved the day!';
+  finaleContent.narrative = "You're a true Word Champion! Ready for your next adventure?";
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-green-100 to-green-200 p-4">
       {showConfetti && (
