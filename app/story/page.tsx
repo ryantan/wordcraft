@@ -14,7 +14,6 @@ import { StoryFinaleScreen } from '@/components/story/StoryFinaleScreen';
 import { StoryIntroScreen } from '@/components/story/StoryIntroScreen';
 import { Button } from '@/components/ui/button';
 import { calculateSessionStats } from '@/lib/game/calculate-session-stats';
-import { useStoryIntro } from '@/lib/hooks/useStoryIntro';
 import { getWordList } from '@/lib/storage/localStorage';
 import { generateStoryAsync } from '@/lib/story/story-generator';
 import { storySessionMachine } from '@/machines/story';
@@ -28,11 +27,9 @@ import { useEffect, useState } from 'react';
 function StorySession({
   wordList,
   generatedStory,
-  hasSeenIntro,
 }: {
   wordList: WordList;
   generatedStory: GeneratedStory;
-  hasSeenIntro: boolean;
 }) {
   const router = useRouter();
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -43,7 +40,6 @@ function StorySession({
       wordList: wordList,
       theme: 'space',
       wordListId: wordList.id,
-      hasSeenIntro,
       generatedStory: generatedStory,
     },
   });
@@ -278,9 +274,6 @@ export default function StoryModePage() {
     generateStory().then();
   }, [wordList]);
 
-  // Check if intro has been seen for this word list
-  const { hasSeenIntro } = useStoryIntro(wordList?.id);
-
   if (!wordList) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -314,7 +307,5 @@ export default function StoryModePage() {
   }
 
   // Render StorySession component with generated story
-  return (
-    <StorySession wordList={wordList} generatedStory={generatedStory} hasSeenIntro={hasSeenIntro} />
-  );
+  return <StorySession wordList={wordList} generatedStory={generatedStory} />;
 }
