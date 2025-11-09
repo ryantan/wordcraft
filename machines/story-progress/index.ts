@@ -5,4 +5,4 @@
  */
 
 export { storyProgressMachine, initializeStoryProgress } from './storyProgressMachine';
-export type { StoryProgressContext, StoryProgressEvent, StoryProgressState } from './types';
+export type { StoryProgressContext, StoryProgressEvent } from './types';

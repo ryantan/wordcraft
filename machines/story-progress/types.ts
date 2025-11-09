@@ -32,11 +32,3 @@ export type StoryProgressEvent =
   | { type: 'SKIP_CHECKPOINT' }
   | { type: 'STORY_RESET' }
   | { type: 'FINALE_REACHED' };
-
-export type StoryProgressState =
-  | { value: 'intro'; context: StoryProgressContext }
-  | { value: 'playing'; context: StoryProgressContext }
-  | { value: 'checkpoint1'; context: StoryProgressContext }
-  | { value: 'checkpoint2'; context: StoryProgressContext }
-  | { value: 'checkpoint3'; context: StoryProgressContext }
-  | { value: 'finale'; context: StoryProgressContext };

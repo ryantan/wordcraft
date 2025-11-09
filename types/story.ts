@@ -17,12 +17,25 @@ import type { WordList } from './word';
  * Story progress context maintained by the state machine
  */
 export interface StoryProgressContext {
-  currentCheckpoint: number; // 0-4 (intro to finale)
+  /** Current checkpoint level (0-4: intro, checkpoint1, checkpoint2, checkpoint3, finale) */
+  currentCheckpoint: number;
+
+  /** Total number of games completed in the story journey */
   gamesCompleted: number;
+
+  /** Total games planned for this session */
   totalGamesInSession: number;
-  checkpointsUnlocked: number[]; // [0, 1, 2, ...]
-  lastCheckpointAt: number; // games count when last checkpoint reached
-  storyTheme: string; // 'space', 'treasure', etc.
+
+  /** Array of unlocked checkpoint numbers */
+  checkpointsUnlocked: number[];
+
+  /** Game count when last checkpoint was reached */
+  lastCheckpointAt: number;
+
+  /** Selected story theme (e.g., 'space', 'treasure') */
+  storyTheme: string;
+
+  /** When the story session started */
   sessionStartTime: Date;
 }
 

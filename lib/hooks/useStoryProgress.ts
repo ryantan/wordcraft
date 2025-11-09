@@ -54,7 +54,7 @@ export function useStoryProgress(
 
   // Load persisted progress on mount
   useEffect(() => {
-    initializeStoryProgress(wordListId).then(context => {
+    initializeStoryProgress().then(context => {
       setInitialContext({
         ...context,
         storyTheme: theme, // Override with current theme
@@ -138,7 +138,7 @@ export function useStoryProgressDisplay(wordListId?: string) {
   const [context, setContext] = useState<StoryProgressContext | null>(null);
 
   useEffect(() => {
-    initializeStoryProgress(wordListId).then(setContext);
+    initializeStoryProgress().then(setContext);
   }, [wordListId]);
 
   if (!context) {

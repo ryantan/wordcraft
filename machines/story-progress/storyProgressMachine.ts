@@ -10,6 +10,19 @@ import { assign, setup } from 'xstate';
 
 import type { StoryProgressContext, StoryProgressEvent } from './types';
 
+/**
+ * Initial context for story progress
+ */
+const initialContext: StoryProgressContext = {
+  currentCheckpoint: 0,
+  gamesCompleted: 0,
+  totalGamesInSession: 20,
+  checkpointsUnlocked: [0],
+  lastCheckpointAt: 0,
+  storyTheme: 'space',
+  sessionStartTime: new Date(),
+};
+
 /** Number of games required to reach each checkpoint */
 const CHECKPOINT_THRESHOLDS = {
   checkpoint1: 5,
@@ -107,34 +120,37 @@ export const storyProgressMachine = setup({
       lastCheckpointAt: ({ context }) => context.gamesCompleted,
     }),
 
-    persistProgress: ({ context }) => {
-      // Save progress to IndexedDB
-      saveStoryProgress(context).catch(err => {
-        console.error('Failed to save story progress:', err);
-      });
-    },
-
-    resetStory: assign({
+    resetContext: assign({
       currentCheckpoint: 0,
       gamesCompleted: 0,
+      totalGamesInSession: 20,
       checkpointsUnlocked: [0],
       lastCheckpointAt: 0,
       sessionStartTime: new Date(),
     }),
+
+    persistProgress: ({ context }) => {
+      saveStoryProgress(context);
+    },
   },
 }).createMachine({
   id: 'storyProgress',
 
   initial: 'intro',
 
-  context: {
-    currentCheckpoint: 0,
-    gamesCompleted: 0,
-    totalGamesInSession: 20,
-    checkpointsUnlocked: [0],
-    lastCheckpointAt: 0,
-    storyTheme: 'space',
-    sessionStartTime: new Date(),
+  context: ({ input }) => {
+    // Try to load persisted progress
+    const persisted = loadStoryProgress();
+
+    if (persisted) {
+      return persisted;
+    }
+
+    // Otherwise use initial context with any provided input
+    return {
+      ...initialContext,
+      ...input,
+    };
   },
 
   states: {
@@ -151,10 +167,6 @@ export const storyProgressMachine = setup({
       on: {
         GAME_COMPLETED: {
           actions: ['incrementGamesCompleted', 'persistProgress'],
-        },
-        STORY_RESET: {
-          target: 'intro',
-          actions: ['resetStory', 'persistProgress'],
         },
       },
 
@@ -181,30 +193,49 @@ export const storyProgressMachine = setup({
     checkpoint1: {
       entry: ['unlockCheckpoint1', 'persistProgress'],
       on: {
-        CONTINUE_STORY: 'playing',
-        SKIP_CHECKPOINT: 'playing',
+        CONTINUE_STORY: {
+          target: 'playing',
+        },
+        SKIP_CHECKPOINT: {
+          target: 'playing',
+        },
       },
     },
 
     checkpoint2: {
       entry: ['unlockCheckpoint2', 'persistProgress'],
       on: {
-        CONTINUE_STORY: 'playing',
-        SKIP_CHECKPOINT: 'playing',
+        CONTINUE_STORY: {
+          target: 'playing',
+        },
+        SKIP_CHECKPOINT: {
+          target: 'playing',
+        },
       },
     },
 
     checkpoint3: {
       entry: ['unlockCheckpoint3', 'persistProgress'],
       on: {
-        CONTINUE_STORY: 'playing',
-        SKIP_CHECKPOINT: 'playing',
+        CONTINUE_STORY: {
+          target: 'playing',
+        },
+        SKIP_CHECKPOINT: {
+          target: 'playing',
+        },
       },
     },
 
     finale: {
       type: 'final',
       entry: ['unlockFinale', 'persistProgress'],
+    },
+  },
+
+  on: {
+    STORY_RESET: {
+      target: '.intro',
+      actions: ['resetContext', 'persistProgress'],
     },
   },
 });
@@ -214,8 +245,8 @@ export const storyProgressMachine = setup({
  *
  * Loads previous progress from IndexedDB if available
  */
-export async function initializeStoryProgress(wordListId?: string): Promise<StoryProgressContext> {
-  const saved = await loadStoryProgress(wordListId);
+export async function initializeStoryProgress(): Promise<StoryProgressContext> {
+  const saved = await loadStoryProgress();
 
   if (saved) {
     return {
@@ -227,12 +258,6 @@ export async function initializeStoryProgress(wordListId?: string): Promise<Stor
 
   // Return default context
   return {
-    currentCheckpoint: 0,
-    gamesCompleted: 0,
-    totalGamesInSession: 20,
-    checkpointsUnlocked: [0],
-    lastCheckpointAt: 0,
-    storyTheme: 'space',
-    sessionStartTime: new Date(),
+    ...initialContext,
   };
 }
