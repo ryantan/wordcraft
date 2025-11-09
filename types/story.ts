@@ -62,7 +62,7 @@ export interface BaseBeat {
   isOptional?: boolean;
   narrative: string;
   // Phase of the story.
-  phase?: 'beginning' | 'middle' | 'end';
+  phase?: 'beginning' | 'middle' | 'challenge' | 'end';
 }
 
 /**
