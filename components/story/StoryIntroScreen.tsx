@@ -36,6 +36,9 @@ export function StoryIntroScreen({
     );
   }
 
+  introContent.title = 'Begin your adventure';
+  introContent.narrative = 'Keep a look out for the hints!';
+
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-100 to-purple-200 p-4">
       <motion.div
