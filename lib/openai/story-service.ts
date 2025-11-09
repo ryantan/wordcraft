@@ -460,10 +460,11 @@ function transformToGeneratedStoryV3(
   const coveredWords = new Set(gameBeats.filter(item => item.stage === 1).map(b => b.word));
 
   // Add missing words as game beats
+  const missingWords: GameBeat[] = [];
   for (const word of requiredWords) {
     if (!coveredWords.has(word)) {
       console.warn(`Missing game beat for word: ${word}`);
-      stage1Beats.push({
+      missingWords.push({
         id: crypto.randomUUID(),
         type: 'game',
         narrative: `Time to spell "${word.toUpperCase()}"!`,
@@ -476,6 +477,28 @@ function transformToGeneratedStoryV3(
     }
   }
 
+  // Insert missing words at the right position based on phase
+  if (missingWords.length > 0) {
+    // Find the index where 'end' phase starts
+    const endPhaseIndex = stage1Beats.findIndex(beat => beat.phase === 'end');
+
+    if (endPhaseIndex !== -1) {
+      // Insert missing words before the end phase
+      stage1Beats.splice(endPhaseIndex, 0, ...missingWords);
+    } else {
+      // If no end phase found, find the last middle phase beat
+      let insertIndex = stage1Beats.length;
+      for (let i = stage1Beats.length - 1; i >= 0; i--) {
+        if (stage1Beats[i].phase === 'middle') {
+          insertIndex = i + 1;
+          break;
+        }
+      }
+      stage1Beats.splice(insertIndex, 0, ...missingWords);
+    }
+  }
+
+  console.log('[transformToGeneratedStoryV3] stage1Beats:', stage1Beats);
   return {
     stage1Beats,
     stage2ExtraBeats,
