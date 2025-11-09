@@ -402,7 +402,7 @@ function transformToGeneratedStoryV3(
   const wordsCoveredInMain = new Set<string>();
   const stage1Beats: StoryBeat[] = [];
   const stage2ExtraBeats = new Map<string, StoryBeat[]>();
-
+  const remainingWords = new Set(input.wordList);
   validatedResponse.blocks.forEach(beat => {
     const baseProps = {
       narrative: beat.text,
@@ -410,7 +410,21 @@ function transformToGeneratedStoryV3(
       phase: beat.stage,
     };
 
-    const word = beat.focus_word || null;
+    let word = beat.focus_word || null;
+
+    // Sometimes AI fails to fill in focus word, we find them ourselves.
+    if (word) {
+      remainingWords.delete(word);
+    } else {
+      // Detect word in baseProps.narrative.
+      const foundWord = [...remainingWords.values()].find(word =>
+        baseProps.narrative.includes(word),
+      );
+      if (foundWord) {
+        word = foundWord;
+        remainingWords.delete(word);
+      }
+    }
 
     // Log challenge blocks for debugging
     if (beat.stage === 'challenge') {
