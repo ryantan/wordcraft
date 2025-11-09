@@ -411,29 +411,20 @@ function transformToGeneratedStoryV3(
       phase: beat.stage,
     };
 
-    let word = beat.focus_word || null;
+    // AI seems to occasionally fails to fill in the right focus word, we find them ourselves.
+    let word: string | null = null;
 
-    // Sometimes AI fails to fill in focus word, we find them ourselves.
-    if (word) {
+    // Detect word in baseProps.narrative.
+    const normalizedNarrative =
+      ' ' + (baseProps.narrative || '').toLowerCase().replace(/[^a-zA-Z]/, ' ') + ' ';
+    const foundWord = [...remainingWords.values()].find(word =>
+      normalizedNarrative.includes(' ' + word.toLowerCase().replace(/[^a-zA-Z]/, ' ') + ' '),
+    );
+    if (foundWord) {
+      word = foundWord;
       remainingWords.delete(word);
-    } else {
-      // Detect word in baseProps.narrative.
-      const foundWord = [...remainingWords.values()].find(word =>
-        baseProps.narrative.includes(word),
-      );
-      if (foundWord) {
-        word = foundWord;
-        remainingWords.delete(word);
-      }
     }
 
-    // Log challenge blocks for debugging
-    if (beat.stage === 'challenge') {
-      console.log('Processing challenge block:', beat);
-    }
-
-    // For now we take the first word that has not been used yet.
-    // const word = selectItemFromListThatIsNotInSet(words, wordsCoveredInMain);
     if (!word) {
       // If no word, this is a pure narrative.
       stage1Beats.push({
