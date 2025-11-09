@@ -58,7 +58,7 @@ export interface StoryCheckpoint {
  */
 export interface BaseBeat {
   type: 'game' | 'choice' | 'narrative' | 'checkpoint';
-  // id: string;
+  id: string;
   isOptional?: boolean;
   narrative: string;
   // Phase of the story.
