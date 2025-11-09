@@ -30,13 +30,20 @@ interface GameRendererProps {
 
 export function GameRenderer({ beat, onComplete }: GameRendererProps) {
   const { word, gameType, narrative } = beat;
-  const [startTime] = useState(Date.now());
+  const [showingNarrative, setShowingNarrative] = useState(true);
+  const [startTime, setStartTime] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
 
+  const handleStartGame = () => {
+    setStartTime(Date.now());
+    setShowingNarrative(false);
+  };
+
   const handleGameComplete = (result: GameResult) => {
-    const timeSpent = Date.now() - startTime;
+    const timeSpent = startTime ? Date.now() - startTime : 0;
     const errors = Math.max(0, result.attempts - 1); // Attempts minus first try
 
+    setShowingNarrative(true);
     onComplete({
       isCorrect: result.correct,
       timeSpent,
@@ -49,17 +56,42 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
     setHintsUsed(prev => prev + 1);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-100 to-indigo-200 p-4">
-      {/* Narrative banner */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <p className="text-lg text-center text-gray-700 font-medium">{narrative}</p>
+  // Show narrative first
+  if (showingNarrative) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-indigo-100 to-indigo-200 p-4 flex items-center justify-center">
+        <div className="max-w-2xl w-full">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            {/* Story narrative */}
+            <div className="mb-8">
+              <p className="text-xl text-gray-700 leading-relaxed text-center">{narrative}</p>
+            </div>
+
+            {/* Word preview */}
+            <div className="mb-8 text-center">
+              <p className="text-sm text-gray-500 mb-2">Get ready to spell:</p>
+              <p className="text-3xl font-bold text-indigo-600">{word.toUpperCase()}</p>
+            </div>
+
+            {/* Start game button */}
+            <div className="text-center">
+              <button
+                onClick={handleStartGame}
+                className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-lg font-medium"
+              >
+                Start Game
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-indigo-100 to-indigo-200 p-4">
       {/* Game component */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto mt-8">
         {gameType === 'letter-matching' && (
           <LetterMatching
             word={word}

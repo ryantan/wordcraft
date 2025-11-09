@@ -10,7 +10,9 @@
       "Bash(git reset:*)",
       "Bash(git commit:*)",
       "Bash(npm run type-check:*)",
-      "SlashCommand(/BMad:agents:architect)"
+      "SlashCommand(/BMad:agents:architect)",
+      "Bash(npm run lint)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
