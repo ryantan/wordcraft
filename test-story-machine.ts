@@ -3,9 +3,8 @@
  * Run with: npx tsx test-story-machine.ts
  */
 
+import { storySessionMachine } from '@/lib/story/machines/storySessionMachine';
 import { createActor } from 'xstate';
-
-import { storySessionMachine } from './machines/story/storySessionMachine';
 
 // Create test word list
 const testWordList = {

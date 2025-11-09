@@ -7,7 +7,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { storySessionMachine } from '@/machines/story/storySessionMachine';
+import { storySessionMachine } from '@/lib/story/machines/storySessionMachine';
 import { useMachine } from '@xstate/react';
 
 export default function StoryDebugPage() {
