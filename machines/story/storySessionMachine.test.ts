@@ -175,8 +175,6 @@ describe('StorySessionMachine', () => {
             });
           } else if (beat?.type === 'choice') {
             actor.send({ type: 'CHOICE_MADE', choice: 'Option 1' });
-          } else if (beat?.type === 'narrative') {
-            break;
           }
         }
 
