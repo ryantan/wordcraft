@@ -4,38 +4,38 @@
  * Main page for narrative-driven spelling practice
  */
 
-'use client'
+'use client';
 
-import { useMachine } from '@xstate/react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { storySessionMachine } from '@/machines/story'
-import { StoryIntroScreen } from '@/components/story/StoryIntroScreen'
-import { NarrativeBeatScreen } from '@/components/story/NarrativeBeatScreen'
-import { ChoiceBeatScreen } from '@/components/story/ChoiceBeatScreen'
-import { CheckpointScreen } from '@/components/story/CheckpointScreen'
-import { StoryFinaleScreen } from '@/components/story/StoryFinaleScreen'
-import { GameRenderer } from '@/components/story/GameRenderer'
-import type { ChoiceBeat, GameBeat } from '@/types/story'
-import { Button } from '@/components/ui/button'
-import { useStoryIntro } from '@/lib/hooks/useStoryIntro'
-import { calculateSessionStats } from '@/lib/game/calculate-session-stats'
-import { getWordList } from '@/lib/storage/localStorage'
-import { generateStoryAsync } from '@/lib/story/story-generator'
-import type { GeneratedStory, WordList } from '@/types'
+import { CheckpointScreen } from '@/components/story/CheckpointScreen';
+import { ChoiceBeatScreen } from '@/components/story/ChoiceBeatScreen';
+import { GameRenderer } from '@/components/story/GameRenderer';
+import { NarrativeBeatScreen } from '@/components/story/NarrativeBeatScreen';
+import { StoryFinaleScreen } from '@/components/story/StoryFinaleScreen';
+import { StoryIntroScreen } from '@/components/story/StoryIntroScreen';
+import { Button } from '@/components/ui/button';
+import { calculateSessionStats } from '@/lib/game/calculate-session-stats';
+import { useStoryIntro } from '@/lib/hooks/useStoryIntro';
+import { getWordList } from '@/lib/storage/localStorage';
+import { generateStoryAsync } from '@/lib/story/story-generator';
+import { storySessionMachine } from '@/machines/story';
+import type { GeneratedStory, WordList } from '@/types';
+import type { ChoiceBeat, GameBeat } from '@/types/story';
+import { useMachine } from '@xstate/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Story Session Component - only rendered when story is ready
 function StorySession({
-                        wordList,
-                        generatedStory,
-                        hasSeenIntro
-                      }: {
-  wordList: WordList
-  generatedStory: GeneratedStory
-  hasSeenIntro: boolean
+  wordList,
+  generatedStory,
+  hasSeenIntro,
+}: {
+  wordList: WordList;
+  generatedStory: GeneratedStory;
+  hasSeenIntro: boolean;
 }) {
-  const router = useRouter()
-  const [showExitDialog, setShowExitDialog] = useState(false)
+  const router = useRouter();
+  const [showExitDialog, setShowExitDialog] = useState(false);
 
   // Create machine with the generated story
   const [state, send] = useMachine(storySessionMachine, {
@@ -46,15 +46,15 @@ function StorySession({
       hasSeenIntro,
       generatedStory: generatedStory,
     },
-  })
+  });
 
   const handleExit = () => {
-    setShowExitDialog(true)
-  }
+    setShowExitDialog(true);
+  };
 
   const confirmExit = () => {
-    router.push('/')
-  }
+    router.push('/');
+  };
 
   // Exit Dialog
   if (showExitDialog) {
@@ -66,23 +66,16 @@ function StorySession({
             Your progress will be saved. You can continue this story later.
           </p>
           <div className="flex gap-4">
-            <Button
-              onClick={() => setShowExitDialog(false)}
-              variant="outline"
-              className="flex-1"
-            >
+            <Button onClick={() => setShowExitDialog(false)} variant="outline" className="flex-1">
               Cancel
             </Button>
-            <Button
-              onClick={confirmExit}
-              className="flex-1 bg-red-500 hover:bg-red-600"
-            >
+            <Button onClick={confirmExit} className="flex-1 bg-red-500 hover:bg-red-600">
               Exit
             </Button>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Intro screen
@@ -95,12 +88,12 @@ function StorySession({
         onStart={() => send({ type: 'START_STORY' })}
         onSkip={() => send({ type: 'SKIP_INTRO' })}
       />
-    )
+    );
   }
 
   // Narrative beat
   if (state.matches({ processingBeat: 'showingNarrative' })) {
-    const beat = state.context.currentBeat
+    const beat = state.context.currentBeat;
     return (
       <>
         {/* Exit button */}
@@ -115,12 +108,12 @@ function StorySession({
           onContinue={() => send({ type: 'NARRATIVE_SEEN' })}
         />
       </>
-    )
+    );
   }
 
   // Choice beat
   if (state.matches({ processingBeat: 'presentingChoice' })) {
-    const beat = state.context.currentBeat as ChoiceBeat
+    const beat = state.context.currentBeat as ChoiceBeat;
     return (
       <>
         {/* Exit button */}
@@ -132,15 +125,15 @@ function StorySession({
 
         <ChoiceBeatScreen
           choiceBeat={beat}
-          onChoice={(choice) => send({ type: 'CHOICE_MADE', choice })}
+          onChoice={choice => send({ type: 'CHOICE_MADE', choice })}
         />
       </>
-    )
+    );
   }
 
   // Game beat
   if (state.matches({ processingBeat: 'playingGame' })) {
-    const beat = state.context.currentBeat as GameBeat
+    const beat = state.context.currentBeat as GameBeat;
     return (
       <>
         {/* Exit button */}
@@ -150,12 +143,9 @@ function StorySession({
           </Button>
         </div>
 
-        <GameRenderer
-          beat={beat}
-          onComplete={(result) => send({ type: 'GAME_COMPLETED', result })}
-        />
+        <GameRenderer beat={beat} onComplete={result => send({ type: 'GAME_COMPLETED', result })} />
       </>
-    )
+    );
   }
 
   // Checkpoint beat
@@ -169,7 +159,7 @@ function StorySession({
         onContinue={() => send({ type: 'CONTINUE_STORY' })}
         onSkip={() => send({ type: 'SKIP_CHECKPOINT' })}
       />
-    )
+    );
   }
 
   // Finale
@@ -178,8 +168,8 @@ function StorySession({
     const stats = calculateSessionStats(
       state.context.wordStats,
       state.context.gameResults,
-      state.context.sessionStartTimeMs
-    )
+      state.context.sessionStartTimeMs,
+    );
 
     return (
       <StoryFinaleScreen
@@ -190,7 +180,7 @@ function StorySession({
         onTryNewWords={() => router.push('/word-lists')}
         onViewProgress={() => router.push('/dashboard')}
       />
-    )
+    );
   }
 
   // Fallback
@@ -203,51 +193,61 @@ function StorySession({
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 // Demo word list for fallback.
 const createDemoWordList = () => {
-  const now = new Date()
+  const now = new Date();
   return {
     id: 'demo-story',
     name: 'Space Adventure Words',
     description: 'Words for space adventure',
-    words: ['ROCKET', 'SPACE', 'ALIEN', 'PLANET', 'STAR', 'MOON', 'GALAXY', 'COMET', 'ORBIT', 'TELESCOPE'],
+    words: [
+      'ROCKET',
+      'SPACE',
+      'ALIEN',
+      'PLANET',
+      'STAR',
+      'MOON',
+      'GALAXY',
+      'COMET',
+      'ORBIT',
+      'TELESCOPE',
+    ],
     createdAt: now,
     lastModifiedAt: now,
     updatedAt: now,
-  }
-}
+  };
+};
 
 export default function StoryModePage() {
-  const searchParams = useSearchParams()
-  const [generatedStory, setGeneratedStory] = useState<GeneratedStory | null>(null)
-  const [isGeneratingStory, setIsGeneratingStory] = useState(false)
+  const searchParams = useSearchParams();
+  const [generatedStory, setGeneratedStory] = useState<GeneratedStory | null>(null);
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
 
-  const [wordList, setWordList] = useState<WordList>()
+  const [wordList, setWordList] = useState<WordList>();
 
-  const listId = searchParams.get('listId')
+  const listId = searchParams.get('listId');
   if (!listId) {
-    throw new Error('No listId provided')
+    throw new Error('No listId provided');
   }
 
   // Get word list from URL params or use demo
   useEffect(() => {
     if (!listId) {
       // Fallback to demo word list
-      setWordList(createDemoWordList())
+      setWordList(createDemoWordList());
       return;
     }
-    const userWordList = getWordList(listId)
+    const userWordList = getWordList(listId);
     if (!userWordList) {
       // Fallback to demo word list
-      setWordList(createDemoWordList())
+      setWordList(createDemoWordList());
       return;
     }
-    setWordList(userWordList)
-
-  }, [searchParams])
+    setWordList(userWordList);
+  }, [searchParams]);
 
   // Generate story whenever wordList changes
   useEffect(() => {
@@ -256,30 +256,30 @@ export default function StoryModePage() {
         return;
       }
 
-      setIsGeneratingStory(true)
+      setIsGeneratingStory(true);
       try {
-        console.log('🚀 Generating story for word list:', wordList.name)
-        console.log('🚀 Generating story for words:', wordList.words)
+        console.log('🚀 Generating story for word list:', wordList.name);
+        console.log('🚀 Generating story for words:', wordList.words);
         const story = await generateStoryAsync({
           wordList: wordList.words,
           theme: 'space',
           targetBeats: 20,
-        })
-        setGeneratedStory(story)
-        console.log('✅ Story generated successfully')
+        });
+        setGeneratedStory(story);
+        console.log('✅ Story generated successfully');
       } catch (error) {
-        console.error('❌ Story generation failed:', error)
-        setGeneratedStory(null)
+        console.error('❌ Story generation failed:', error);
+        setGeneratedStory(null);
       } finally {
-        setIsGeneratingStory(false)
+        setIsGeneratingStory(false);
       }
     }
 
-    generateStory().then()
-  }, [wordList])
+    generateStory().then();
+  }, [wordList]);
 
   // Check if intro has been seen for this word list
-  const { hasSeenIntro } = useStoryIntro(wordList?.id)
+  const { hasSeenIntro } = useStoryIntro(wordList?.id);
 
   if (!wordList) {
     return (
@@ -289,7 +289,7 @@ export default function StoryModePage() {
           <p className="text-xl font-semibold">Getting word list...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Loading state - show while generating story
@@ -301,22 +301,20 @@ export default function StoryModePage() {
           {isGeneratingStory ? (
             <>
               <p className="text-xl font-semibold">Creating your adventure...</p>
-              <p className="text-sm text-gray-600 mt-2">Using AI to craft a unique story just for you!</p>
+              <p className="text-sm text-gray-600 mt-2">
+                Using AI to craft a unique story just for you!
+              </p>
             </>
           ) : (
             <p className="text-xl font-semibold">Preparing your adventure...</p>
           )}
         </div>
       </div>
-    )
+    );
   }
 
   // Render StorySession component with generated story
   return (
-    <StorySession
-      wordList={wordList}
-      generatedStory={generatedStory}
-      hasSeenIntro={hasSeenIntro}
-    />
-  )
+    <StorySession wordList={wordList} generatedStory={generatedStory} hasSeenIntro={hasSeenIntro} />
+  );
 }
