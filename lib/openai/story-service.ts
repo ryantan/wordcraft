@@ -405,6 +405,7 @@ function transformToGeneratedStoryV3(
   const remainingWords = new Set(input.wordList);
   validatedResponse.blocks.forEach(beat => {
     const baseProps = {
+      id: crypto.randomUUID(),
       narrative: beat.text,
       isOptional: false,
       phase: beat.stage,
@@ -463,6 +464,7 @@ function transformToGeneratedStoryV3(
     if (!coveredWords.has(word)) {
       console.warn(`Missing game beat for word: ${word}`);
       stage1Beats.push({
+        id: crypto.randomUUID(),
         type: 'game',
         narrative: `Time to spell "${word.toUpperCase()}"!`,
         word,
