@@ -40,7 +40,7 @@ export const storySessionMachine = setup({
      * Spawn StoryProgressMachine as child actor
      */
     spawnStoryProgressActor: assign({
-      storyProgressActor: ({ spawn }) => spawn(storyProgressMachine, { id: 'storyProgress' }),
+      storyProgressActor: ({ spawn }) => spawn(storyProgressMachine, { systemId: 'storyProgress' }),
     }),
 
     /**
