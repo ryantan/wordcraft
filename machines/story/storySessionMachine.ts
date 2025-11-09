@@ -225,6 +225,16 @@ export const storySessionMachine = createMachine(
         if (!context.generatedStory) return {};
 
         const beat = context.generatedStory.stage1Beats[context.currentBeatIndex];
+
+        // Log beat processing for debugging
+        if (beat) {
+          console.log(`Loading beat ${context.currentBeatIndex}:`, {
+            type: beat.type,
+            phase: beat.phase,
+            narrative: beat.narrative.substring(0, 50) + '...',
+          });
+        }
+
         return {
           currentBeat: beat || null,
         };
@@ -398,10 +408,19 @@ export const storySessionMachine = createMachine(
         const beatsExhausted =
           context.currentBeatIndex >= context.generatedStory.stage1Beats.length;
 
+        if (beatsExhausted) return true;
+
         // Check if all words mastered
         const wordsMastered = allWordsMastered(context.wordStats, 80);
 
-        return beatsExhausted || wordsMastered;
+        if (!wordsMastered) return false;
+
+        // If words are mastered, check if we've processed all non-end phase beats
+        const remainingBeats = context.generatedStory.stage1Beats.slice(context.currentBeatIndex);
+        const hasNonEndBeats = remainingBeats.some(beat => beat.phase && beat.phase !== 'end');
+
+        // Show finale only if no non-end beats remain (i.e., only end beats left)
+        return !hasNonEndBeats;
       },
 
       /**

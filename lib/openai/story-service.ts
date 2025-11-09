@@ -273,7 +273,9 @@ function transformToGeneratedStoryV1(
         word,
         gameType: 'letter-matching',
         stage: 1,
-      });
+        phase: 'middle', // Default to middle phase for missing words
+        isOptional: false,
+      } as GameBeat);
     }
   }
 
@@ -375,7 +377,9 @@ export function transformToGeneratedStoryV2(
         word,
         gameType: 'letter-matching',
         stage: 1,
-      });
+        phase: 'middle', // Default to middle phase for missing words
+        isOptional: false,
+      } as GameBeat);
     }
   }
 
@@ -407,6 +411,11 @@ function transformToGeneratedStoryV3(
     };
 
     const word = beat.focus_word || null;
+
+    // Log challenge blocks for debugging
+    if (beat.stage === 'challenge') {
+      console.log('Processing challenge block:', beat);
+    }
 
     // For now we take the first word that has not been used yet.
     // const word = selectItemFromListThatIsNotInSet(words, wordsCoveredInMain);
@@ -445,7 +454,9 @@ function transformToGeneratedStoryV3(
         word,
         gameType: 'letter-matching',
         stage: 1,
-      });
+        phase: 'middle', // Default to middle phase for missing words
+        isOptional: false,
+      } as GameBeat);
     }
   }
 
