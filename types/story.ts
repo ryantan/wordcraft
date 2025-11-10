@@ -84,6 +84,7 @@ export interface BaseBeat {
 export interface GameBeat extends BaseBeat {
   type: 'game';
   word: string;
+  potentialWords: string[];
   gameType: GameMechanics;
   stage: 1 | 2; // Stage 1: Assessment, Stage 2: Mastery
 }
