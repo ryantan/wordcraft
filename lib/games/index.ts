@@ -3,6 +3,7 @@
  * Registers all available game mechanics
  */
 
+import { definitionMatchMechanic } from './definition-match';
 import { letterHuntMechanic } from './letter-hunt';
 import { letterMatchingMechanic } from './letter-matching';
 import { missingLettersMechanic } from './missing-letters';
@@ -21,7 +22,8 @@ export type GameMechanics =
   | 'letter-hunt'
   | 'picture-reveal'
   | 'word-building'
-  | 'trace-write';
+  | 'trace-write'
+  | 'definition-match';
 
 export const gameMechanics: Array<GameMechanics> = [
   'word-scramble',
@@ -32,6 +34,7 @@ export const gameMechanics: Array<GameMechanics> = [
   'picture-reveal',
   'word-building',
   'trace-write',
+  'definition-match',
 ];
 
 // Register all game mechanics
@@ -44,6 +47,7 @@ export function initializeGames(): void {
   registerGame('picture-reveal', pictureRevealMechanic);
   registerGame('word-building', wordBuildingMechanic);
   registerGame('trace-write', traceWriteMechanic);
+  registerGame('definition-match', definitionMatchMechanic);
 }
 
 // Auto-initialize on import (for client-side usage)

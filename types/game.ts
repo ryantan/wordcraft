@@ -38,7 +38,8 @@ export type GameMechanicId =
   | 'letter-hunt'
   | 'trace-write'
   | 'picture-reveal'
-  | 'word-building';
+  | 'word-building'
+  | 'definition-match';
 
 export interface GameMechanic {
   meta: GameMechanicMeta;
