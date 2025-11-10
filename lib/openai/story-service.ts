@@ -17,6 +17,7 @@ import type {
   StoryBeat,
   StoryGenerationInput,
 } from '@/types/story';
+import partition from 'lodash/partition';
 
 import { createOpenAIClient, OpenAIAPIError, withRetry, withTimeout } from './client';
 import {
@@ -399,12 +400,11 @@ function transformToGeneratedStoryV3(
 ): GeneratedStory {
   // Convert validated schema types to our internal types
   let gameTypeIndex = 0;
-  const wordsCoveredInMain = new Set<string>();
   const stage1Beats: StoryBeat[] = [];
   const stage2ExtraBeats = new Map<string, StoryBeat[]>();
-  const remainingWords = new Set(input.wordList);
+  const wordListSet = new Set(input.wordList);
   validatedResponse.blocks.forEach(beat => {
-    const baseProps = {
+    const baseProps: Partial<StoryBeat> = {
       id: crypto.randomUUID(),
       narrative: beat.text,
       isOptional: false,
@@ -412,20 +412,14 @@ function transformToGeneratedStoryV3(
     };
 
     // AI seems to occasionally fails to fill in the right focus word, we find them ourselves.
-    let word: string | null = null;
-
-    // Detect word in baseProps.narrative.
+    // Detect all potential words in baseProps.narrative.
     const normalizedNarrative =
       ' ' + (baseProps.narrative || '').toLowerCase().replace(/[^a-zA-Z]/, ' ') + ' ';
-    const foundWord = [...remainingWords.values()].find(word =>
+    const potentialWords = [...wordListSet.values()].filter(word =>
       normalizedNarrative.includes(' ' + word.toLowerCase().replace(/[^a-zA-Z]/, ' ') + ' '),
     );
-    if (foundWord) {
-      word = foundWord;
-      remainingWords.delete(word);
-    }
 
-    if (!word) {
+    if (potentialWords.length === 0) {
       // If no word, this is a pure narrative.
       stage1Beats.push({
         ...baseProps,
@@ -433,17 +427,76 @@ function transformToGeneratedStoryV3(
       } as NarrativeBeat);
       return;
     }
-    wordsCoveredInMain.add(word);
-    gameTypeIndex++;
     stage1Beats.push({
       ...baseProps,
       type: 'game',
-      word,
-      gameType: selectGameType(gameTypeIndex),
+      word: '',
+      potentialWords,
+      gameType: selectGameType(0),
       stage: 1,
     } as GameBeat);
     return;
   });
+
+  // region Assign words to blocks.
+  // Assign words prioritizing those that only appear once.
+  const wordOccurrences = new Map<string, GameBeat[]>();
+  stage1Beats.forEach(block => {
+    if (block.type !== 'game') {
+      return;
+    }
+    block.potentialWords.forEach(potentialWord => {
+      const existingBlocks = wordOccurrences.get(potentialWord) || [];
+      existingBlocks.push(block);
+      wordOccurrences.set(potentialWord, existingBlocks);
+    });
+  });
+  const coveredWords1 = new Set<string>();
+
+  // Assign words with only 1 block.
+  // Do max 5 passes.
+  for (let i = 0; i < 5; i++) {
+    console.log(
+      `Word occurrences at ${i} pass:`,
+      [...wordOccurrences.entries()].map(
+        ([word, beats]) => `${word} => ${beats.map(b => b.id).join(',')}`,
+      ),
+    );
+    [...wordOccurrences.entries()]
+      .filter(([_, blocks]) => blocks.length === 1)
+      .forEach(([word, blocks]) => {
+        const selectedBlock = blocks[0];
+        selectedBlock.word = word;
+        coveredWords1.add(word);
+        console.log(`${word} assigned to block ${selectedBlock.id}`);
+      });
+
+    // Remove used blocks from wordOccurrences
+    console.log('Remove used blocks.');
+    for (const w of wordOccurrences.keys()) {
+      const existingBlocks = wordOccurrences.get(w);
+      if (!existingBlocks) {
+        continue;
+      }
+      const [usedBlock, unusedBlocks] = partition(existingBlocks, block => !!block.word);
+      if (usedBlock.length > 0) {
+        usedBlock.forEach(block => {
+          console.log(
+            `Block ${block.id} removed from word ${w} as it is already assigned to word ${block.word}`,
+          );
+        });
+      }
+      wordOccurrences.set(w, unusedBlocks);
+    }
+  }
+  console.log(
+    'Word occurrences after:',
+    [...wordOccurrences.entries()].map(
+      ([word, beats]) => `${word} => ${beats.map(b => b.id).join(',')}`,
+    ),
+  );
+
+  // endregion Assign words to blocks.
 
   // Validate that all required words are covered
   const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[];
@@ -488,6 +541,16 @@ function transformToGeneratedStoryV3(
       stage1Beats.splice(insertIndex, 0, ...missingWords);
     }
   }
+
+  // Assign games mechanics.
+  // Those with similar words should use the find word out of similar words game.
+  stage1Beats.forEach(beat => {
+    if (beat.type !== 'game') {
+      return;
+    }
+    gameTypeIndex++;
+    beat.gameType = selectGameType(gameTypeIndex);
+  });
 
   console.log('[transformToGeneratedStoryV3] stage1Beats:', stage1Beats);
   return {
