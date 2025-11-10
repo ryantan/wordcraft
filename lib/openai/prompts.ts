@@ -395,7 +395,7 @@ Conflict: {CONFLICT}
 
 What is at stake for our hero: {STAKE}
 
-Uses these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
+Must use these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
 
 Target reading level: {LEVEL}
 
@@ -553,7 +553,7 @@ export const buildUserPrompt = (request: StoryGenerationRequest): string => {
       .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
       // .replace('{LEVEL}', 'CEFR A1')
       .replace('{LEVEL}', 'CEFR B2')
-      .replace('{MAX_WORDS}', '600')
+      .replace('{MAX_WORDS}', '700')
       .replace('{MAIN_COUNT}', `${wordList.length}`)
       .replace('{OPTIONAL_COUNT}', `${wordList.length}`)
   );
