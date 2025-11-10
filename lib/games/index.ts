@@ -37,6 +37,17 @@ export const gameMechanics: Array<GameMechanics> = [
   'definition-match',
 ];
 
+export const gameMechanicsWithoutRequirements: Array<GameMechanics> = [
+  'word-scramble',
+  'missing-letters',
+  'letter-matching',
+  'spelling-challenge',
+  'letter-hunt',
+  'picture-reveal',
+  'word-building',
+  'trace-write',
+];
+
 // Register all game mechanics
 export function initializeGames(): void {
   registerGame('word-scramble', wordScrambleMechanic);
