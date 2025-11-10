@@ -10,7 +10,7 @@
 
 import { generateStoryServerAction } from '@/lib/actions/generate-story.action';
 import { env } from '@/lib/env';
-import { gameMechanics, GameMechanics } from '@/lib/games';
+import { GameMechanics, gameMechanicsWithoutRequirements } from '@/lib/games';
 import {
   logStoryMetrics,
   validateStoryContent,
@@ -339,7 +339,7 @@ function getChoiceOptions(theme: string, beatIndex: number): [string, string] {
  * Cycles through different game types for variety
  */
 export function selectGameType(index: number): GameMechanics {
-  return gameMechanics[index % gameMechanics.length];
+  return gameMechanicsWithoutRequirements[index % gameMechanicsWithoutRequirements.length];
 }
 
 /**

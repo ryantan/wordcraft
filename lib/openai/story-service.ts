@@ -473,8 +473,6 @@ function transformToGeneratedStoryV3(
   validatedResponse: Story,
   input: StoryGenerationInput,
 ): GeneratedStory {
-  // Convert validated schema types to our internal types
-  let gameTypeIndex = 0;
   const stage1Beats: StoryBeat[] = [];
   const stage2ExtraBeats = new Map<string, StoryBeat[]>();
   const wordListSet = new Set(input.wordList);
@@ -630,16 +628,6 @@ function transformToGeneratedStoryV3(
       stage1Beats.splice(insertIndex, 0, ...missingWords);
     }
   }
-
-  // Assign games mechanics.
-  // Those with similar words should use the find word out of similar words game.
-  stage1Beats.forEach(beat => {
-    if (beat.type !== 'game') {
-      return;
-    }
-    gameTypeIndex++;
-    beat.gameType = selectGameType(gameTypeIndex);
-  });
 
   console.log('[transformToGeneratedStoryV3] stage1Beats:', stage1Beats);
   return {
