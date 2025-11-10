@@ -28,6 +28,13 @@ export async function generateStoryServerAction(
     console.log('✅ Server action: OpenAI story generated successfully');
     story.words = new Map(Object.entries(wordInfo || {}));
 
+    // Enrich blocks with wordinfo
+    story.stage1Beats.forEach(beat => {
+      if (beat.type === 'game') {
+        beat.extraWordInfo = story.words?.get(beat.word);
+      }
+    });
+
     return story;
   } catch (error) {
     console.error('❌ Server action: Story generation failed:', error);
