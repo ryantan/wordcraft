@@ -6,6 +6,7 @@
 
 'use client';
 
+import { DefinitionMatch } from '@/components/games/DefinitionMatch';
 import { LetterHunt } from '@/components/games/LetterHunt';
 import { LetterMatching } from '@/components/games/LetterMatching';
 import { MissingLetters } from '@/components/games/MissingLetters';
@@ -29,7 +30,7 @@ interface GameRendererProps {
 }
 
 export function GameRenderer({ beat, onComplete }: GameRendererProps) {
-  const { word, gameType, narrative } = beat;
+  const { word, gameType, narrative, extraWordInfo } = beat;
   const [showingNarrative, setShowingNarrative] = useState(true);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -153,6 +154,15 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
             word={word}
             onComplete={handleGameComplete}
             onHintRequest={handleHintRequest}
+          />
+        )}
+
+        {gameType === 'definition-match' && (
+          <DefinitionMatch
+            word={word}
+            onComplete={handleGameComplete}
+            onHintRequest={handleHintRequest}
+            extraWordInfo={extraWordInfo}
           />
         )}
       </div>
