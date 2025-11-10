@@ -10,6 +10,7 @@ interface LetterPosition {
   y: number
   found: boolean
   index: number
+  uniqueId: number // Unique identifier for each letter instance
 }
 
 /**
@@ -59,6 +60,7 @@ export const LetterHunt: FC<GameMechanicProps> = ({
         y: baseY + (Math.random() * 15 - 7.5),
         found: false,
         index,
+        uniqueId: index, // Each position gets a unique ID
       }
     })
 
@@ -72,8 +74,11 @@ export const LetterHunt: FC<GameMechanicProps> = ({
 
       if (clickedLetter.found) return // Already found
 
-      if (clickedLetter.index === currentLetterIndex) {
-        // Correct letter!
+      // Get the current letter we're looking for
+      const targetLetter = word.replace(/\s/g, '').charAt(currentLetterIndex)
+      
+      if (clickedLetter.letter === targetLetter) {
+        // Correct letter! (any instance of the target letter is acceptable)
         const newPositions = [...letterPositions]
         newPositions[clickedIndex].found = true
         setLetterPositions(newPositions)
@@ -119,12 +124,8 @@ export const LetterHunt: FC<GameMechanicProps> = ({
     setHintsUsed(prev => prev + 1)
     onHintRequest()
 
-    // Highlight the next letter to find
-    const nextLetterPosition = letterPositions.find(lp => lp.index === currentLetterIndex)
-    if (nextLetterPosition) {
-      // Flash animation handled by CSS class
-    }
-  }, [letterPositions, currentLetterIndex, onHintRequest])
+    // The hint system will highlight all instances of the target letter via CSS
+  }, [onHintRequest])
 
   // Progress display
   const progressWord = useMemo(() => {
@@ -177,13 +178,14 @@ export const LetterHunt: FC<GameMechanicProps> = ({
 
           {/* Letter positions */}
           {letterPositions.map((lp, index) => {
-            const isNext = lp.index === currentLetterIndex
+            const targetLetter = word.replace(/\s/g, '').charAt(currentLetterIndex)
+            const isTargetLetter = lp.letter === targetLetter && !lp.found
             const isWrong = wrongLetter === index
-            const shouldPulse = isNext && hintsUsed > 0 && !lp.found
+            const shouldPulse = isTargetLetter && hintsUsed > 0
 
             return (
               <button
-                key={index}
+                key={lp.uniqueId}
                 onClick={() => handleLetterClick(index)}
                 disabled={lp.found || showFeedback !== null}
                 className={`absolute w-16 h-16 text-3xl font-bold rounded-full transition-all transform
@@ -191,7 +193,7 @@ export const LetterHunt: FC<GameMechanicProps> = ({
                     ? 'bg-success-200 border-2 border-success-400 text-success-700 opacity-50 scale-75'
                     : isWrong
                     ? 'bg-error-200 border-4 border-error-500 text-error-800 scale-90 animate-shake'
-                    : isNext
+                    : isTargetLetter
                     ? 'bg-primary-200 border-4 border-primary-600 text-primary-900 scale-110 shadow-lg hover:scale-125'
                     : 'bg-white border-2 border-gray-300 text-gray-700 hover:scale-110 hover:border-primary-400'
                   }
