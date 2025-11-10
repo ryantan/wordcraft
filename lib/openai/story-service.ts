@@ -152,8 +152,76 @@ async function generateStoryWithOpenAIV2(
   }
 }
 
+// async function generateStoryWithOpenAIV2WithRetry(
+//   input: StoryGenerationInput,
+// ): Promise<GeneratedStory | null> {
+//   // At most try 3 times
+//   let storyWithLeastMissedWords: GeneratedStory | null = null;
+//   for (let i = 0; i < 3; i++) {
+//     const story = await generateStoryWithOpenAIV2(input);
+//     if (!story) {
+//       continue;
+//     }
+//     if (storyWithLeastMissedWords) {
+//       if (
+//         story.artificiallyAddedBlocksForMissingWords <
+//         storyWithLeastMissedWords.artificiallyAddedBlocksForMissingWords
+//       ) {
+//         storyWithLeastMissedWords = story;
+//       }
+//     } else {
+//       storyWithLeastMissedWords = story;
+//     }
+//
+//     if (story.artificiallyAddedBlocksForMissingWords < 2) {
+//       // Good enough.
+//       break;
+//     }
+//   }
+//   return storyWithLeastMissedWords;
+// }
+
+async function generateStoryWithOpenAIV2InParallel(
+  input: StoryGenerationInput,
+  attempts: number = 3,
+): Promise<GeneratedStory | null> {
+  // At most try 3 times
+
+  const promises: Promise<GeneratedStory | null>[] = [];
+  for (let i = 0; i < attempts; i++) {
+    promises.push(generateStoryWithOpenAIV2(input));
+  }
+  const settledResults = await Promise.allSettled(promises);
+
+  let storyWithLeastMissedWords: GeneratedStory | null = null;
+  for (const settledResult of settledResults) {
+    if (settledResult.status === 'rejected') {
+      continue;
+    }
+    const story = settledResult.value;
+    if (!story) {
+      continue;
+    }
+    if (!story) {
+      continue;
+    }
+
+    if (storyWithLeastMissedWords) {
+      if (
+        story.artificiallyAddedBlocksForMissingWords >=
+        storyWithLeastMissedWords.artificiallyAddedBlocksForMissingWords
+      ) {
+        continue;
+      }
+    }
+    storyWithLeastMissedWords = story;
+  }
+
+  return storyWithLeastMissedWords;
+}
+
 export const generateStoryWithOpenAILegacy = generateStoryWithOpenAIV1;
-export const generateStoryWithOpenAI = generateStoryWithOpenAIV2;
+export const generateStoryWithOpenAI = generateStoryWithOpenAIV2InParallel;
 
 /**
  * Build comprehensive prompt for story generation
@@ -263,7 +331,7 @@ function transformToGeneratedStoryV1(
   const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[];
   const requiredWords = new Set(input.wordList);
   const coveredWords = new Set(gameBeats.filter(item => item.type === 'game').map(b => b.word));
-
+  let artificiallyAddedBlocksForMissingWords = 0;
   // Add missing words as game beats
   for (const word of requiredWords) {
     if (!coveredWords.has(word)) {
@@ -277,6 +345,7 @@ function transformToGeneratedStoryV1(
         phase: 'middle', // Default to middle phase for missing words
         isOptional: false,
       } as GameBeat);
+      artificiallyAddedBlocksForMissingWords++;
     }
   }
 
@@ -284,6 +353,7 @@ function transformToGeneratedStoryV1(
     stage1Beats,
     stage2ExtraBeats: new Map(),
     stage2FixedSequence: [],
+    artificiallyAddedBlocksForMissingWords,
   };
 }
 
@@ -367,7 +437,7 @@ export function transformToGeneratedStoryV2(
   const gameBeats = stage1Beats.filter(b => b.type === 'game') as GameBeat[];
   const requiredWords = new Set(input.wordList);
   const coveredWords = new Set(gameBeats.filter(item => item.stage === 1).map(b => b.word));
-
+  let artificiallyAddedBlocksForMissingWords = 0;
   // Add missing words as game beats
   for (const word of requiredWords) {
     if (!coveredWords.has(word)) {
@@ -381,6 +451,7 @@ export function transformToGeneratedStoryV2(
         phase: 'middle', // Default to middle phase for missing words
         isOptional: false,
       } as GameBeat);
+      artificiallyAddedBlocksForMissingWords++;
     }
   }
 
@@ -388,8 +459,12 @@ export function transformToGeneratedStoryV2(
     stage1Beats,
     stage2ExtraBeats,
     stage2FixedSequence: [],
+    artificiallyAddedBlocksForMissingWords,
   };
 }
+
+const normalizeForWordMatching = (text: string) =>
+  ' ' + text.toLowerCase().replace(/[^a-zA-Z]/g, ' ') + ' ';
 
 /**
  * Transform validated OpenAI response to our internal GeneratedStory format
@@ -413,10 +488,9 @@ function transformToGeneratedStoryV3(
 
     // AI seems to occasionally fails to fill in the right focus word, we find them ourselves.
     // Detect all potential words in baseProps.narrative.
-    const normalizedNarrative =
-      ' ' + (baseProps.narrative || '').toLowerCase().replace(/[^a-zA-Z]/, ' ') + ' ';
+    const normalizedNarrative = normalizeForWordMatching(baseProps.narrative || '');
     const potentialWords = [...wordListSet.values()].filter(word =>
-      normalizedNarrative.includes(' ' + word.toLowerCase().replace(/[^a-zA-Z]/, ' ') + ' '),
+      normalizedNarrative.includes(normalizeForWordMatching(word)),
     );
 
     if (potentialWords.length === 0) {
@@ -454,22 +528,37 @@ function transformToGeneratedStoryV3(
   const coveredWords1 = new Set<string>();
 
   // Assign words with only 1 block.
-  // Do max 5 passes.
-  for (let i = 0; i < 5; i++) {
+  // Do max 10 passes.
+  for (let i = 0; i < 10; i++) {
+    const entries = [...wordOccurrences.entries()].filter(([_, blocks]) => blocks?.length > 0);
+    if (entries.length === 0) {
+      console.log(`Word occurrences at ${i} pass: empty!`);
+      break;
+    }
     console.log(
       `Word occurrences at ${i} pass:`,
-      [...wordOccurrences.entries()].map(
-        ([word, beats]) => `${word} => ${beats.map(b => b.id).join(',')}`,
-      ),
+      entries.map(([word, beats]) => `${word} => ${beats.map(b => b.id).join(',')}`),
     );
-    [...wordOccurrences.entries()]
-      .filter(([_, blocks]) => blocks.length === 1)
-      .forEach(([word, blocks]) => {
+    const entriesWithOnly1Block = entries.filter(([_, blocks]) => blocks.length === 1);
+    entriesWithOnly1Block.forEach(([word, blocks]) => {
+      const selectedBlock = blocks[0];
+      selectedBlock.word = word;
+      coveredWords1.add(word);
+      console.log(`${word} assigned to block ${selectedBlock.id}`);
+    });
+
+    // If there are no more words that only have 1 block, we just pick the first one and go to next pass.
+    if (entriesWithOnly1Block.length === 0) {
+      // Assign word in first entry to first block.
+      const firstEntry = entries[0];
+      if (firstEntry) {
+        const [word, blocks] = firstEntry;
         const selectedBlock = blocks[0];
         selectedBlock.word = word;
         coveredWords1.add(word);
         console.log(`${word} assigned to block ${selectedBlock.id}`);
-      });
+      }
+    }
 
     // Remove used blocks from wordOccurrences
     console.log('Remove used blocks.');
@@ -557,6 +646,7 @@ function transformToGeneratedStoryV3(
     stage1Beats,
     stage2ExtraBeats,
     stage2FixedSequence: [],
+    artificiallyAddedBlocksForMissingWords: missingWords.length,
   };
 }
 
