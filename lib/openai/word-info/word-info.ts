@@ -189,5 +189,22 @@ function transformToWordInfo(
   validatedResponse: WordInfoMap,
   _input: StoryGenerationInput,
 ): WordInfoMap {
+  if (validatedResponse) {
+    for (const word in validatedResponse) {
+      const item = validatedResponse[word];
+      // Filter similar words if they are subsets of original word.
+      const similarWords = new Set<string>(item.similar_words);
+      const lowercaseWord = word.toLowerCase();
+      item.similar_words.forEach(similarWord => {
+        const lc = similarWord.toLowerCase();
+        if (lc === lowercaseWord) {
+          similarWords.delete(similarWord);
+        } else if (lowercaseWord.includes(lc)) {
+          similarWords.delete(similarWord);
+        }
+      });
+      item.similar_words = [...similarWords.values()];
+    }
+  }
   return validatedResponse;
 }
