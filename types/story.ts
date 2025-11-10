@@ -154,6 +154,7 @@ export interface GeneratedStory {
   stage1Beats: StoryBeat[]; // One beat per word (story order)
   stage2ExtraBeats: Map<string, StoryBeat[]>; // Extra beats per word for mastery
   stage2FixedSequence: StoryBeat[]; // Fallback sequence for Stage 2
+  artificiallyAddedBlocksForMissingWords: number;
 }
 
 /**
