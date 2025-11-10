@@ -148,7 +148,7 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
         isOptional: false,
         phase: 'middle',
         type: 'narrative',
-        // id: `narrative-${beatIndex}`,
+        id: crypto.randomUUID(),
         narrative: getNarrativeForBeat(theme, beatIndex),
       };
       stage1Beats.push(narrativeBeat);
@@ -161,7 +161,7 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
         isOptional: false,
         phase: 'middle',
         type: 'choice',
-        // id: `choice-${beatIndex}`,
+        id: crypto.randomUUID(),
         narrative: 'You encounter a fork in the path...',
         question: getChoiceQuestion(theme, beatIndex),
         options: getChoiceOptions(theme, beatIndex),
@@ -175,9 +175,10 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
       isOptional: false,
       phase: 'middle',
       type: 'game',
-      // id: `game-${word}-stage1`,
+      id: crypto.randomUUID(),
       narrative: getGameNarrative(theme, word, i),
       word,
+      potentialWords: [],
       gameType: selectGameType(i),
       stage: 1,
     };
@@ -193,7 +194,7 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
         isOptional: false,
         phase: 'middle',
         type: 'checkpoint',
-        // id: `checkpoint-${checkpointNum}`,
+        id: crypto.randomUUID(),
         narrative: checkpoint.narrative.replace('{wordCount}', String(gamesCompleted)),
         checkpointNumber: checkpointNum as 1 | 2 | 3,
         celebrationEmoji: checkpoint.celebrationEmoji || '🎉',
@@ -215,6 +216,7 @@ function generateTemplateStory(input: StoryGenerationInput): GeneratedStory {
     stage1Beats,
     stage2ExtraBeats,
     stage2FixedSequence,
+    artificiallyAddedBlocksForMissingWords: 0,
   };
 }
 
