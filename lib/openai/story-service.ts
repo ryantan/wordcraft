@@ -484,6 +484,33 @@ function transformToGeneratedStoryV3(
       phase: beat.stage,
     };
 
+    if (beat.stage === 'beginning') {
+      // Beginning blocks are always pure narrative.
+      stage1Beats.push({
+        ...baseProps,
+        type: 'narrative',
+      } as NarrativeBeat);
+      return;
+    }
+
+    if (beat.stage === 'challenge') {
+      // Challenge blocks are always pure narrative.
+      stage1Beats.push({
+        ...baseProps,
+        type: 'narrative',
+      } as NarrativeBeat);
+      return;
+    }
+
+    if (beat.stage === 'end') {
+      // End blocks are always pure narrative.
+      stage1Beats.push({
+        ...baseProps,
+        type: 'narrative',
+      } as NarrativeBeat);
+      return;
+    }
+
     // AI seems to occasionally fails to fill in the right focus word, we find them ourselves.
     // Detect all potential words in baseProps.narrative.
     const normalizedNarrative = normalizeForWordMatching(baseProps.narrative || '');
