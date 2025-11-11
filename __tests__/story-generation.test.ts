@@ -3,7 +3,7 @@
  */
 
 import { generateStory, generateStoryAsync } from '@/lib/story/story-generator';
-import type { StoryGenerationInput } from '@/types/story';
+import type { GeneratedStory, StoryGenerationInput } from '@/types/story';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock OpenAI service to control test behavior
@@ -91,10 +91,6 @@ describe('Story Generation Integration', () => {
     });
 
     it('should attempt OpenAI generation when enabled', async () => {
-      // Enable OpenAI for this test
-      const { env } = await import('@/lib/env');
-      vi.mocked(env).enableOpenAIStoryGeneration = true;
-
       const { generateStoryWithOpenAI } = await import('@/lib/openai/story-service');
       vi.mocked(generateStoryWithOpenAI).mockResolvedValue(null); // Simulate failure
 
@@ -105,11 +101,7 @@ describe('Story Generation Integration', () => {
     });
 
     it('should use OpenAI result when generation succeeds', async () => {
-      // Enable OpenAI for this test
-      const { env } = await import('@/lib/env');
-      vi.mocked(env).enableOpenAIStoryGeneration = true;
-
-      const mockOpenAIResult = {
+      const mockOpenAIResult: GeneratedStory = {
         stage1Beats: [
           {
             type: 'narrative' as const,
@@ -121,12 +113,14 @@ describe('Story Generation Integration', () => {
             id: 'ai-game-1',
             narrative: 'AI-generated game challenge!',
             word: 'rocket',
-            gameType: 'letterMatching' as const,
+            potentialWords: ['rocket'],
+            gameType: 'letter-matching',
             stage: 1 as const,
           },
         ],
         stage2ExtraBeats: new Map(),
         stage2FixedSequence: [],
+        artificiallyAddedBlocksForMissingWords: 0,
       };
 
       const { generateStoryWithOpenAI, validateStoryContent } = await import(
@@ -142,14 +136,11 @@ describe('Story Generation Integration', () => {
     });
 
     it('should fall back to templates when OpenAI generates invalid content', async () => {
-      // Enable OpenAI for this test
-      const { env } = await import('@/lib/env');
-      vi.mocked(env).enableOpenAIStoryGeneration = true;
-
-      const mockInvalidResult = {
+      const mockInvalidResult: GeneratedStory = {
         stage1Beats: [],
         stage2ExtraBeats: new Map(),
         stage2FixedSequence: [],
+        artificiallyAddedBlocksForMissingWords: 0,
       };
 
       const { generateStoryWithOpenAI, validateStoryContent } = await import(
