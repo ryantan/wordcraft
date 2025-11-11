@@ -1,30 +1,37 @@
-'use client'
+'use client';
 
-import { type FC, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { validateWordListInput, VALIDATION_LIMITS } from '@/lib/utils/validation'
-import type { WordListCreateInput } from '@/types'
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { validateWordListInput, VALIDATION_LIMITS } from '@/lib/utils/validation';
+import type { WordListCreateInput } from '@/types';
+import { useState, type FC } from 'react';
+import { useForm } from 'react-hook-form';
 
 interface WordListFormProps {
   initialData?: {
-    name: string
-    description?: string
-    words: string[]
-  }
-  onSubmit: (data: WordListCreateInput) => void
-  onCancel?: () => void
-  submitLabel?: string
+    name: string;
+    description?: string;
+    words: string[];
+  };
+  onSubmit: (data: WordListCreateInput) => void;
+  onCancel?: () => void;
+  submitLabel?: string;
 }
 
 interface FormData {
-  name: string
-  description: string
-  wordsText: string
+  name: string;
+  description: string;
+  wordsText: string;
 }
 
 export const WordListForm: FC<WordListFormProps> = ({
@@ -33,7 +40,7 @@ export const WordListForm: FC<WordListFormProps> = ({
   onCancel,
   submitLabel = 'Create Word List',
 }) => {
-  const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const {
     register,
@@ -45,34 +52,34 @@ export const WordListForm: FC<WordListFormProps> = ({
       description: initialData?.description || '',
       wordsText: initialData?.words.join('\n') || '',
     },
-  })
+  });
 
   const onFormSubmit = (data: FormData) => {
     // Parse words from textarea
     const words = data.wordsText
       .split('\n')
       .map(w => w.trim())
-      .filter(Boolean)
+      .filter(Boolean);
 
     // Validate input
     const validation = validateWordListInput({
       name: data.name,
       description: data.description || undefined,
       words,
-    })
+    });
 
     if (!validation.valid) {
-      setValidationErrors(validation.errors.map(e => e.message))
-      return
+      setValidationErrors(validation.errors.map(e => e.message));
+      return;
     }
 
-    setValidationErrors([])
+    setValidationErrors([]);
     onSubmit({
       name: data.name,
       description: data.description || undefined,
       words,
-    })
-  }
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
@@ -142,7 +149,7 @@ export const WordListForm: FC<WordListFormProps> = ({
               {...register('wordsText', {
                 required: 'At least one word is required',
               })}
-              placeholder="Enter one word per line&#10;cat&#10;dog&#10;bird"
+              placeholder="Enter one word per line"
               rows={10}
               className="font-mono"
             />
@@ -186,5 +193,5 @@ export const WordListForm: FC<WordListFormProps> = ({
         </CardFooter>
       </Card>
     </form>
-  )
-}
+  );
+};
