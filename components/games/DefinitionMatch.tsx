@@ -61,45 +61,43 @@ export const DefinitionMatch: FC<DefinitionMatchProps> = ({
     (option: string) => {
       if (showFeedback || eliminatedOptions.has(option)) return;
       setSelectedOption(option);
+      
+      // Automatically check the answer
+      const correct = option.toLowerCase() === word.toLowerCase();
+      setAttempts(prev => prev + 1);
+      setIsCorrect(correct);
+      setShowFeedback(true);
+
+      if (correct) {
+        const timeMs = Date.now() - startTime;
+
+        // Complete the game after a short delay to show feedback
+        setTimeout(() => {
+          onComplete({
+            word,
+            correct: true,
+            attempts: attempts + 1,
+            timeMs,
+            hintsUsed,
+            mechanicId: 'definition-match',
+            completedAt: new Date(),
+          });
+        }, 1500);
+      } else {
+        // Hide feedback after 2 seconds and reset
+        setTimeout(() => {
+          setShowFeedback(false);
+          // Mark the incorrect option as eliminated in hard mode
+          if (difficulty === 'hard') {
+            setEliminatedOptions(prev => new Set([...prev, option]));
+          }
+          setSelectedOption(null);
+        }, 2000);
+      }
     },
-    [showFeedback, eliminatedOptions],
+    [showFeedback, eliminatedOptions, word, attempts, hintsUsed, startTime, onComplete, difficulty],
   );
 
-  const handleSubmit = useCallback(() => {
-    if (!selectedOption) return;
-
-    const correct = selectedOption.toLowerCase() === word.toLowerCase();
-    setAttempts(prev => prev + 1);
-    setIsCorrect(correct);
-    setShowFeedback(true);
-
-    if (correct) {
-      const timeMs = Date.now() - startTime;
-
-      // Complete the game after a short delay to show feedback
-      setTimeout(() => {
-        onComplete({
-          word,
-          correct: true,
-          attempts: attempts + 1,
-          timeMs,
-          hintsUsed,
-          mechanicId: 'definition-match',
-          completedAt: new Date(),
-        });
-      }, 1500);
-    } else {
-      // Hide feedback after 2 seconds and reset
-      setTimeout(() => {
-        setShowFeedback(false);
-        // Mark the incorrect option as eliminated in hard mode
-        if (difficulty === 'hard' && selectedOption) {
-          setEliminatedOptions(prev => new Set([...prev, selectedOption]));
-        }
-        setSelectedOption(null);
-      }, 2000);
-    }
-  }, [selectedOption, word, attempts, hintsUsed, startTime, onComplete, difficulty]);
 
   const handleHint = useCallback(() => {
     if (!onHintRequest) return;
@@ -201,9 +199,6 @@ export const DefinitionMatch: FC<DefinitionMatchProps> = ({
               💡 Hint ({hintsUsed})
             </Button>
           )}
-          <Button onClick={handleSubmit} disabled={!selectedOption || showFeedback} size="lg">
-            Check Answer
-          </Button>
         </div>
 
         {/* Stats */}
