@@ -6,7 +6,7 @@
  */
 import { findSimilar } from '@/lib/data/find-similar';
 import { validateEnvironment } from '@/lib/env';
-import { buildSystemPromptForWordInfo, buildUserPromptForWordInfo } from '@/lib/openai/prompts';
+import { buildSystemPromptForWordInfo, buildUserPromptForWordInfoV3 } from '@/lib/openai/prompts';
 import {
   WordInfoMap,
   WordInfoMapResponse,
@@ -62,6 +62,16 @@ export async function generateWordInfoWithOpenAI(
   input: StoryGenerationInput,
 ): Promise<WordInfoMap | null> {
   console.log('generateWordInfoWithOpenAIV1 start, input:', JSON.stringify(input));
+
+  // Find from our own word list as seeds for AI.
+  const similarWordsMap = new Map<string, string[]>();
+  for (const word of input.wordList) {
+    const similarWords = await findSimilar(word);
+    console.log(`Found ${similarWords.length} words similar to ${word}`);
+    console.log(JSON.stringify(similarWords));
+    similarWordsMap.set(word, similarWords);
+  }
+
   try {
     // Validate environment and create client
     validateEnvironment();
@@ -77,7 +87,7 @@ export async function generateWordInfoWithOpenAI(
           wordList: input.wordList,
         };
         const systemPrompt = buildSystemPromptForWordInfo(request);
-        const userPrompt = buildUserPromptForWordInfo(request);
+        const userPrompt = buildUserPromptForWordInfoV3(request, similarWordsMap);
         const jsonSchema = z.toJSONSchema(wordInfoMapResponseSchema, {
           // Use older version for openAI support.
           target: 'draft-4',
@@ -163,12 +173,6 @@ export async function generateWordInfoWithOpenAI(
       return null;
     }
     console.info('OpenAI response passed validation');
-
-    for (const word of input.wordList) {
-      const similarWords = await findSimilar(word);
-      console.log(`Found ${similarWords.length} words similar to ${word}`);
-      console.log(JSON.stringify(similarWords));
-    }
 
     // Transform to our internal GeneratedStory format
     return transformToWordInfo(validatedResponse, input);

@@ -425,7 +425,7 @@ For each target word (store in target_words),
 - give a simplified definition,
 - come up with a hint
 - rank them 1-10 with 10 being the most difficult out of all target words and 0 being the easiest among the target words (store in difficulty).
-- If you can, find 2 common words (store in similar_words) that have similar spelling, sometimes only a few letters off, that might make them confusing. Only use words suitable for kids.
+- If you can, find 4 words (store in similar_words) that have similar spelling (only a few letters off) or sound similar (rhymes or just sound a little different). Only use words suitable for kids, no directly or indirectly explicit content, especially words that have double meanings where 1 of the meanings is not suitable for kids!
 
 Return only JSON that validates against the provided schema. No extra text.`;
 
@@ -433,6 +433,13 @@ Return only JSON that validates against the provided schema. No extra text.`;
 export const wordInfoUserPromptV1 = `These are the target words: {WORDS_JSON_ARRAY}.
 
 Target reading level: {LEVEL}. Theme: {THEME}
+
+Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
+
+// LEVEL: e.g., “CEFR A1” or “very early reader”
+export const wordInfoUserPromptV3 = `Please generate for these {WORDS_LENGTH} target words below - I have listed them in order and optionally included some similar looking or similar sounding words for your consideration:
+
+{SEEDS}
 
 Fill the JSON fields as specified by the schema below. Return only the JSON object.`;
 
@@ -487,6 +494,34 @@ export const buildUserPromptForWordInfo = (request: StoryGenerationRequest): str
       .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
       // .replace('{LEVEL}', 'CEFR A1')
       .replace('{LEVEL}', 'CEFR B2')
+  );
+};
+
+export const buildUserPromptForWordInfoV3 = (
+  request: StoryGenerationRequest,
+  similarWordsMap: Map<string, string[]>,
+): string => {
+  const { wordList } = request;
+
+  const seedParts: string[] = [];
+  for (const [word, similarWords] of similarWordsMap.entries()) {
+    let seed = `## ${word}\n\n`;
+    if (similarWords.length === 0) {
+      seed += "I couldn't find any similar words, please help!\n\n\n\n";
+    } else {
+      seed += `Words that look or sound similar to ${word}: \`\`\`${similarWords.join(', ')}\`\`\`\n\n\n\n`;
+    }
+    seedParts.push(seed);
+  }
+  const seeds = seedParts.join('\n');
+
+  return (
+    wordInfoUserPromptV3
+      // .replace('{THEME}', theme)
+      .replace('{WORDS_LENGTH}', `${wordList.length}`)
+      // .replace('{WORDS_JSON_ARRAY}', JSON.stringify(wordList))
+      // .replace('{LEVEL}', 'CEFR B2')
+      .replace('{SEEDS}', seeds)
   );
 };
 
