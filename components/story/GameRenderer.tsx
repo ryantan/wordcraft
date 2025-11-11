@@ -17,6 +17,7 @@ import { WordBuildingBlocks } from '@/components/games/WordBuildingBlocks';
 import { WordScramble } from '@/components/games/WordScramble';
 import type { GameResult } from '@/types';
 import type { GameBeat } from '@/types/story';
+import { highlightText } from '@/lib/utils/highlight-text';
 import { useState } from 'react';
 
 interface GameRendererProps {
@@ -63,15 +64,11 @@ export function GameRenderer({ beat, onComplete }: GameRendererProps) {
       <div className="min-h-screen bg-gradient-to-b from-indigo-100 to-indigo-200 p-4 flex items-center justify-center">
         <div className="max-w-2xl w-full">
           <div className="bg-white rounded-xl shadow-lg p-8">
-            {/* Story narrative */}
+            {/* Story narrative with highlighted word */}
             <div className="mb-8">
-              <p className="text-xl text-gray-700 leading-relaxed text-center">{narrative}</p>
-            </div>
-
-            {/* Word preview */}
-            <div className="mb-8 text-center">
-              <p className="text-sm text-gray-500 mb-2">Get ready to spell:</p>
-              <p className="text-3xl font-bold text-indigo-600">{word.toUpperCase()}</p>
+              <p className="text-xl text-gray-700 leading-relaxed text-center">
+                {highlightText(narrative, word)}
+              </p>
             </div>
 
             {/* Start game button */}
