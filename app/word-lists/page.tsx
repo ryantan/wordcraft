@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { WordListCard } from '@/components/word-lists/WordListCard'
 import { getAllWordLists, deleteWordList } from '@/lib/storage/localStorage'
 import type { WordList } from '@/types'
 
 export default function WordListsPage() {
+  const router = useRouter()
   const [wordLists, setWordLists] = useState<WordList[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -18,6 +20,13 @@ export default function WordListsPage() {
   const loadWordLists = () => {
     setIsLoading(true)
     const lists = getAllWordLists()
+    
+    // Auto-redirect to new word list form if no lists exist
+    if (lists.length === 0) {
+      router.push('/word-lists/new')
+      return
+    }
+    
     setWordLists(lists)
     setIsLoading(false)
   }
