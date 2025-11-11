@@ -331,17 +331,21 @@ Examples of bad things, i.e. the conflict:
 
 Decide on the main conflict first before coming up with the story - the main conflict does not have to be anything to do with the target words.
 
-Right before the end, add a block where the hero takes on the villain - call this the challenge block. The challenge block does not need to use any of the target words, it's an open ended challenge where we would let the reader play some minigames in order to overcome them. 
 
-Story blocks makes up the story. Each block:
+Beginning story blocks are narrative-only blocks that introduces the hero, setting, the conflict, the significance of what the villain did and what the hero must do.  
+
+Middle story blocks makes up the story. Each block:
 - focuses on one target word,
 - uses the target word naturally,
 - advances the plot.
-- indicates whether it belongs in the beginning, middle, challenge, or end phase.
 
+Right before the end, add a block where the hero takes on the villain - call this the challenge block. The challenge block does not need to use any of the target words, it's an open ended challenge where we would let the reader play some minigames in order to overcome them.
+ 
 Challenge story block (challenge) comes between the middle and end phase:
 - do not use any target words,
 - prompt that the hero would now be doing some challenges - do not go into detail what the challenges are as they would be programmatically generated - but that they would help the hero achieve the goal.
+
+End story blocks are narrative-only blocks that provide a satisfying resolution to the conflict, and what happens to our hero and other characters.
 
 Return only JSON that validates against the provided schema. No extra text.`;
 
@@ -395,7 +399,7 @@ Conflict: {CONFLICT}
 
 What is at stake for our hero: {STAKE}
 
-Must use these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY}.
+Must use these exact {WORDS_LENGTH} words naturally at least once: {WORDS_JSON_ARRAY} across the middle blocks. 
 
 Target reading level: {LEVEL}
 
