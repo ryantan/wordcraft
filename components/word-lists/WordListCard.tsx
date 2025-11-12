@@ -1,14 +1,21 @@
-'use client'
+'use client';
 
-import { type FC } from 'react'
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import type { WordList } from '@/types'
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import type { WordList } from '@/types';
+import Link from 'next/link';
+import { type FC } from 'react';
 
 interface WordListCardProps {
-  wordList: WordList
-  onDelete?: (id: string) => void
+  wordList: WordList;
+  onDelete?: (id: string) => void;
 }
 
 export const WordListCard: FC<WordListCardProps> = ({ wordList, onDelete }) => {
@@ -16,7 +23,7 @@ export const WordListCard: FC<WordListCardProps> = ({ wordList, onDelete }) => {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  }).format(wordList.updatedAt)
+  }).format(wordList.updatedAt);
 
   return (
     <Card className="card-hover">
@@ -38,15 +45,30 @@ export const WordListCard: FC<WordListCardProps> = ({ wordList, onDelete }) => {
         </div>
       </CardContent>
 
-      <CardFooter className="gap-2 flex-wrap">
+      <CardFooter className="gap-2 gap-y-2 flex-wrap">
+        <Link href={`/story?listId=${wordList.id}`} className="w-full">
+          {/*<Button*/}
+          {/*  variant="outline"*/}
+          {/*  className="w-full bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100"*/}
+          {/*>*/}
+          {/*  🚀 Play with story*/}
+          {/*</Button>*/}
+          <Button className="w-full">🚀 Play with story</Button>
+        </Link>
+        <Link href={`/game?listId=${wordList.id}`} className="w-full">
+          {/*<Button className="w-full">Play without story</Button>*/}
+          <Button
+            variant="outline"
+            className="w-full bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100"
+          >
+            Play without story
+          </Button>
+        </Link>
         <div className="flex gap-2 w-full">
           <Link href={`/word-lists/${wordList.id}`} className="flex-1">
             <Button variant="outline" className="w-full">
               Edit
             </Button>
-          </Link>
-          <Link href={`/game?listId=${wordList.id}`} className="flex-1">
-            <Button className="w-full">Play</Button>
           </Link>
           {onDelete && (
             <Button
@@ -72,12 +94,7 @@ export const WordListCard: FC<WordListCardProps> = ({ wordList, onDelete }) => {
             </Button>
           )}
         </div>
-        <Link href={`/story?listId=${wordList.id}`} className="w-full mt-2">
-          <Button variant="outline" className="w-full bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100">
-            🚀 Story Adventure
-          </Button>
-        </Link>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
