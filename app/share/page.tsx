@@ -68,8 +68,7 @@ export default function SharePage() {
       <div className="flex items-center justify-center min-h-screen">
         <Card className="w-[400px]">
           <CardHeader>
-            <CardTitle>Importing Word List</CardTitle>
-            <CardDescription>Please wait while we save your word list...</CardDescription>
+            <CardTitle>Saving the wordlist and starting the game</CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">
             <div className="h-8 w-8 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin" />
@@ -99,12 +98,11 @@ export default function SharePage() {
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>Word List Imported!</CardTitle>
-          <CardDescription>Your word list has been saved. Redirecting to story mode...</CardDescription>
+          <CardTitle>Starting the game...</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center">
           <Button onClick={() => router.push(`/story?listId=${wordListId}`)}>
-            Start Story Now
+            Start Now
           </Button>
         </CardContent>
       </Card>
